@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.venv/
+
+# SQLite DB and contact csv
+app.db
+contacts.csv
+
+# Environment variables
+.env
+
+# Editor files
+.vscode/
+*.swp
+Thumbs.db
+desktop.ini
