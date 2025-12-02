@@ -30,10 +30,15 @@ def allowed_file(filename):
 # ----------------------------------
 @app.route('/')
 def home():
-    images = [f for f in os.listdir(UPLOAD_FOLDER) if allowed_file(f)]
-    images.sort(reverse=True)
+    files = []
+    for name in os.listdir(app.config['UPLOAD_FOLDER']):
+        if name == 'thumbs':
+            continue
+        if allowed_file(name):
+            files.append(name)
+    files.sort(reverse=True)
     current_year = datetime.now().year
-    return render_template('index.html', images=images, current_year=current_year)
+    return render_template('index.html', images=files, current_year=current_year)
 
 # ----------------------------------
 # Fotoğraf yükleme
@@ -50,13 +55,13 @@ def upload():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(filepath)
+            destination = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(destination)
 
             # Thumbnail oluştur
             thumb_path = os.path.join(THUMB_FOLDER, filename)
             try:
-                img = Image.open(filepath)
+                img = Image.open(destination)
                 img.thumbnail((300, 300))
                 img.save(thumb_path)
             except Exception:
@@ -72,32 +77,33 @@ def upload():
 # ----------------------------------
 @app.route('/gallery')
 def gallery():
-    files = [f for f in os.listdir(UPLOAD_FOLDER) if allowed_file(f) and f != 'thumbs']
+    files = []
+    for name in os.listdir(app.config['UPLOAD_FOLDER']):
+        if name == 'thumbs':
+            continue
+        if allowed_file(name):
+            files.append(name)
     files.sort(reverse=True)
     return render_template('gallery.html', files=files)
 
 # ----------------------------------
-# Tek fotoğraf gösterimi
+# Fotoğraf gösterimi
 # ----------------------------------
-@app.route('/photo/<filename>')
-def photo(filename):
-    return render_template('photo.html', name=filename)
-
-# ----------------------------------
-# Fotoğraf ve thumbnail servisleri
-# ----------------------------------
-@app.route('/uploads/<filename>')
+@app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-@app.route('/thumbs/<filename>')
+@app.route('/thumbs/<path:filename>')
 def thumbnail(filename):
     return send_from_directory(THUMB_FOLDER, filename)
+
+@app.route('/photo/<path:filename>')
+def photo(filename):
+    return render_template('photo.html', name=filename)
 
 # ----------------------------------
 # Uygulamayı başlat
 # ----------------------------------
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))  # Render uyumlu port
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True, port=5001)
 
