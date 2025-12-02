@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Fotoğraf Galerisi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            background-color: #fff;
+            padding: 20px 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            margin: 0;
+            color: #333;
+        }
+
+        nav {
+            margin-top: 15px;
+        }
+
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #555;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: #ff6600;
+        }
+
+        main {
+            text-align: center;
+        }
+
+        main p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            nav a {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Merhaba Flask!</h1>
+        <nav>
+            <a href="{{ url_for('upload') }}">Fotoğraf Yükle</a>
+            <a href="{{ url_for('gallery') }}">Galeri</a>
+        </nav>
+    </header>
+
+    <main>
+        <p>Hoş geldiniz! Fotoğraflarınızı yükleyin ve galeriyi keşfedin.</p>
+    </main>
+</body>
+</html>
+
+
