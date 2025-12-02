@@ -1,4 +1,4 @@
-# Online Galeri (Basit Flask örneği)
+# Online Galeri (Basit Flask örneği) http://127.0.0.1:5000/
 
 Bu proje, basit bir çevrimiçi galeri gösterimi için Flask tabanlı örnek uygulamadır. İçerik:
 
@@ -44,3 +44,4 @@ Kimlik doğrulama / profesyonel kullanıcılar:
 Prod / Deploy notları:
 - `FLASK_SECRET` ortam değişkeni ayarlayın (prod için rastgele güçlü bir değer).
 - Prod deploy yaparken `debug=True` kapatılmalı ve WSGI sunucusu (gunicorn veya waitress) kullanılmalıdır.
+
