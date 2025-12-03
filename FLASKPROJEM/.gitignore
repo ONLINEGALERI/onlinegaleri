@@ -1,7 +1,0 @@
-# Python virtual environment
-.venv/
-yoksa/lib/
-__pycache__/
-*.pyc
-.env
-
