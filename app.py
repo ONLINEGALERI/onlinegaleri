@@ -1,18 +1,41 @@
-import os
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-from werkzeug.utils import secure_filename
-from PIL import Image
-from datetime import datetime
-
-# Temel ayarlar
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
-THUMB_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbs')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(THUMB_FOLDER, exist_ok=True)
+from flask import Flask, render_template
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+@app.route("/register")
+def register():
+    return render_template("register.html")
+
+@app.route("/profile")
+def profile():
+    return render_template("profile.html")
+
+@app.route("/gallery")
+def gallery():
+    return render_template("gallery.html")
+
+@app.route("/upload")
+def upload():
+    return render_template("upload.html")
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
