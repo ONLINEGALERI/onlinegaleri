@@ -1,0 +1,30 @@
+*   [33mf0996f5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcemre[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/cemre[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m Merge beril into main with unrelated histories
+[31m|[m[32m\[m  
+[31m|[m * [33md03b182[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/beril[m[33m)[m Add .gitignore to ignore venv and cache files
+[31m|[m * [33m00fd9cc[m Remove venv and add .gitignore
+[31m|[m * [33mb02a24f[m İlk commit: proje başlangıcı
+* [33m2091cdc[m Update README.md
+* [33m42382a9[m Delete .DS_Store
+* [33m16dcc76[m Delete yoksa directory
+* [33med8339f[m Delete templates directory
+* [33m0d82cd6[m Delete oluştur directory
+* [33mc3c2cd1[m Delete Sanal directory
+* [33m1bca3d1[m Delete FLASKPROJEM directory
+* [33me7e08ee[m Delete # directory
+* [33m600d895[m Delete ortam directory
+* [33maae8884[m Update README.md
+* [33m0fee65b[m Add index.html template
+* [33m8573e2e[m Remove virtual environment and system packages from repo
+* [33m192eab4[m Clean repo: ignore virtual environment and packages
+* [33mca227dd[m Update app.py with clean code
+* [33m600ac7c[m Reset app.py to clean version
+*   [33me329b0a[m Resolve merge conflict
+[33m|[m[34m\[m  
+[33m|[m * [33maea55c5[m Update README.md
+[33m|[m * [33m3c7e39f[m Remove empty README.md file
+[33m|[m * [33m6e0133e[m Update README.md
+[33m|[m * [33mb6dd459[m Update README.md
+[33m|[m * [33m758104c[m Fix formatting and duplicate content in README.md
+[33m|[m * [33m3986cbe[m Add files via upload
+[33m|[m * [33mca9b5f9[m Initial commit
+* [33m60803fb[m Initial commit: add app.py and templates
