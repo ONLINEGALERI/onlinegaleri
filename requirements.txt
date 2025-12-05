@@ -1,8 +1,2 @@
-Flask
-Flask-SQLAlchemy
-Flask-Migrate
-Flask-Login
-email-validator
-Werkzeug
+flask
 gunicorn
-
