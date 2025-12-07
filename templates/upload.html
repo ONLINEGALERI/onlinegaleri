@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Yükle - Online Galeri{% endblock %}
 
+<<<<<<< HEAD
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Fotoğraf Yükle</h1>
 
@@ -43,4 +44,78 @@ if(fileInput){
 }
 </script>
 {% endblock %}
+=======
+    <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+        <input type="file" name="photo" accept="image/*" required>
+        <button type="submit">Yükle</button>
+    {% extends 'base.html' %}
+
+    {% block title %}Fotoğraf Yükle{% endblock %}
+
+    {% block content %}
+    <div class="container" style="max-width:900px">
+        <div class="profile-card mt-4 p-4">
+            <h3 class="mb-3">Yeni Fotoğraf Yükle</h3>
+            <p class="muted">JPEG/PNG/GIF – maksimum 5 MB. Fotoğraf yüklendikten sonra küçük resim oluşturulacaktır.</p>
+
+            <form id="uploadForm" action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Görsel Seç</label>
+                    <input id="photoInput" class="form-control" type="file" name="photo" accept="image/*" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Açıklama (opsiyonel)</label>
+                    <input name="caption" class="form-control" type="text" placeholder="Gönderi açıklaması">
+                </div>
+
+                <div id="previewWrap" class="mb-3" style="display:none">
+                    <div class="mb-2">Önizleme:</div>
+                    <div style="max-width:360px;border-radius:8px;overflow:hidden;border:1px solid #e6e9ee;padding:6px;background:#fff">
+                        <img id="previewImg" src="" alt="preview" style="width:100%;height:auto;display:block">
+                    </div>
+                    <div id="previewInfo" class="muted small mt-2"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button id="submitBtn" class="btn btn-primary" type="submit">Yükle</button>
+                    <a class="btn btn-outline-secondary" href="{{ url_for('gallery') }}">İptal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const input = document.getElementById('photoInput');
+            const previewWrap = document.getElementById('previewWrap');
+            const previewImg = document.getElementById('previewImg');
+            const previewInfo = document.getElementById('previewInfo');
+            const maxBytes = 5 * 1024 * 1024; // 5MB
+
+            input.addEventListener('change', function(){
+                const f = this.files && this.files[0];
+                if(!f){ previewWrap.style.display='none'; previewImg.src=''; return; }
+                if(!f.type.startsWith('image/')){ alert('Lütfen bir görsel dosyası seçin.'); this.value=''; return; }
+                if(f.size > maxBytes){ alert('Dosya çok büyük. Maksimum 5 MB.'); this.value=''; previewWrap.style.display='none'; return; }
+                // show preview
+                const reader = new FileReader();
+                reader.onload = function(ev){ previewImg.src = ev.target.result; previewWrap.style.display='block'; }
+                reader.readAsDataURL(f);
+                // show info
+                const kb = Math.round(f.size/1024);
+                previewInfo.textContent = `${f.name} — ${kb} KB — ${f.type}`;
+            });
+
+            // prevent double submits
+            const form = document.getElementById('uploadForm');
+            form.addEventListener('submit', function(e){
+                const btn = document.getElementById('submitBtn');
+                btn.disabled = true; btn.textContent = 'Yükleniyor...';
+            });
+        })();
+    </script>
+
+    {% endblock %}
+>>>>>>> origin/cemre
 
