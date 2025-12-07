@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Arşivim - {{ username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card p-3">
+        <h4>Arşivlenmiş Gönderiler ({{ posts|length }})</h4>
+        <div class="row mt-3">
+            {% for p in posts %}
+            <div class="col-12 col-sm-6 col-md-4 mb-3">
+                <div class="card">
+                    <img src="{{ p.url }}" class="card-img-top" style="object-fit:cover;height:200px;" />
+                    <div class="card-body">
+                        <p class="card-text">{{ p.caption }}</p>
+                        <div class="d-flex gap-2">
+                            <button data-id="{{ p.id }}" class="btn btn-sm btn-primary unarchive-btn">Arşivi Aç</button>
+                            <button data-id="{{ p.id }}" class="btn btn-sm btn-danger delete-btn">Kalıcı Sil</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-muted">Arşivlenmiş gönderiniz yok.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('click', function(e){
+    const ua = e.target.closest('.unarchive-btn');
+    if(ua){
+        const id = ua.dataset.id;
+        if(!confirm('Bu gönderinin arşivini açmak istiyor musunuz?')) return;
+        fetch('/post/'+id+'/unarchive',{method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.json()).then(j=>{ if(j.status==='ok'){ location.reload(); } else { alert(j.message||'Hata'); } }).catch(()=>alert('Hata'));
+    }
+    const del = e.target.closest('.delete-btn');
+    if(del){
+        const id = del.dataset.id;
+        if(!confirm('Bu gönderiyi kalıcı olarak silmek istediğinize emin misiniz?')) return;
+        fetch('/post/'+id+'/delete',{method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.json()).then(j=>{ if(j.status==='ok'){ location.reload(); } else { alert(j.message||'Hata'); } }).catch(()=>alert('Hata'));
+    }
+});
+</script>
+{% endblock %}

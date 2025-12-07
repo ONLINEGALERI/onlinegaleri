@@ -16,6 +16,7 @@
         {% endwith %}
 
         <form method="POST" action="{{ url_for('login') }}" novalidate>
+            <input type="hidden" name="next" value="{{ request.args.get('next') }}">
             <div class="mb-3">
                 <label class="form-label">Kullanıcı Adı veya Email</label>
                 <input type="text" name="username" class="form-control" required placeholder="ornek@mail.com">

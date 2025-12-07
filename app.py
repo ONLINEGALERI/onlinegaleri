@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify, abort
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
@@ -8,6 +8,7 @@ from extensions import db, migrate, login_manager
 from flask_login import login_user, logout_user, current_user, login_required
 from models.user import User
 from models.siteinfo import SiteInfo
+from models.post import Post
 
 
 app = Flask(__name__)
@@ -41,6 +42,8 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        # prefer form 'next' then querystring
+        next_page = request.form.get('next') or request.args.get('next')
         user = None
         if username:
             # allow login by username or email
@@ -48,9 +51,21 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             flash('Başarıyla giriş yapıldı', 'success')
-            return redirect(request.args.get('next') or url_for('index'))
+            # validate next_page - only allow relative paths
+            if next_page and isinstance(next_page, str) and next_page.startswith('/'):
+                return redirect(next_page)
+            # otherwise redirect to the user's profile
+            return redirect(url_for('profile', username=user.username))
         flash('Geçersiz kullanıcı adı veya şifre', 'danger')
     return render_template('login_clean.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Çıkış yapıldı', 'info')
+    return redirect(url_for('index'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -103,12 +118,91 @@ def profile():
             'following': server_profile.following,
             'posts': server_profile.posts
         }
+        # load posts for this user (latest first)
+        posts_q = Post.query.filter_by(user_id=server_profile.id, archived=False).order_by(Post.created_at.desc()).all()
+        posts = [p.to_dict(base_url=request.url_root) for p in posts_q]
+    else:
+        posts = []
     can_edit = False
     try:
         can_edit = current_user.is_authenticated and current_user.username == username
     except Exception:
         can_edit = False
-    return render_template('profile.html', username=username, server_profile=sp, can_edit=can_edit)
+    # is_following: whether current_user follows this server_profile (for follow button)
+    is_following = False
+    if server_profile and current_user.is_authenticated and current_user.id != server_profile.id:
+        try:
+            is_following = current_user.is_following(server_profile)
+        except Exception:
+            is_following = False
+    return render_template('profile.html', username=username, server_profile=sp, can_edit=can_edit, is_following=is_following, posts=posts)
+
+
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow_user(username):
+    target = User.query.filter_by(username=username).first()
+    if not target:
+        return jsonify({'status':'error','message':'Kullanıcı bulunamadı'}), 404
+    if target.id == current_user.id:
+        return jsonify({'status':'error','message':'Kendinizi takip edemezsiniz'}), 400
+    try:
+        current_user.follow(target)
+        db.session.commit()
+        return jsonify({'status':'ok','followers': target.followers, 'following': current_user.following})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status':'error','message':str(e)}), 500
+
+
+@app.route('/profile/<username>/followers')
+def profile_followers(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        abort(404)
+    # build list from relationship
+    followers = [u for u in user.followers_rel]
+    return render_template('follow_list.html', title='Takipçiler', username=username, items=followers)
+
+
+@app.route('/profile/<username>/following')
+def profile_following(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        abort(404)
+    following = [u for u in user.following_rel]
+    return render_template('follow_list.html', title='Takip Edilenler', username=username, items=following)
+
+
+@app.route('/profile/<username>/archive')
+@login_required
+def profile_archive(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        abort(404)
+    # only owner or admin can view archived posts
+    if not (current_user.is_authenticated and (current_user.id == user.id or getattr(current_user,'is_admin',False))):
+        abort(403)
+    archived_posts = Post.query.filter_by(user_id=user.id, archived=True).order_by(Post.created_at.desc()).all()
+    posts = [p.to_dict(base_url=request.url_root) for p in archived_posts]
+    return render_template('archive_list.html', username=username, posts=posts)
+
+
+@app.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow_user(username):
+    target = User.query.filter_by(username=username).first()
+    if not target:
+        return jsonify({'status':'error','message':'Kullanıcı bulunamadı'}), 404
+    if target.id == current_user.id:
+        return jsonify({'status':'error','message':'Kendinizi takipten çıkaramazsınız'}), 400
+    try:
+        current_user.unfollow(target)
+        db.session.commit()
+        return jsonify({'status':'ok','followers': target.followers, 'following': current_user.following})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status':'error','message':str(e)}), 500
 
 
 @app.route('/profile/save', methods=['POST'])
@@ -120,21 +214,43 @@ def save_profile():
     name = data.get('name')
     handle = data.get('handle')
     bio = data.get('bio')
-    followers = data.get('followers')
-    following = data.get('following')
-    posts = data.get('posts')
+    # followers/following/posts counters are managed server-side (do not accept from client)
 
     u = current_user
-    if avatar: u.avatar = avatar
-    if bio is not None: u.bio = bio
-    try:
-        u.followers = int(followers) if followers else u.followers
-        u.following = int(following) if following else u.following
-        u.posts = int(posts) if posts else u.posts
-    except Exception:
-        pass
+    # allow clearing avatar by submitting empty string
+    if 'avatar' in data:
+        u.avatar = avatar or None
+    if bio is not None:
+        u.bio = bio
+    # name/handle can be client visible but avoid changing username column here to keep uniqueness
+    # (if you want to allow username change add validation endpoint)
     db.session.commit()
     return jsonify({'status':'ok'})
+
+
+@app.route('/profile/upload-avatar', methods=['POST'])
+@login_required
+def upload_avatar():
+    if 'avatar' not in request.files:
+        return jsonify({'status':'error','message':'Dosya bulunamadı'}), 400
+    file = request.files['avatar']
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        file.save(filepath)
+        try:
+            img = Image.open(filepath)
+            img.thumbnail((400, 400))
+            thumbpath = os.path.join(THUMB_FOLDER, filename)
+            img.save(thumbpath)
+        except Exception:
+            pass
+        # set user's avatar to the uploads route
+        current_user.avatar = url_for('uploaded_file', filename=filename)
+        db.session.commit()
+        return jsonify({'status':'ok','avatar': current_user.avatar})
+    return jsonify({'status':'error','message':'Geçersiz dosya türü'}), 400
 
 
 @app.route('/gallery')
@@ -169,6 +285,148 @@ def upload():
     return render_template('upload.html')
 
 
+@app.route('/post/upload', methods=['POST'])
+@login_required
+def upload_post():
+    if 'photo' not in request.files:
+        flash('Dosya bulunamadı', 'warning')
+        return redirect(request.referrer or url_for('profile'))
+    file = request.files['photo']
+    caption = request.form.get('caption')
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        file.save(filepath)
+        try:
+            img = Image.open(filepath)
+            img.thumbnail((600, 600))
+            img.save(os.path.join(THUMB_FOLDER, filename))
+        except Exception:
+            pass
+        # create post
+        p = Post(user_id=current_user.id, filename=filename, caption=caption)
+        db.session.add(p)
+        try:
+            current_user.posts = (current_user.posts or 0) + 1
+        except Exception:
+            pass
+        db.session.commit()
+        flash('Gönderi yüklendi', 'success')
+        return redirect(url_for('profile', username=current_user.username))
+    flash('Geçersiz dosya türü', 'danger')
+    return redirect(request.referrer or url_for('profile'))
+
+
+@app.route('/post/<int:post_id>/delete', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    p = Post.query.get(post_id)
+    if not p:
+        flash('Gönderi bulunamadı', 'warning')
+        return redirect(request.referrer or url_for('profile'))
+    if p.user_id != current_user.id and not getattr(current_user,'is_admin',False):
+        flash('Yetkiniz yok', 'danger')
+        return redirect(request.referrer or url_for('profile'))
+    # delete files
+    try:
+        os.remove(os.path.join(UPLOAD_FOLDER, p.filename))
+    except Exception:
+        pass
+    try:
+        os.remove(os.path.join(THUMB_FOLDER, p.filename))
+    except Exception:
+        pass
+    try:
+        # decrement the owner's post counter
+        owner = User.query.get(p.user_id)
+        db.session.delete(p)
+        if owner:
+            try:
+                owner.posts = max(0, (owner.posts or 1) - 1)
+            except Exception:
+                pass
+        db.session.commit()
+        # If request came via AJAX, return JSON so frontend can update without redirect
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'status':'ok'})
+    except Exception:
+        db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'status':'error','message':'Silme işlemi başarısız oldu'}), 500
+    # Non-AJAX fallback
+    flash('Gönderi silindi', 'success')
+    return redirect(url_for('profile', username=current_user.username))
+
+
+@app.route('/post/<int:post_id>/archive', methods=['POST'])
+@login_required
+def archive_post(post_id):
+    p = Post.query.get(post_id)
+    if not p:
+        return jsonify({'status':'error','message':'Gönderi bulunamadı'}), 404
+    if p.user_id != current_user.id and not getattr(current_user,'is_admin',False):
+        return jsonify({'status':'error','message':'Yetkiniz yok'}), 403
+    try:
+        p.archived = True
+        owner = User.query.get(p.user_id)
+        if owner:
+            try:
+                owner.posts = max(0, (owner.posts or 1) - 1)
+            except Exception:
+                pass
+        db.session.commit()
+        return jsonify({'status':'ok'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status':'error','message':str(e)}), 500
+
+
+@app.route('/post/<int:post_id>/unarchive', methods=['POST'])
+@login_required
+def unarchive_post(post_id):
+    p = Post.query.get(post_id)
+    if not p:
+        return jsonify({'status':'error','message':'Gönderi bulunamadı'}), 404
+    if p.user_id != current_user.id and not getattr(current_user,'is_admin',False):
+        return jsonify({'status':'error','message':'Yetkiniz yok'}), 403
+    try:
+        p.archived = False
+        owner = User.query.get(p.user_id)
+        if owner:
+            try:
+                owner.posts = (owner.posts or 0) + 1
+            except Exception:
+                pass
+        db.session.commit()
+        return jsonify({'status':'ok'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status':'error','message':str(e)}), 500
+
+
+@app.route('/account/change-username', methods=['POST'])
+@login_required
+def change_username():
+    new_username = request.form.get('new_username')
+    password = request.form.get('password')
+    if not new_username or not password:
+        return jsonify({'status':'error','message':'Eksik parametre'}), 400
+    # verify password
+    if not current_user.check_password(password):
+        return jsonify({'status':'error','message':'Parola yanlış'}), 403
+    # check uniqueness
+    if User.query.filter(User.username == new_username).first():
+        return jsonify({'status':'error','message':'Kullanıcı adı alınmış'}), 409
+    try:
+        current_user.username = new_username
+        db.session.commit()
+        return jsonify({'status':'ok','username': new_username})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status':'error','message':str(e)}), 500
+
+
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -192,7 +450,9 @@ def contact():
 @app.route('/admin/siteinfo', methods=['GET', 'POST'])
 @login_required
 def edit_siteinfo():
-    # Only authenticated users can edit; in future refine to admin-only
+    # Only admin users can edit site info
+    if not getattr(current_user, 'is_admin', False):
+        abort(403)
     si = SiteInfo.query.first()
     if request.method == 'POST':
         email = request.form.get('contact_email')
