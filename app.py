@@ -7,6 +7,7 @@ from config import Config
 from extensions import db, migrate, login_manager
 from flask_login import login_user, logout_user, current_user, login_required
 from models.user import User
+from models.siteinfo import SiteInfo
 
 
 app = Flask(__name__)
@@ -52,31 +53,30 @@ def login():
     return render_template('login_clean.html')
 
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST' or request.method == 'GET':
-        if request.method == 'POST':
-            username = request.form.get('username')
-            email = request.form.get('email')
-            p1 = request.form.get('password1')
-            p2 = request.form.get('password2')
-            if not username or not email or not p1:
-                flash('Tüm alanlar gerekli', 'danger')
-                return redirect(url_for('register'))
-            if p1 != p2:
-                flash('Şifreler eşleşmiyor', 'danger')
-                return redirect(url_for('register'))
-            if User.query.filter((User.username == username) | (User.email == email)).first():
-                flash('Kullanıcı adı veya email zaten kayıtlı', 'warning')
-                return redirect(url_for('register'))
-            u = User(username=username, email=email)
-            u.set_password(p1)
-            db.session.add(u)
-            db.session.commit()
-            flash('Kayıt başarılı. Giriş yapabilirsiniz.', 'success')
-            return redirect(url_for('login'))
-        # GET
-        return render_template('register.html')
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        p1 = request.form.get('password1')
+        p2 = request.form.get('password2')
+        if not username or not email or not p1:
+            flash('Tüm alanlar gerekli', 'danger')
+            return redirect(url_for('register'))
+        if p1 != p2:
+            flash('Şifreler eşleşmiyor', 'danger')
+            return redirect(url_for('register'))
+        if User.query.filter((User.username == username) | (User.email == email)).first():
+            flash('Kullanıcı adı veya email zaten kayıtlı', 'warning')
+            return redirect(url_for('register'))
+        u = User(username=username, email=email)
+        u.set_password(p1)
+        db.session.add(u)
+        db.session.commit()
+        flash('Kayıt başarılı. Giriş yapabilirsiniz.', 'success')
+        return redirect(url_for('login'))
+    # GET
+    return render_template('register.html')
 
 
 @app.route('/profile')
@@ -183,7 +183,36 @@ def contact():
         print(f"Yeni mesaj: {name} - {email} - {message}")
         flash('Mesajınız alındı', 'success')
         return redirect(url_for('index'))
-    return render_template('contact.html')
+    # show stored site owner info if any
+    si = SiteInfo.query.first()
+    site_info = si.to_dict() if si else None
+    return render_template('contact.html', site_info=site_info)
+
+
+@app.route('/admin/siteinfo', methods=['GET', 'POST'])
+@login_required
+def edit_siteinfo():
+    # Only authenticated users can edit; in future refine to admin-only
+    si = SiteInfo.query.first()
+    if request.method == 'POST':
+        email = request.form.get('contact_email')
+        phone = request.form.get('contact_phone')
+        addr = request.form.get('contact_address')
+        extra = request.form.get('extra')
+        if not si:
+            si = SiteInfo(contact_email=email, contact_phone=phone, contact_address=addr, extra=extra)
+            db.session.add(si)
+        else:
+            si.contact_email = email
+            si.contact_phone = phone
+            si.contact_address = addr
+            si.extra = extra
+        db.session.commit()
+        flash('Site iletişim bilgileri güncellendi', 'success')
+        return redirect(url_for('contact'))
+
+    site_info = si.to_dict() if si else None
+    return render_template('admin_siteinfo.html', site_info=site_info)
 
 
 @app.route('/uploads/<filename>')

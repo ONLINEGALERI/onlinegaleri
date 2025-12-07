@@ -8,6 +8,7 @@ login_manager = LoginManager()
 login_manager.login_view = "login"
 
 from models.user import User
+from models.siteinfo import SiteInfo
 
 @login_manager.user_loader
 def load_user(user_id):
