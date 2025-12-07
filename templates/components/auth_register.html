@@ -1,0 +1,20 @@
+<form method="POST" action="{{ url_for('register') }}">
+  <div class="mb-3">
+    <label for="reg-username" class="form-label">Kullanıcı adı</label>
+    <input id="reg-username" name="username" type="text" class="form-control" placeholder="Kullanıcı adı" required>
+  </div>
+  <div class="mb-3">
+    <label for="reg-email" class="form-label">E-posta</label>
+    <input id="reg-email" name="email" type="email" class="form-control" placeholder="ornek@mail.com" required>
+  </div>
+  <div class="mb-3">
+    <label for="reg-password" class="form-label">Şifre</label>
+    <input id="reg-password" name="password1" type="password" class="form-control" placeholder="••••••••" required>
+  </div>
+  <div class="mb-3">
+    <label for="reg-password2" class="form-label">Şifre (tekrar)</label>
+    <input id="reg-password2" name="password2" type="password" class="form-control" placeholder="••••••••" required>
+  </div>
+  <button type="submit" class="btn btn-success w-100">Kayıt Ol</button>
+  <div class="text-center mt-3 small">Zaten hesabın var mı? <a href="#" data-bs-toggle="tab" data-bs-target="#login">Giriş yap</a></div>
+</form>

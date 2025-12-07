@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}Kayıt Ol{% endblock %}
 
@@ -8,15 +7,15 @@
     <div class="card shadow p-4" style="max-width: 480px; width: 100%;">
         <h3 class="text-center mb-4">Kayıt Ol</h3>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-
+        <form method="POST" action="{{ url_for('register') }}">
             <div class="mb-3">
                 <label class="form-label">Kullanıcı Adı</label>
                 <input type="text" name="username" class="form-control" required placeholder="kullaniciadi">
@@ -43,7 +42,7 @@
         <hr>
 
         <div class="text-center">
-            <p>Zaten hesabın var mı? <a href="{% url 'login' %}">Giriş Yap</a></p>
+            <p>Zaten hesabın var mı? <a href="{{ url_for('login') }}">Giriş Yap</a></p>
         </div>
     </div>
 </div>

@@ -70,3 +70,27 @@ nav a:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     text-align: center;
 }
+
+/* Auth offcanvas / login styles */
+#authOffcanvas {
+    --bs-offcanvas-width: 380px;
+}
+#authOffcanvas .offcanvas-body {
+    padding: 1rem 1.25rem;
+}
+#authOffcanvas .form-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+}
+#authOffcanvas .form-control {
+    width: 100%;
+    box-sizing: border-box;
+}
+#authOffcanvas .btn {
+    border-radius: 8px;
+}
+#authOffcanvas .small { margin-top: .6rem; display:block; }
+
+/* Make sure the hero content doesn't contain the login card */
+.hero .login-card { display: none; }

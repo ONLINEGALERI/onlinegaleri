@@ -1,19 +1,21 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 	<div class="container">
-		<a class="navbar-brand" href="{{ url_for('index') }}">Online Galeri</a>
+			<div class="d-flex align-items-center">
+			<a class="navbar-brand me-2" href="{{ url_for('index') }}">Online Galeri</a>
+			<button id="authBtn" class="btn btn-sm btn-outline-light me-2" data-bs-toggle="offcanvas" data-bs-target="#authOffcanvas" aria-controls="authOffcanvas">Üye Ol</button>
+			<button id="profileBtn" class="btn btn-sm btn-light">Profil</button>
+		</div>
+
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
 			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Ana Sayfa</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('gallery') }}">Galeri</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('upload') }}">Yükle</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">Hakkında</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('contact') }}">İletişim</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Giriş</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Kayıt</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}">Profil</a></li>
 			</ul>
 		</div>
 	</div>
