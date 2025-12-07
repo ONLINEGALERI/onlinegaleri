@@ -1,22 +1,191 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>Fotoğraf Galerisi</title>
-</head>
-<body>
-    <h1>Galeriye Hoşgeldiniz</h1>
+{% extends "base.html" %}
+{% block title %}Galeri{% endblock %}
 
-    <!-- Buraya fotoğrafları listeleyecek kod gelecek -->
-    <div id="gallery">
-        <!-- Örnek resim -->
-        <img src="/static/images/ornek.jpg" alt="Örnek Fotoğraf" width="200">
+{% block head_extra %}
+<style>
+  /* Kare-kutu grid, küçük beyaz boşluklar, sade VSCO-tarzı */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 6px;
+  }
+
+  .photo-card {
+    position: relative;
+    padding-top: 100%; /* kare */
+    overflow: hidden;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .photo-card img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .18s ease;
+  }
+
+  .photo-card:hover img { transform: scale(1.03); }
+
+  .card-controls {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity .12s;
+  }
+
+  .photo-card:focus-within .card-controls,
+  .photo-card:hover .card-controls { opacity: 1; }
+
+  .btn {
+    background: rgba(255,255,255,0.95);
+    border: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .notice { color:#666; font-size:14px; margin-bottom:10px; }
+  .empty-msg { text-align:center; color:#777; padding:40px 0; }
+
+  /* Lightbox */
+  #lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; z-index:9999; padding:20px; }
+  #lightbox.show { display:flex; }
+  #lightbox .inner { max-width:92vw; max-height:90vh; width:900px; color:#fff; }
+  #lightbox img { width:100%; height:auto; border-radius:6px; display:block; }
+  #lightbox .meta { margin-top:8px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  @media (max-width:640px) { .photo-grid { grid-template-columns: repeat(2,1fr); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Galeri</h1>
+
+{# güvenli auth kontrolü #}
+{% set max_public = limit|default(6) %}
+{% set is_auth = (current_user is defined and current_user.is_authenticated) %}
+{% set visible_photos = photos if is_auth else photos[:max_public] %}
+
+{% if photos is not defined or photos|length == 0 %}
+  <div class="empty-msg">Henüz paylaşım yok.</div>
+{% else %}
+  {% if not is_auth %}
+    <div class="notice">Üye değilsiniz — yalnızca <strong>{{ max_public }}</strong> fotoğraf görüntüleniyor.</div>
+  {% endif %}
+
+  <div class="photo-grid" id="photoGrid">
+    {% for p in visible_photos %}
+      <div class="photo-card" tabindex="0"
+           data-id="{{ p.id }}" data-src="{{ p.url }}" data-title="{{ p.title|default('') }}" data-desc="{{ p.description|default('') }}">
+        <img src="{{ p.url }}" alt="{{ p.title|default('photo') }}">
+        <div class="card-controls" aria-hidden="true">
+          <button class="btn save-btn" data-id="{{ p.id }}" title="Kaydet">❤</button>
+          <button class="btn repost-btn" data-id="{{ p.id }}" title="Tekrar Paylaş">⤴</button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if not is_auth and photos|length > visible_photos|length %}
+    <div class="notice">Daha fazla fotoğraf görmek için giriş yapın.</div>
+  {% endif %}
+{% endif %}
+
+<!-- Lightbox -->
+<div id="lightbox" role="dialog" aria-hidden="true" onclick="if(event.target===this) closeLightbox()">
+  <div class="inner" role="document">
+    <button id="lb-close" style="float:right;background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer">✕</button>
+    <img id="lb-img" src="" alt="">
+    <div class="meta">
+      <div>
+        <div id="lb-title" style="font-weight:600"></div>
+        <div id="lb-desc" style="color:#ddd;font-size:13px"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="lb-save">❤ Kaydet</button>
+        <button class="btn" id="lb-repost">⤴ Repost</button>
+      </div>
     </div>
+  </div>
+</div>
+{% endblock %}
 
-    <a href="{{ url_for('upload') }}">Fotoğraf Yükle</a>
-</body>
-</html>
+{% block scripts %}
+<script>
+  const CSRF = '{{ csrf_token() if csrf_token is defined else "" }}';
+  const saveUrl = "{{ url_for('save_photo') }}";
+  const repostUrl = "{{ url_for('repost') }}";
 
-git add templates/gallery.html
-git commit -m "Gallery sayfası tasarımı eklendi"
-git push origin <branch-adın>
+  const grid = document.getElementById('photoGrid');
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbTitle = document.getElementById('lb-title');
+  const lbDesc = document.getElementById('lb-desc');
+  const lbClose = document.getElementById('lb-close');
+  let currentId = null;
+
+  grid?.addEventListener('click', (e) => {
+    const card = e.target.closest('.photo-card');
+    if (!card) return;
+    openLightbox(card.dataset.src, card.dataset.title, card.dataset.desc, card.dataset.id);
+  });
+
+  grid?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const card = e.target.closest('.photo-card');
+      if (card) openLightbox(card.dataset.src, card.dataset.title, card.dataset.desc, card.dataset.id);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const s = e.target.closest('.save-btn');
+    const r = e.target.closest('.repost-btn');
+    if (s) { e.stopPropagation(); postAction(saveUrl, s.dataset.id); }
+    if (r) { e.stopPropagation(); if (!confirm('Bu fotoğrafı tekrar paylaşmak istiyor musunuz?')) return; postAction(repostUrl, r.dataset.id); }
+  });
+
+  function openLightbox(src, title, desc, id) {
+    lbImg.src = src;
+    lbTitle.textContent = title || '';
+    lbDesc.textContent = desc || '';
+    currentId = id || null;
+    lightbox.classList.add('show');
+    lightbox.setAttribute('aria-hidden','false');
+  }
+  function closeLightbox() {
+    lightbox.classList.remove('show');
+    lightbox.setAttribute('aria-hidden','true');
+    lbImg.src = '';
+    currentId = null;
+  }
+  lbClose?.addEventListener('click', closeLightbox);
+  document.getElementById('lb-save')?.addEventListener('click', ()=>{ if(currentId) postAction(saveUrl, currentId); });
+  document.getElementById('lb-repost')?.addEventListener('click', ()=>{ if(!currentId) return; if(!confirm('Bu fotoğrafı tekrar paylaşmak istiyor musunuz?')) return; postAction(repostUrl, currentId); });
+
+  async function postAction(url, id) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ photo_id: id })
+      });
+      if (res.status === 401) { alert('Giriş yapmalısınız.'); return; }
+      const j = await res.json().catch(()=>({}));
+      alert(j.message || 'İşlem tamamlandı.');
+    } catch (err) { console.error(err); alert('Bir hata oluştu.'); }
+  }
+
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+{% endblock %}
+
+
+

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}İletişim - Online Galeri{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">İletişim</h1>
+
+<form method="post" action="{{ url_for('contact') }}" class="bg-white p-6 rounded shadow-md max-w-lg">
+  {{ form.csrf_token() if form is defined }}
+
+  <label class="block mb-3">
+    <span>İsim</span>
+    <input name="name" required class="mt-2 w-full px-3 py-2 border rounded" />
+  </label>
+
+  <label class="block mb-3">
+    <span>E-posta</span>
+    <input type="email" name="email" required class="mt-2 w-full px-3 py-2 border rounded" />
+  </label>
+
+  <label class="block mb-3">
+    <span>Konu</span>
+    <input name="subject" class="mt-2 w-full px-3 py-2 border rounded" />
+  </label>
+
+  <label class="block mb-3">
+    <span>Mesaj</span>
+    <textarea name="message" rows="5" required class="mt-2 w-full px-3 py-2 border rounded"></textarea>
+  </label>
+
+  <!-- Basit honeypot spam koruması -->
+  <input type="text" name="hp_field" style="display:none" tabindex="-1" autocomplete="off" />
+
+  <div class="mt-4">
+    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Gönder</button>
+  </div>
+</form>
+{% endblock %}

@@ -5,24 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Galeri - Ana Sayfa</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+      /* small helper styles for explore grid */
+      .explore-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; }
+      .explore-card { position:relative; padding-top:100%; overflow:hidden; border-radius:6px; background:#fafafa; }
+  .explore-card img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; transition:transform .18s ease; }
+  /* press-and-hold effect: when user holds the card it grows slightly */
+    .explore-card.pressed img { transform: scale(1.06); }
+
+    /* peek overlay (Instagram-style long-press preview) */
+    #peekOverlay { display:none; position:fixed; inset:0; align-items:center; justify-content:center; z-index:10000; pointer-events:none; }
+    #peekOverlay.show { display:flex; pointer-events:auto; }
+  /* lighter frame for peek: white card with subtle shadow */
+  #peekOverlay .peek-inner { max-width:92vw; max-height:86vh; width:520px; border-radius:10px; overflow:hidden; background:rgba(255,255,255,0.98); padding:6px; box-shadow:0 12px 30px rgba(0,0,0,0.12); }
+  #peekOverlay img { display:block; width:100%; height:auto; border-radius:6px; background:linear-gradient(#fff,#fff); }
+      .card-overlay { position:absolute; inset:8px; display:flex; justify-content:space-between; align-items:flex-start; pointer-events:none; }
+      .card-left { pointer-events:auto; display:flex; gap:6px; }
+      .card-controls { background:rgba(255,255,255,0.92); border-radius:6px; padding:4px; display:flex; gap:6px; }
+      .card-likes { background:rgba(0,0,0,0.45); color:#fff; padding:4px 6px; border-radius:999px; font-size:12px; pointer-events:auto; }
+      .loader { text-align:center; padding:18px; color:#666 }
+
+      /* Lightbox */
+      #lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; z-index:9999; padding:20px; }
+      #lightbox.show { display:flex; }
+      #lightbox .inner { max-width:92vw; max-height:90vh; width:900px; color:#fff; }
+      #lightbox img { width:100%; height:auto; border-radius:6px; display:block; }
+      #lightbox .meta { margin-top:8px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    </style>
 </head>
 <body>
 
 <header>
-    <h1>Online Galeri</h1>
-    <nav>
-        <a href="/">Ana Sayfa</a>
-        <a href="/gallery">Galeri</a>
-        <a href="/about">Hakkımızda</a>
-        <a href="/contact">İletişim</a>
-    </nav>
+  <h1>Online Galeri</h1>
+  <nav>
+    <a href="/">Ana Sayfa</a>
+    <a href="/about">Hakkımızda</a>
+    <a href="/contact">İletişim</a>
+  </nav>
 </header>
 
 <section class="hero">
     <h2>Fotoğraflarını Paylaş, Dünyayı Keşfet!</h2>
     <p>Sanatçıların eserlerini sergilediği modern dijital galeri platformu.</p>
-    <a href="/gallery" class="btn">Galeriyi Gör</a>
+  <!-- Galeriyi Gör butonu kaldırıldı -->
 </section>
+
+<!-- Explore / Trending photos (horizontal, page-by-page: 15 items per page) -->
+<section class="explore" style="margin:36px 0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="font-size:20px;margin:0">Keşfet & Trend</h3>
+    <a href="/gallery" style="color:#334;border-bottom:1px solid transparent">Tümünü Gör</a>
+  </div>
+
+  <div class="pager-container" style="position:relative;">
+    <button id="pagerPrev" class="pager-btn" aria-label="Önceki" style="position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:5;background:rgba(255,255,255,0.9);border:0;padding:8px;border-radius:6px;">‹</button>
+    <div id="pagerViewport" class="pager-viewport" style="overflow:hidden;width:100%;">
+      <div id="pages" class="pages" style="display:flex;transition:transform 360ms ease;"></div>
+    </div>
+    <button id="pagerNext" class="pager-btn" aria-label="Sonraki" style="position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:5;background:rgba(255,255,255,0.9);border:0;padding:8px;border-radius:6px;">›</button>
+  </div>
+
+  <div id="pagerInfo" style="margin-top:10px;color:#666;font-size:14px">Sayfa <span id="currentPage">1</span> / <span id="totalPages">?</span></div>
+</section>
+
+<!-- Lightbox -->
+<div id="lightbox" aria-hidden="true" onclick="if(event.target===this) closeLightbox()">
+  <div class="inner" role="document">
+    <button id="lb-close" style="float:right;background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer">✕</button>
+    <img id="lb-img" src="" alt="">
+    <div class="meta">
+      <div>
+        <div id="lb-title" style="font-weight:600"></div>
+        <div id="lb-desc" style="color:#ddd;font-size:13px"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="lb-save">❤ Kaydet</button>
+        <button class="btn" id="lb-repost">⤴ Repost</button>
+        <div id="lb-likes" style="color:#fff;padding:6px;background:rgba(0,0,0,0.4);border-radius:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Peek overlay for long-press preview (Instagram-like) -->
+<div id="peekOverlay" aria-hidden="true">
+  <div class="peek-inner">
+    <img id="peekImg" src="" alt="preview">
+  </div>
+</div>
 
 <section class="features">
     <div class="feature-box">
@@ -40,6 +110,259 @@
         <p>Fotoğraflara yorum yaparak diğer kullanıcılarla etkileşim kur.</p>
     </div>
 </section>
+
+<script>
+  const CSRF = '{{ csrf_token() if csrf_token is defined else "" }}';
+  const saveUrl = "{{ url_for('save_photo') }}";
+  const repostUrl = "{{ url_for('repost') }}";
+
+  // pager elements
+  const pagesEl = document.getElementById('pages');
+  const viewport = document.getElementById('pagerViewport');
+  const prevBtn = document.getElementById('pagerPrev');
+  const nextBtn = document.getElementById('pagerNext');
+  const currentPageLabel = document.getElementById('currentPage');
+  const totalPagesLabel = document.getElementById('totalPages');
+
+  const perPage = 15;
+  let currentPage = 1;
+  let total = null;
+  let totalPages = null;
+  const loaded = {};// tracks loaded pages
+  let isLoading = false;
+  let currentId = null;
+
+  // create a page container with grid of 15
+  function createPageElement(pageNum, items){
+    const pageWrap = document.createElement('div');
+    pageWrap.className = 'page';
+    pageWrap.style.minWidth = '100%';
+    pageWrap.style.boxSizing = 'border-box';
+    pageWrap.style.paddingRight = '8px';
+    // grid inside
+    const grid = document.createElement('div');
+    grid.className = 'page-grid';
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(5,1fr)';
+    grid.style.gridAutoRows = '1fr';
+    grid.style.gap = '8px';
+    for(const p of items){
+      const div = document.createElement('div');
+      div.className = 'explore-card';
+      div.tabIndex = 0;
+      div.dataset.id = p.id;
+      div.dataset.title = p.title || '';
+      div.dataset.desc = p.description || '';
+      div.dataset.likes = p.likes || 0;
+      div.innerHTML = `
+        <img src="${p.url}" alt="${(p.title||'photo').replace(/"/g,'')}">
+        <div class="card-overlay">
+          <div class="card-left">
+            <div class="card-controls">
+              <button class="btn save-btn" data-id="${p.id}">❤</button>
+              <button class="btn repost-btn" data-id="${p.id}">⤴</button>
+            </div>
+          </div>
+          <div class="card-likes">${p.likes || 0} ❤</div>
+        </div>
+      `;
+      grid.appendChild(div);
+    }
+    pageWrap.appendChild(grid);
+    return pageWrap;
+  }
+
+  async function loadPage(n){
+    if(loaded[n] || isLoading) return;
+    isLoading = true;
+    try{
+      const res = await fetch(`/api/trending?page=${n}&per_page=${perPage}`);
+      if(!res.ok) throw new Error('Sunucu hatası');
+      const j = await res.json();
+      total = j.total;
+      totalPages = Math.ceil(total / perPage) || 1;
+      totalPagesLabel.textContent = totalPages;
+      const pageEl = createPageElement(n, j.items || []);
+      // insert pages in correct order
+      // pagesEl children represent page 1..N in order
+      pagesEl.appendChild(pageEl);
+      loaded[n] = true;
+    }catch(err){
+      console.error(err);
+      const errEl = document.createElement('div'); errEl.textContent = 'Yükleme hatası'; pagesEl.appendChild(errEl);
+    }finally{ isLoading = false; updatePager(); }
+  }
+
+  function updatePager(){
+    // ensure pagesEl has enough width via children; simply translate by page index
+    const idx = currentPage - 1;
+    pagesEl.style.transform = `translateX(-${idx * 100}%)`;
+    currentPageLabel.textContent = currentPage;
+    if(totalPages!==null) totalPagesLabel.textContent = totalPages;
+    prevBtn.disabled = (currentPage <= 1);
+    nextBtn.disabled = (totalPages !== null && currentPage >= totalPages);
+  }
+
+  prevBtn.addEventListener('click', ()=>{
+    if(currentPage<=1) return;
+    currentPage -= 1;
+    updatePager();
+  });
+  nextBtn.addEventListener('click', async ()=>{
+    if(totalPages!==null && currentPage >= totalPages) return;
+    currentPage += 1;
+    // load page if not loaded
+    if(!loaded[currentPage]) await loadPage(currentPage);
+    updatePager();
+  });
+
+  // delegation for opening lightbox from any page card
+  pagesEl.addEventListener('click', (e)=>{
+    const card = e.target.closest('.explore-card');
+    if(!card) return;
+    if(e.target.closest('.card-controls')) return; // ignore clicks on controls
+    openLightbox(card.dataset.id, card.dataset.title, card.dataset.desc, card.querySelector('img')?.src, card.dataset.likes);
+  });
+
+  // press-and-hold (long press) support: Instagram-like peek overlay
+  (function addPressHoldPeek(){
+    let holdTimer = null;
+    let heldCard = null;
+    const HOLD_DELAY = 200; // ms
+    const peekOverlay = document.getElementById('peekOverlay');
+    const peekImg = document.getElementById('peekImg');
+    let longPressed = false;
+    let ignoreClick = false;
+
+    function showPeek(card){
+      const img = card.querySelector('img');
+      if(!img) return;
+      peekImg.src = img.src;
+      peekOverlay.classList.add('show');
+      peekOverlay.setAttribute('aria-hidden','false');
+      longPressed = true;
+      // ignore the immediate click after release
+      ignoreClick = true;
+      setTimeout(()=>{ ignoreClick = false; }, 250);
+    }
+    function hidePeek(){
+      peekOverlay.classList.remove('show');
+      peekOverlay.setAttribute('aria-hidden','true');
+      peekImg.src = '';
+      longPressed = false;
+    }
+
+    function startHold(card){
+      clearHold();
+      heldCard = card;
+      holdTimer = setTimeout(()=>{
+        if(heldCard) showPeek(heldCard);
+      }, HOLD_DELAY);
+    }
+    function clearHold(){
+      if(holdTimer){ clearTimeout(holdTimer); holdTimer = null; }
+      // if user already long-pressed, hidePeek will be called on touchend/mouseup
+      heldCard = null;
+    }
+
+    // touch
+    pagesEl.addEventListener('touchstart', (e)=>{
+      const card = e.target.closest('.explore-card');
+      if(card) startHold(card);
+    }, {passive:true});
+    pagesEl.addEventListener('touchend', (e)=>{ if(longPressed) hidePeek(); clearHold(); });
+    pagesEl.addEventListener('touchcancel', (e)=>{ if(longPressed) hidePeek(); clearHold(); });
+
+    // mouse
+    pagesEl.addEventListener('mousedown', (e)=>{
+      const card = e.target.closest('.explore-card');
+      if(card) startHold(card);
+    });
+    pagesEl.addEventListener('mouseup', (e)=>{ if(longPressed) hidePeek(); clearHold(); });
+    pagesEl.addEventListener('mouseleave', (e)=>{ if(longPressed) hidePeek(); clearHold(); });
+    // also clear on scroll to avoid stuck state
+    window.addEventListener('scroll', ()=>{ if(longPressed) hidePeek(); clearHold(); }, {passive:true});
+
+    // prevent opening lightbox immediately after a long-press
+    pagesEl.addEventListener('click', (e)=>{
+      if(ignoreClick){ e.stopPropagation(); e.preventDefault(); }
+    }, true);
+
+    // expose a function for other handlers to check long-press state
+    pagesEl._wasLongPressed = ()=> longPressed;
+  })();
+
+  // actions delegation for save/repost
+  document.addEventListener('click', (e)=>{
+    const s = e.target.closest('.save-btn');
+    const r = e.target.closest('.repost-btn');
+    if(s){ e.stopPropagation(); postAction(saveUrl, s.dataset.id); }
+    if(r){ e.stopPropagation(); if(!confirm('Bu fotoğrafı tekrar paylaşmak istiyor musunuz?')) return; postAction(repostUrl, r.dataset.id); }
+  });
+
+  // swipe support
+  (function addSwipe(){
+    let startX = 0; let startTime = 0;
+    viewport.addEventListener('touchstart', (e)=>{ startX = e.touches[0].clientX; startTime = Date.now(); });
+    viewport.addEventListener('touchend', (e)=>{
+      const dx = (e.changedTouches[0].clientX - startX);
+      const dt = Date.now() - startTime;
+      if(Math.abs(dx) > 40 && dt < 500){
+        if(dx < 0){ // swipe left -> next
+          if(totalPages===null || currentPage < totalPages){ currentPage += 1; if(!loaded[currentPage]) loadPage(currentPage); updatePager(); }
+        } else { // swipe right -> prev
+          if(currentPage>1){ currentPage -= 1; updatePager(); }
+        }
+      }
+    });
+  })();
+
+  // keyboard support
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowRight'){ if(totalPages===null || currentPage < totalPages){ currentPage += 1; if(!loaded[currentPage]) loadPage(currentPage); updatePager(); } }
+    if(e.key === 'ArrowLeft'){ if(currentPage>1){ currentPage -= 1; updatePager(); } }
+    if(e.key === 'Escape'){ const lb = document.getElementById('lightbox'); if(lb) lb.classList.remove('show'); }
+  });
+
+  // lightbox controls (reuse existing elements)
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbTitle = document.getElementById('lb-title');
+  const lbDesc = document.getElementById('lb-desc');
+  const lbLikes = document.getElementById('lb-likes');
+  const lbClose = document.getElementById('lb-close');
+
+  function openLightbox(id, title, desc, src, likes){
+    lbImg.src = src || '';
+    lbTitle.textContent = title || '';
+    lbDesc.textContent = desc || '';
+    lbLikes.textContent = (likes || 0) + ' ❤';
+    currentId = id || null;
+    lb.classList.add('show');
+    lb.setAttribute('aria-hidden','false');
+  }
+  function closeLightbox(){ lb.classList.remove('show'); lb.setAttribute('aria-hidden','true'); lbImg.src=''; currentId=null; }
+  lbClose?.addEventListener('click', closeLightbox);
+  document.getElementById('lb-save')?.addEventListener('click', ()=>{ if(currentId) postAction(saveUrl,currentId); });
+  document.getElementById('lb-repost')?.addEventListener('click', ()=>{ if(!currentId) return; if(!confirm('Bu fotoğrafı tekrar paylaşmak istiyor musunuz?')) return; postAction(repostUrl,currentId); });
+
+  async function postAction(url,id){
+    try{
+      const res = await fetch(url,{ method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({photo_id: id}) });
+      if(res.status===401){ alert('Bu işlemi gerçekleştirmek için giriş yapmalısınız.'); return; }
+      const j = await res.json().catch(()=>({}));
+      alert(j.message || 'İşlem tamamlandı.');
+    }catch(err){ console.error(err); alert('Bir hata oluştu.'); }
+  }
+
+  // initial page load: load page 1 and prefetch page 2
+  (async function initPager(){
+    await loadPage(1);
+    updatePager();
+    // prefetch page 2
+    loadPage(2);
+  })();
+</script>
 
 </body>
 </html>
