@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<div class="container">
+			<div class="d-flex align-items-center">
+					<a class="navbar-brand me-2" href="{{ url_for('index') }}">Online Galeri</a>
+					{% if current_user.is_authenticated %}
+						<div class="dropdown">
+							<a class="btn btn-sm btn-outline-light dropdown-toggle me-2" href="#" role="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+								{{ current_user.username }} {% if current_user.is_admin %}<span class="badge bg-warning text-dark ms-1">Admin</span>{% endif %}
+							</a>
+							<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
+								<li><a class="dropdown-item" href="{{ url_for('profile', username=current_user.username) }}">Profilim</a></li>
+								<li><a class="dropdown-item" href="#">Ayarlar</a></li>
+								<li><hr class="dropdown-divider"></li>
+								<li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Çıkış</a></li>
+							</ul>
+						</div>
+					{% else %}
+						<button id="authBtn" class="btn btn-sm btn-outline-light me-2" data-bs-toggle="offcanvas" data-bs-target="#authOffcanvas" aria-controls="authOffcanvas">Üye Ol</button>
+						<a class="btn btn-sm btn-light" href="{{ url_for('login') }}">Giriş</a>
+					{% endif %}
+				</div>
+
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Ana Sayfa</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('gallery') }}">Galeri</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">Hakkında</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('contact') }}">İletişim</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>

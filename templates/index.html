@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -95,6 +96,22 @@
 </div>
 
 <section class="features">
+=======
+{% extends "base.html" %}
+
+{% block title %}Ana Sayfa - Online Galeri{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding:2.5rem 0;">
+    <div class="container text-center">
+        <h2>Fotoğraflarını Paylaş, Dünyayı Keşfet!</h2>
+        <p>Sanatçıların eserlerini sergilediği modern dijital galeri platformu.</p>
+        <a href="/gallery" class="btn btn-outline-primary">Galeriyi Gör</a>
+    </div>
+</section>
+
+<section class="features mt-4">
+>>>>>>> origin/cemre
     <div class="feature-box">
         <h3>📸 Fotoğraf Yükle</h3>
         <p>Kendi fotoğraflarını kolayca yükleyip paylaşabilirsin.</p>
@@ -110,6 +127,7 @@
         <p>Fotoğraflara yorum yaparak diğer kullanıcılarla etkileşim kur.</p>
     </div>
 </section>
+<<<<<<< HEAD
 
 <script>
   const CSRF = '{{ csrf_token() if csrf_token is defined else "" }}';
@@ -366,4 +384,7 @@
 
 </body>
 </html>
+=======
+{% endblock %}
+>>>>>>> origin/cemre
 
