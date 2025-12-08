@@ -52,7 +52,7 @@
     color: #000;
 }
 
-.about-btn {
+.about-btn, .contact-btn {
     margin-top: 15px;
     padding: 6px 16px;
     border: 1px solid #fff;
@@ -63,7 +63,7 @@
     transition: all 0.3s ease;
 }
 
-.about-btn:hover {
+.about-btn:hover, .contact-btn:hover {
     background: #fff;
     color: #000;
 }
@@ -88,7 +88,7 @@
 }
 
 /* Hakkında yazısı başlangıçta gizli */
-.about {
+.about, .contact {
     display: none;
     background: #000;
     color: #fff;
@@ -100,7 +100,7 @@
     line-height: 1.6;
 }
 
-.about span {
+.about span, .contact span {
     font-size: 0.9rem;
     color: #aaa;
     display: block;
@@ -122,6 +122,7 @@
     </div>
 
     <button class="about-btn" onclick="showAbout()">Hakkında</button>
+    <button class="contact-btn" onclick="showContact()">İletişim</button>
 
     <div class="scroll-down">↓ Keşfet</div>
     <div class="bec">BEC</div>
@@ -134,15 +135,28 @@
     <span>Beril, Ecem ve Cemre tarafından geliştirilmiştir.</span>
 </div>
 
+<!-- İletişim -->
+<div class="contact" id="contact-section">
+    <span>berilecemcemre@gmail.com</span>
+</div>
+
 <script>
 function showAbout() {
     const about = document.getElementById('about-section');
     about.style.display = 'block';
     about.scrollIntoView({behavior:'smooth'});
 }
+
+function showContact() {
+    const contact = document.getElementById('contact-section');
+    contact.style.display = 'block';
+    contact.scrollIntoView({behavior:'smooth'});
+}
 </script>
 
 {% endblock %}
+
+
 
 
 
