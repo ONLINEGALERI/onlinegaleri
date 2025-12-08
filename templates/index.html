@@ -2,131 +2,7 @@
 {% block title %}Verzia{% endblock %}
 
 {% block content %}
-<!-- Google Fonts: Arsenica -->
 <link href="https://fonts.googleapis.com/css2?family=Arsenica:wght@400;700&display=swap" rel="stylesheet">
-
-<style>
-/* Sayfa ve hero tam siyah */
-html, body {
-    background-color: #000 !important;
-    color: #fff !important;
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
-
-.hero {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    animation: fadeIn 1.2s ease-out forwards;
-    background: #000;
-    color: #fff;
-}
-
-.logo {
-    font-family: "Arsenica", serif;
-    font-size: 6rem;
-    font-weight: 400;
-    letter-spacing: 0.05em;
-    opacity: 0;
-    animation: slideDown 1.2s ease forwards;
-    margin-bottom: 20px;
-}
-
-.auth-buttons {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 10px;
-    opacity: 0;
-    animation: fadeIn 1.5s ease forwards;
-}
-
-.auth-buttons a {
-    text-decoration: none;
-    color: #fff;
-    border: 1px solid #fff;
-    padding: 8px 18px;
-    border-radius: 25px;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-}
-
-.auth-buttons a:hover {
-    background: #fff;
-    color: #000;
-}
-
-.about-btn, .contact-btn {
-    margin-top: 15px;
-    padding: 6px 16px;
-    border: 1px solid #fff;
-    border-radius: 25px;
-    background: transparent;
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.about-btn:hover, .contact-btn:hover {
-    background: #fff;
-    color: #000;
-}
-
-.scroll-down {
-    position: absolute;
-    bottom: 30px;
-    font-size: 0.8rem;
-    opacity: 0.4;
-    animation: fadeIn 2s ease forwards, bounce 1.5s infinite ease-in-out;
-}
-
-.bec {
-    position: absolute;
-    bottom: 15px;
-    right: 20px;
-    font-size: 0.75rem;
-    opacity: 0.5;
-    font-family: "Helvetica Neue", sans-serif;
-    letter-spacing: 0.1em;
-    animation: fadeIn 1.8s ease forwards;
-}
-
-/* Hakkında ve iletişim başlangıçta gizli */
-.about, .contact {
-    display: none;
-    background: #000;
-    color: #fff;
-    text-align: center;
-    padding: 40px 20px;
-    max-width: 700px;
-    margin: 40px auto 0 auto;
-    font-size: 1.2rem;
-    line-height: 1.6;
-}
-
-.about span, .contact span {
-    font-size: 0.9rem;
-    color: #aaa;
-    display: block;
-    margin-top: 10px;
-}
-
-/* Kenarlarda beyaz görünümleri kaldır */
-* {
-    border-color: #000 !important;
-    box-shadow: none !important;
-}
-
-/* ANİMASYONLAR */
-@keyframes fadeIn {0% { opacity: 0; } 100% { opacity: 1; }}
-@keyframes slideDown {0% { opacity: 0; transform: translateY(-30px); } 100% { opacity: 1; transform: translateY(0); }}
-@keyframes bounce {0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); }}
-</style>
 
 <div class="hero">
     <div class="logo">VERZIA</div>
@@ -138,12 +14,13 @@ html, body {
 
     <button class="about-btn" onclick="showAbout()">Hakkında</button>
     <button class="contact-btn" onclick="showContact()">İletişim</button>
+    <button class="mode-btn" onclick="toggleMode()">Dark/Light</button>
 
     <div class="scroll-down">↓ Keşfet</div>
     <div class="bec">BEC</div>
 </div>
 
-<!-- Hakkında yazısı -->
+<!-- Hakkında -->
 <div class="about" id="about-section">
     Verzia, çarpıcı bir görsel deneyim sunar.<br>
     Fotoğraflarınızı paylaşın, keşfedin ve ilham alın.<br>
@@ -167,27 +44,9 @@ function showContact() {
     contact.style.display = 'block';
     contact.scrollIntoView({behavior:'smooth'});
 }
+
+function toggleMode() {
+    document.body.classList.toggle('light-mode');
+}
 </script>
-
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

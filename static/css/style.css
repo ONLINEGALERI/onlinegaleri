@@ -1,7 +1,15 @@
+/* GENEL */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #f9f9f9;
+    background-color: #000; /* Varsayılan siyah tema */
+    color: #fff;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Light mode seçeneği */
+body.light-mode {
+    background-color: #f9f9f9;
     color: #333;
 }
 
@@ -13,6 +21,11 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+header.light-mode {
+    background: #fff;
+    color: #000;
 }
 
 header h1 {
@@ -30,67 +43,138 @@ nav a:hover {
     text-decoration: underline;
 }
 
-/* HERO */
-.hero {
-    padding: 80px 20px;
-    text-align: center;
-    background: linear-gradient(to right, #4b79a1, #283e51);
-    color: white;
+nav a.light-mode {
+    color: #000;
 }
 
-.hero h2 {
-    font-size: 2.5rem;
+/* HERO */
+.hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    animation: fadeIn 1.2s ease-out forwards;
+    background: #000;
+    color: #fff;
+}
+
+body.light-mode .hero {
+    background: #f0f0f0;
+    color: #000;
+}
+
+.logo {
+    font-family: "Arsenica", serif;
+    font-size: 6rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+}
+
+/* Auth buttons */
+.auth-buttons {
+    display: flex;
+    gap: 15px;
     margin-bottom: 10px;
 }
 
-.hero .btn {
-    display: inline-block;
-    padding: 12px 25px;
-    background: white;
-    color: #333;
-    border-radius: 8px;
-    margin-top: 15px;
+.auth-buttons a {
     text-decoration: none;
-    font-weight: bold;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
 }
 
-/* FEATURES */
-.features {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 40px 20px;
+body.light-mode .auth-buttons a {
+    color: #000;
+    border-color: #000;
 }
 
-.feature-box {
-    width: 30%;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.auth-buttons a:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* Hakkında ve İletişim butonları */
+.about-btn, .contact-btn, .mode-btn {
+    margin-top: 15px;
+    padding: 6px 16px;
+    border: 1px solid #fff;
+    border-radius: 25px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+body.light-mode .about-btn, 
+body.light-mode .contact-btn,
+body.light-mode .mode-btn {
+    border-color: #000;
+    color: #000;
+}
+
+.about-btn:hover, .contact-btn:hover, .mode-btn:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* Hakkında ve İletişim bölümleri */
+.about, .contact {
+    display: none;
+    background: #000;
+    color: #fff;
     text-align: center;
+    padding: 40px 20px;
+    max-width: 700px;
+    margin: 40px auto 0 auto;
+    font-size: 1.2rem;
+    line-height: 1.6;
 }
 
-/* Auth offcanvas / login styles */
-#authOffcanvas {
-    --bs-offcanvas-width: 380px;
+body.light-mode .about, body.light-mode .contact {
+    background: #f9f9f9;
+    color: #333;
 }
-#authOffcanvas .offcanvas-body {
-    padding: 1rem 1.25rem;
-}
-#authOffcanvas .form-label {
+
+.about span, .contact span {
+    font-size: 0.9rem;
+    color: #aaa;
     display: block;
-    margin-bottom: 0.35rem;
-    font-weight: 600;
+    margin-top: 10px;
 }
-#authOffcanvas .form-control {
-    width: 100%;
-    box-sizing: border-box;
-}
-#authOffcanvas .btn {
-    border-radius: 8px;
-}
-#authOffcanvas .small { margin-top: .6rem; display:block; }
 
-/* Make sure the hero content doesn't contain the login card */
-.hero .login-card { display: none; }
+body.light-mode .about span, body.light-mode .contact span {
+    color: #555;
+}
+
+/* Scroll down ve BEC */
+.scroll-down {
+    position: absolute;
+    bottom: 30px;
+    font-size: 0.8rem;
+    opacity: 0.4;
+    animation: fadeIn 2s ease forwards, bounce 1.5s infinite ease-in-out;
+}
+
+.bec {
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    font-size: 0.75rem;
+    opacity: 0.5;
+    font-family: "Helvetica Neue", sans-serif;
+    letter-spacing: 0.1em;
+    animation: fadeIn 1.8s ease forwards;
+}
+
+/* Animasyonlar */
+@keyframes fadeIn {0% { opacity: 0; } 100% { opacity: 1; }}
+@keyframes slideDown {0% { opacity: 0; transform: translateY(-30px); } 100% { opacity: 1; transform: translateY(0); }}
+@keyframes bounce {0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); }}
