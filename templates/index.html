@@ -1,31 +1,122 @@
 {% extends "base.html" %}
-
-{% block title %}Ana Sayfa - Online Galeri{% endblock %}
+{% block title %}Verzia{% endblock %}
 
 {% block content %}
-<section class="hero" style="padding:2.5rem 0;">
-    <div class="container text-center">
-        <h2>Fotoğraflarını Paylaş, Dünyayı Keşfet!</h2>
-        <p>Sanatçıların eserlerini sergilediği modern dijital galeri platformu.</p>
-        <a href="/gallery" class="btn btn-outline-primary">Galeriyi Gör</a>
-    </div>
-</section>
+<!-- Google Fonts: Arsenica -->
+<link href="https://fonts.googleapis.com/css2?family=Arsenica:wght@400;700&display=swap" rel="stylesheet">
 
-<section class="features mt-4">
-    <div class="feature-box">
-        <h3>📸 Fotoğraf Yükle</h3>
-        <p>Kendi fotoğraflarını kolayca yükleyip paylaşabilirsin.</p>
+<style>
+/* HERO OVERRIDE - Minimal ve Butonlar Yakın */
+.hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    animation: fadeIn 1.2s ease-out forwards;
+    background: #000;
+    color: #fff;
+}
+
+/* VERZIA LOGO */
+.logo {
+    font-family: "Arsenica", serif;
+    font-size: 6rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    animation: slideDown 1.2s ease forwards;
+    margin-bottom: 20px; /* Butonlar için boşluk */
+}
+
+/* AUTH BUTTONS */
+.auth-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px; /* Scroll icon ile mesafe */
+    opacity: 0;
+    animation: fadeIn 1.5s ease forwards;
+}
+
+.auth-buttons a {
+    text-decoration: none;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.auth-buttons a:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* SCROLL DOWN */
+.scroll-down {
+    position: absolute;
+    bottom: 30px;
+    font-size: 0.8rem;
+    opacity: 0.4;
+    animation: fadeIn 2s ease forwards, bounce 1.5s infinite ease-in-out;
+}
+
+/* BEC ALT SAĞ */
+.bec {
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    font-size: 0.75rem;
+    opacity: 0.5;
+    font-family: "Helvetica Neue", sans-serif;
+    letter-spacing: 0.1em;
+    animation: fadeIn 1.8s ease forwards;
+}
+
+/* ANİMASYONLAR */
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes slideDown {
+    0% { opacity: 0; transform: translateY(-30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+</style>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="logo">VERZIA</div>
+
+    <!-- GİRİŞ / KAYIT BUTONLARI -->
+    <div class="auth-buttons">
+        <a href="{{ url_for('login') }}">Giriş Yap</a>
+        <a href="{{ url_for('register') }}">Kayıt Ol</a>
     </div>
 
-    <div class="feature-box">
-        <h3>❤️ Beğeni Sistemi</h3>
-        <p>Fotoğraflara beğeni bırakabilir ve popüler olanları görebilirsin.</p>
-    </div>
-
-    <div class="feature-box">
-        <h3>💬 Yorum Yap</h3>
-        <p>Fotoğraflara yorum yaparak diğer kullanıcılarla etkileşim kur.</p>
-    </div>
-</section>
+    <div class="scroll-down">↓ Keşfet</div>
+    <div class="bec">BEC</div>
+</div>
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
 
