@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kullanıcı Güncelle</title>
+</head>
+<body>
+    <h1>Kullanıcı Güncelle</h1>
+    <form method="POST">
+        <label>Kullanıcı Adı:</label><br>
+        <input type="text" name="username" value="{{ user.username }}" required><br>
+        <label>Email:</label><br>
+        <input type="email" name="email" value="{{ user.email }}" required><br>
+        <label>Şifre:</label><br>
+        <input type="text" name="password" value="{{ user.password }}" required><br><br>
+        <input type="submit" value="Güncelle">
+    </form>
+    <br>
+    <a href="{{ url_for('admin') }}">Geri Dön</a>
+</body>
+</html>

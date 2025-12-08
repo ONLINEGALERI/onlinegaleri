@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Yeni Kullanıcı Ekle</title>
+</head>
+<body>
+    <h1>Yeni Kullanıcı Ekle</h1>
+    <form method="POST">
+        <label>Kullanıcı Adı:</label><br>
+        <input type="text" name="username" required><br>
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br>
+        <label>Şifre:</label><br>
+        <input type="text" name="password" required><br><br>
+        <input type="submit" value="Ekle">
+    </form>
+    <br>
+    <a href="{{ url_for('admin') }}">Geri Dön</a>
+</body>
+</html>

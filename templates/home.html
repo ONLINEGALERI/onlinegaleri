@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fotoğraf Galerisi</title>
+</head>
+<body>
+    <h1>Fotoğraf Galerisi</h1>
+    {% for photo in photos %}
+        <div>
+            <h2>{{ photo.title }}</h2>
+            <p>{{ photo.description }}</p>
+            <p>Ekleyen: {{ photo.owner.username }}</p>
+            <img src="/static/uploads/{{ photo.filename }}" alt="{{ photo.title }}" width="200">
+        </div>
+    {% endfor %}
+</body>
+</html>
+
