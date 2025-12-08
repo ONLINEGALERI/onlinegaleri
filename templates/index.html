@@ -6,6 +6,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Arsenica:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
+/* Sayfa ve hero tam siyah */
+html, body {
+    background-color: #000 !important;
+    color: #fff !important;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
 .hero {
     height: 100vh;
     display: flex;
@@ -87,7 +96,7 @@
     animation: fadeIn 1.8s ease forwards;
 }
 
-/* Hakkında yazısı başlangıçta gizli */
+/* Hakkında ve iletişim başlangıçta gizli */
 .about, .contact {
     display: none;
     background: #000;
@@ -105,6 +114,12 @@
     color: #aaa;
     display: block;
     margin-top: 10px;
+}
+
+/* Kenarlarda beyaz görünümleri kaldır */
+* {
+    border-color: #000 !important;
+    box-shadow: none !important;
 }
 
 /* ANİMASYONLAR */
@@ -155,6 +170,7 @@ function showContact() {
 </script>
 
 {% endblock %}
+
 
 
 
