@@ -2,12 +2,12 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #000; /* Varsayılan siyah tema */
+    background-color: #000;
     color: #fff;
     transition: background 0.3s, color 0.3s;
 }
 
-/* Light mode seçeneği */
+/* Light mode */
 body.light-mode {
     background-color: #f9f9f9;
     color: #333;
@@ -74,11 +74,13 @@ body.light-mode .hero {
     margin-bottom: 20px;
 }
 
-/* Auth buttons */
+/* AUTH BUTTONS – SAĞ ÜST */
 .auth-buttons {
+    position: absolute;
+    top: 20px;
+    right: 30px;
     display: flex;
     gap: 15px;
-    margin-bottom: 10px;
 }
 
 .auth-buttons a {
@@ -101,8 +103,41 @@ body.light-mode .auth-buttons a {
     color: #000;
 }
 
-/* Hakkında ve İletişim butonları */
-.about-btn, .contact-btn, .mode-btn {
+/* HAKKINDA & İLETİŞİM – SOL ÜST (YAN YANA) */
+.about-btn,
+.contact-btn {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    padding: 6px 16px;
+    border: 1px solid #fff;
+    border-radius: 25px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* İletişim, Hakkında'nın SAĞINDA */
+.contact-btn {
+    left: 140px;
+}
+
+/* Dark / Light */
+body.light-mode .about-btn,
+body.light-mode .contact-btn {
+    border-color: #000;
+    color: #000;
+}
+
+.about-btn:hover,
+.contact-btn:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* MODE BUTONU (ORTADA KALSIN) */
+.mode-btn {
     margin-top: 15px;
     padding: 6px 16px;
     border: 1px solid #fff;
@@ -113,20 +148,19 @@ body.light-mode .auth-buttons a {
     transition: all 0.3s ease;
 }
 
-body.light-mode .about-btn, 
-body.light-mode .contact-btn,
 body.light-mode .mode-btn {
     border-color: #000;
     color: #000;
 }
 
-.about-btn:hover, .contact-btn:hover, .mode-btn:hover {
+.mode-btn:hover {
     background: #fff;
     color: #000;
 }
 
-/* Hakkında ve İletişim bölümleri */
-.about, .contact {
+/* HAKKINDA & İLETİŞİM İÇERİK */
+.about,
+.contact {
     display: none;
     background: #000;
     color: #fff;
@@ -138,23 +172,26 @@ body.light-mode .mode-btn {
     line-height: 1.6;
 }
 
-body.light-mode .about, body.light-mode .contact {
+body.light-mode .about,
+body.light-mode .contact {
     background: #f9f9f9;
     color: #333;
 }
 
-.about span, .contact span {
+.about span,
+.contact span {
     font-size: 0.9rem;
     color: #aaa;
     display: block;
     margin-top: 10px;
 }
 
-body.light-mode .about span, body.light-mode .contact span {
+body.light-mode .about span,
+body.light-mode .contact span {
     color: #555;
 }
 
-/* Scroll down ve BEC */
+/* ALT YAZILAR */
 .scroll-down {
     position: absolute;
     bottom: 30px;
@@ -174,7 +211,15 @@ body.light-mode .about span, body.light-mode .contact span {
     animation: fadeIn 1.8s ease forwards;
 }
 
-/* Animasyonlar */
-@keyframes fadeIn {0% { opacity: 0; } 100% { opacity: 1; }}
-@keyframes slideDown {0% { opacity: 0; transform: translateY(-30px); } 100% { opacity: 1; transform: translateY(0); }}
-@keyframes bounce {0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); }}
+/* ANİMASYONLAR */
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+
