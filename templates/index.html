@@ -12,41 +12,79 @@
         <a href="{{ url_for('register') }}">Kayıt Ol</a>
     </div>
 
-    <button class="about-btn" onclick="showAbout()">Hakkında</button>
-    <button class="contact-btn" onclick="showContact()">İletişim</button>
+    <button class="about-btn" onclick="openAbout()">Hakkında</button>
+    <button class="contact-btn" onclick="openContact()">İletişim</button>
     <button class="mode-btn" onclick="toggleMode()">Dark/Light</button>
 
-    <div class="scroll-down">↓ Keşfet</div>
+    <div class="scroll-down" onclick="goExplore()">↓ Keşfet</div>
     <div class="bec">BEC</div>
 </div>
 
-<!-- Hakkında -->
-<div class="about" id="about-section">
-    Verzia, çarpıcı bir görsel deneyim sunar.<br>
-    Fotoğraflarınızı paylaşın, keşfedin ve ilham alın.<br>
-    <span>Beril, Ecem ve Cemre tarafından geliştirilmiştir.</span>
+<!-- KEŞFET -->
+<section class="explore" id="explore">
+    <div class="explore-header">
+        <span class="mini-logo">VERZIA</span>
+
+        <!-- SAĞ ÜST KULLANICI ARAMA -->
+        <div class="search-box">
+            <input type="text" placeholder="Kullanıcı ara...">
+        </div>
+    </div>
+
+    <div class="explore-content">
+        <h2>Keşfet</h2>
+        <p>Fotoğrafları keşfet, ilham al.</p>
+    </div>
+</section>
+
+<!-- ABOUT OVERLAY -->
+<div class="overlay" id="about-overlay">
+    <div class="overlay-content">
+        <button class="close-btn" onclick="closeOverlay()">×</button>
+        <h2>Hakkında</h2>
+        <p>
+            Verzia, çarpıcı bir görsel deneyim sunar.<br>
+            Fotoğraflarınızı paylaşın, keşfedin ve ilham alın.
+        </p>
+        <span>Beril, Ecem ve Cemre tarafından geliştirilmiştir.</span>
+    </div>
 </div>
 
-<!-- İletişim -->
-<div class="contact" id="contact-section">
-    <span>berilecemcemre@gmail.com</span>
+<!-- CONTACT OVERLAY -->
+<div class="overlay" id="contact-overlay">
+    <div class="overlay-content">
+        <button class="close-btn" onclick="closeOverlay()">×</button>
+        <h2>İletişim</h2>
+        <p>berilecemcemre@gmail.com</p>
+    </div>
 </div>
 
 <script>
-function showAbout() {
-    const about = document.getElementById('about-section');
-    about.style.display = 'block';
-    about.scrollIntoView({behavior:'smooth'});
+function openAbout() {
+    document.getElementById('about-overlay').classList.add('active');
 }
 
-function showContact() {
-    const contact = document.getElementById('contact-section');
-    contact.style.display = 'block';
-    contact.scrollIntoView({behavior:'smooth'});
+function openContact() {
+    document.getElementById('contact-overlay').classList.add('active');
+}
+
+function closeOverlay() {
+    document.querySelectorAll('.overlay')
+        .forEach(o => o.classList.remove('active'));
 }
 
 function toggleMode() {
     document.body.classList.toggle('light-mode');
 }
+
+function goExplore() {
+    document.getElementById('explore')
+        .scrollIntoView({ behavior: 'smooth' });
+}
 </script>
 {% endblock %}
+
+
+
+
+

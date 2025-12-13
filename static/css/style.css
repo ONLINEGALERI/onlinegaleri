@@ -13,41 +13,7 @@ body.light-mode {
     color: #333;
 }
 
-/* HEADER */
-header {
-    background: #222;
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-header.light-mode {
-    background: #fff;
-    color: #000;
-}
-
-header h1 {
-    margin: 0;
-}
-
-nav a {
-    color: white;
-    margin-left: 15px;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-nav a:hover {
-    text-decoration: underline;
-}
-
-nav a.light-mode {
-    color: #000;
-}
-
-/* HERO */
+/* HERO (ANA SAYFA) */
 .hero {
     height: 100vh;
     display: flex;
@@ -58,7 +24,6 @@ nav a.light-mode {
     position: relative;
     animation: fadeIn 1.2s ease-out forwards;
     background: #000;
-    color: #fff;
 }
 
 body.light-mode .hero {
@@ -66,6 +31,7 @@ body.light-mode .hero {
     color: #000;
 }
 
+/* ANA LOGO */
 .logo {
     font-family: "Arsenica", serif;
     font-size: 6rem;
@@ -103,7 +69,7 @@ body.light-mode .auth-buttons a {
     color: #000;
 }
 
-/* HAKKINDA & İLETİŞİM – SOL ÜST (YAN YANA) */
+/* HAKKINDA & İLETİŞİM – SOL ÜST */
 .about-btn,
 .contact-btn {
     position: absolute;
@@ -118,12 +84,10 @@ body.light-mode .auth-buttons a {
     transition: all 0.3s ease;
 }
 
-/* İletişim, Hakkında'nın SAĞINDA */
 .contact-btn {
     left: 140px;
 }
 
-/* Dark / Light */
 body.light-mode .about-btn,
 body.light-mode .contact-btn {
     border-color: #000;
@@ -136,7 +100,7 @@ body.light-mode .contact-btn {
     color: #000;
 }
 
-/* MODE BUTONU (ORTADA KALSIN) */
+/* MODE */
 .mode-btn {
     margin-top: 15px;
     padding: 6px 16px;
@@ -145,7 +109,6 @@ body.light-mode .contact-btn {
     background: transparent;
     color: #fff;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 body.light-mode .mode-btn {
@@ -158,68 +121,176 @@ body.light-mode .mode-btn {
     color: #000;
 }
 
-/* HAKKINDA & İLETİŞİM İÇERİK */
-.about,
-.contact {
-    display: none;
-    background: #000;
-    color: #fff;
-    text-align: center;
-    padding: 40px 20px;
-    max-width: 700px;
-    margin: 40px auto 0 auto;
-    font-size: 1.2rem;
-    line-height: 1.6;
-}
-
-body.light-mode .about,
-body.light-mode .contact {
-    background: #f9f9f9;
-    color: #333;
-}
-
-.about span,
-.contact span {
-    font-size: 0.9rem;
-    color: #aaa;
-    display: block;
-    margin-top: 10px;
-}
-
-body.light-mode .about span,
-body.light-mode .contact span {
-    color: #555;
-}
-
-/* ALT YAZILAR */
+/* KEŞFET YAZISI */
 .scroll-down {
     position: absolute;
     bottom: 30px;
     font-size: 0.8rem;
-    opacity: 0.4;
-    animation: fadeIn 2s ease forwards, bounce 1.5s infinite ease-in-out;
+    opacity: 0.5;
+    cursor: pointer;
+    animation: bounce 1.5s infinite ease-in-out;
 }
 
+/* ========== KEŞİF SAYFASI ========== */
+.explore {
+    min-height: 100vh;
+    background: #000;
+    color: #fff;
+    padding-top: 90px;
+}
+
+body.light-mode .explore {
+    background: #f9f9f9;
+    color: #000;
+}
+
+/* EXPLORE HEADER */
+.explore-header {
+    position: sticky;
+    top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* SAĞ ÜST – KULLANICI ARAMA */
+.search-box {
+    position: absolute;
+    right: 30px;
+}
+
+.search-box input {
+    background: transparent;
+    border: 1px solid #fff;
+    border-radius: 20px;
+    padding: 6px 14px;
+    color: #fff;
+    font-size: 0.85rem;
+    outline: none;
+    width: 160px;
+    transition: all 0.3s ease;
+}
+
+.search-box input::placeholder {
+    color: #aaa;
+}
+
+.search-box input:focus {
+    width: 220px;
+    background: rgba(255,255,255,0.05);
+}
+
+/* Light mode search */
+body.light-mode .search-box input {
+    border-color: #000;
+    color: #000;
+}
+
+body.light-mode .search-box input::placeholder {
+    color: #666;
+}
+
+/* ÜST ORTA – MİNİ VERZIA */
+.mini-logo {
+    font-family: "Arsenica", serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.2em;
+    opacity: 0.6;
+}
+
+/* KEŞİF İÇERİĞİ */
+.explore-content {
+    margin-top: 140px;
+    text-align: center;
+}
+
+.explore-content h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.explore-content p {
+    opacity: 0.7;
+}
+
+/* ALT YAZI */
 .bec {
     position: absolute;
     bottom: 15px;
     right: 20px;
     font-size: 0.75rem;
     opacity: 0.5;
-    font-family: "Helvetica Neue", sans-serif;
     letter-spacing: 0.1em;
-    animation: fadeIn 1.8s ease forwards;
+}
+
+/* OVERLAY SAYFALAR */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.overlay-content {
+    text-align: center;
+    max-width: 600px;
+    padding: 40px;
+    animation: fadeIn 0.6s ease;
+}
+
+.overlay-content h2 {
+    font-family: "Arsenica", serif;
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.overlay-content p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+.overlay-content span {
+    display: block;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    opacity: 0.6;
+}
+
+/* KAPATMA BUTONU */
+.close-btn {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    color: #fff;
+    cursor: pointer;
 }
 
 /* ANİMASYONLAR */
 @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-6px); }
 }
+
+
 
 
