@@ -1,46 +1,5 @@
-{% extends "base.html" %}
-{% block title %}Yükle - Online Galeri{% endblock %}
 
-{% block content %}
-<h1 class="text-2xl font-bold mb-4">Fotoğraf Yükle</h1>
 
-<form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="bg-white p-6 rounded shadow-md max-w-xl">
-  <!-- CSRF token (Flask-WTF kullanıyorsanız) -->
-  {{ form.csrf_token() if form is defined }}
-
-  <label class="block mb-3">
-    <span class="text-sm font-medium">Fotoğraf</span>
-    <input type="file" name="photo" accept="image/*" required class="mt-2" />
-  </label>
-
-  <label class="block mb-3">
-    <span class="text-sm font-medium">Başlık</span>
-    <input name="title" value="{{ request.form.title or '' }}" class="mt-2 w-full px-3 py-2 border rounded" placeholder="Fotoğraf başlığı" />
-  </label>
-
-  <label class="block mb-3">
-    <span class="text-sm font-medium">Açıklama (opsiyonel)</span>
-    <textarea name="description" rows="3" class="mt-2 w-full px-3 py-2 border rounded"></textarea>
-  </label>
-
-  <div class="flex gap-2 mt-4">
-    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Yükle</button>
-    <a href="{{ url_for('gallery') }}" class="px-4 py-2 border rounded">İptal</a>
-  </div>
-</form>
-
-<!-- İyi bir kullanıcı deneyimi: dosya önizlemesi (opsiyonel) -->
-<script>
-const fileInput = document.querySelector('input[type=file]');
-if(fileInput){
-  fileInput.addEventListener('change', (e) => {
-    const f = e.target.files[0];
-    if(!f) return;
-    const p = document.createElement('p');
-    p.textContent = `Seçilen: ${f.name} (${Math.round(f.size/1024)} KB)`;
-    e.target.closest('form').insertBefore(p, e.target.nextSibling);
-  });
-}
-</script>
-{% endblock %}
+=======
+>>>>>>> Stashed changes
 
