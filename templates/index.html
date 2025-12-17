@@ -1,7 +1,35 @@
 <<<<<<< HEAD
-<!DOCTYPE html>
-<html lang="tr">
-<head>
+{% extends "base.html" %}
+
+{% block title %}Ana Sayfa - Online Galeri{% endblock %}
+
+    {% block content %}
+    <section class="hero" style="padding:2.5rem 0;">
+      <div class="container text-center">
+        <h2>Fotoğraflarını Paylaş, Dünyayı Keşfet!</h2>
+        <p>Sanatçıların eserlerini sergilediği modern dijital galeri platformu.</p>
+        <a href="/gallery" class="btn btn-outline-primary">Galeriyi Gör</a>
+      </div>
+    </section>
+
+    <section class="features mt-4">
+      <div class="feature-box">
+        <h3>📸 Fotoğraf Yükle</h3>
+        <p>Kendi fotoğraflarını kolayca yükleyip paylaşabilirsin.</p>
+      </div>
+
+      <div class="feature-box">
+        <h3>❤️ Beğeni Sistemi</h3>
+        <p>Fotoğraflara beğeni bırakabilir ve popüler olanları görebilirsin.</p>
+      </div>
+
+      <div class="feature-box">
+        <h3>💬 Yorum Yap</h3>
+        <p>Fotoğraflara yorum yaparak diğer kullanıcılarla etkileşim kur.</p>
+      </div>
+    </section>
+
+    {% endblock %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Galeri - Ana Sayfa</title>
