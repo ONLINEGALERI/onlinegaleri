@@ -40,7 +40,7 @@ body.light-mode .hero {
     margin-bottom: 20px;
 }
 
-/* AUTH BUTTONS – SAĞ ÜST */
+/* AUTH BUTTONS – SAĞ ÜST (WEB) */
 .auth-buttons {
     position: absolute;
     top: 20px;
@@ -69,7 +69,7 @@ body.light-mode .auth-buttons a {
     color: #000;
 }
 
-/* HAKKINDA & İLETİŞİM – SOL ÜST */
+/* HAKKINDA & İLETİŞİM – SOL ÜST (WEB) */
 .about-btn,
 .contact-btn {
     position: absolute;
@@ -154,7 +154,7 @@ body.light-mode .explore {
     z-index: 10;
 }
 
-/* SAĞ ÜST – KULLANICI ARAMA */
+/* SAĞ ÜST – ARAMA */
 .search-box {
     position: absolute;
     right: 30px;
@@ -172,26 +172,12 @@ body.light-mode .explore {
     transition: all 0.3s ease;
 }
 
-.search-box input::placeholder {
-    color: #aaa;
-}
-
 .search-box input:focus {
     width: 220px;
     background: rgba(255,255,255,0.05);
 }
 
-/* Light mode search */
-body.light-mode .search-box input {
-    border-color: #000;
-    color: #000;
-}
-
-body.light-mode .search-box input::placeholder {
-    color: #666;
-}
-
-/* ÜST ORTA – MİNİ VERZIA */
+/* MINI LOGO */
 .mini-logo {
     font-family: "Arsenica", serif;
     font-size: 1.6rem;
@@ -199,32 +185,7 @@ body.light-mode .search-box input::placeholder {
     opacity: 0.6;
 }
 
-/* KEŞİF İÇERİĞİ */
-.explore-content {
-    margin-top: 140px;
-    text-align: center;
-}
-
-.explore-content h2 {
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-.explore-content p {
-    opacity: 0.7;
-}
-
-/* ALT YAZI */
-.bec {
-    position: absolute;
-    bottom: 15px;
-    right: 20px;
-    font-size: 0.75rem;
-    opacity: 0.5;
-    letter-spacing: 0.1em;
-}
-
-/* OVERLAY SAYFALAR */
+/* OVERLAY */
 .overlay {
     position: fixed;
     inset: 0;
@@ -243,43 +204,6 @@ body.light-mode .search-box input::placeholder {
     pointer-events: all;
 }
 
-.overlay-content {
-    text-align: center;
-    max-width: 600px;
-    padding: 40px;
-    animation: fadeIn 0.6s ease;
-}
-
-.overlay-content h2 {
-    font-family: "Arsenica", serif;
-    font-size: 3rem;
-    margin-bottom: 20px;
-}
-
-.overlay-content p {
-    font-size: 1.2rem;
-    line-height: 1.6;
-}
-
-.overlay-content span {
-    display: block;
-    margin-top: 15px;
-    font-size: 0.9rem;
-    opacity: 0.6;
-}
-
-/* KAPATMA BUTONU */
-.close-btn {
-    position: absolute;
-    top: 30px;
-    right: 40px;
-    background: none;
-    border: none;
-    font-size: 2.5rem;
-    color: #fff;
-    cursor: pointer;
-}
-
 /* ANİMASYONLAR */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -290,6 +214,53 @@ body.light-mode .search-box input::placeholder {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-6px); }
 }
+
+/* ===================== */
+/* 📱 MOBİL DÜZENLEME */
+/* ===================== */
+@media (max-width: 768px) {
+
+    .logo {
+        font-size: 3.5rem;
+    }
+
+    /* ÜST BUTONLAR ARTIK ORTALI VE ALT ALTA */
+    .auth-buttons {
+        position: static;
+        margin-top: 20px;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .auth-buttons a {
+        width: 200px;
+        text-align: center;
+    }
+
+    .about-btn,
+    .contact-btn {
+        position: static;
+        margin: 8px auto;
+        display: block;
+        width: 200px;
+        text-align: center;
+    }
+
+    .contact-btn {
+        left: auto;
+    }
+
+    .search-box {
+        position: static;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    .search-box input {
+        width: 90%;
+    }
+}
+
 
 
 
