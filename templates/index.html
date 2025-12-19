@@ -30,12 +30,11 @@
         </div>
     </div>
     <div class="explore-content">
-        <h2>Keşfet</h2>
-        <p>Fotoğrafları keşfet, ilham al.</p>
+        <div class="photo-feed" id="photo-feed"></div>
     </div>
 </section>
 
-<!-- ABOUT OVERLAY -->
+<!-- OVERLAYLAR -->
 <div class="overlay" id="about-overlay">
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
@@ -45,7 +44,6 @@
     </div>
 </div>
 
-<!-- CONTACT OVERLAY -->
 <div class="overlay" id="contact-overlay">
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
@@ -54,7 +52,6 @@
     </div>
 </div>
 
-<!-- LOGIN OVERLAY -->
 <div class="overlay" id="login-overlay">
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
@@ -67,7 +64,6 @@
     </div>
 </div>
 
-<!-- REGISTER OVERLAY -->
 <div class="overlay" id="register-overlay">
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
@@ -81,31 +77,164 @@
     </div>
 </div>
 
+<!-- LIGHTBOX -->
+<div id="lightbox" class="lightbox">
+    <span class="close-lightbox">&times;</span>
+    <img class="lightbox-content" id="lightbox-img">
+</div>
+
 <script>
-function openAbout() {
-    document.getElementById('about-overlay').classList.add('active');
+// Overlay fonksiyonları
+function openAbout() { document.getElementById('about-overlay').classList.add('active'); }
+function openContact() { document.getElementById('contact-overlay').classList.add('active'); }
+function openLogin() { document.getElementById('login-overlay').classList.add('active'); }
+function openRegister() { document.getElementById('register-overlay').classList.add('active'); }
+function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
+function toggleMode() { document.body.classList.toggle('light-mode'); }
+function goExplore() { document.getElementById('explore').scrollIntoView({ behavior: 'smooth' }); }
+
+// FOTOĞRAF AKIŞI - Pinterest tarzı, daha fazla fotoğraf
+const photoFeed = document.getElementById('photo-feed');
+fetch("/api/photos")
+    .then(res => res.json())
+    .then(photos => {
+        let placeholders = [];
+        if (!photos.length) {
+            for (let i=101; i<=115; i++) { // 15 placeholder fotoğraf
+                let height = 300 + Math.floor(Math.random() * 150); // 300-450 px arası rastgele yükseklik
+                placeholders.push({
+                    url:`https://picsum.photos/300/${height}?random=${i}`,
+                    username:`Kullanıcı ${i-100}`,
+                    bio:'Minimal sanat'
+                });
+            }
+        } else {
+            placeholders = photos.map((url, index) => ({
+                url: url,
+                username: `Kullanıcı ${index+1}`,
+                bio: 'Bio burada'
+            }));
+        }
+        placeholders.forEach(p => addPhotoCard(p.url, p.username, p.bio));
+    })
+    .catch(err => {
+        console.error(err);
+        photoFeed.innerHTML = "<p>Fotoğraflar yüklenemedi.</p>";
+    });
+
+function addPhotoCard(url, username, bio) {
+    const card = document.createElement('div');
+    card.className = 'photo-card';
+    card.innerHTML = `
+        <img src="${url}" alt="Fotoğraf">
+        <div class="photo-overlay">
+            <div class="overlay-text">
+                <strong>${username}</strong><br>${bio}
+            </div>
+        </div>
+    `;
+    card.addEventListener('click', () => openLightbox(url));
+    photoFeed.appendChild(card);
 }
-function openContact() {
-    document.getElementById('contact-overlay').classList.add('active');
-}
-function openLogin() {
-    document.getElementById('login-overlay').classList.add('active');
-}
-function openRegister() {
-    document.getElementById('register-overlay').classList.add('active');
-}
-function closeOverlay() {
-    document.querySelectorAll('.overlay')
-        .forEach(o => o.classList.remove('active'));
-}
-function toggleMode() {
-    document.body.classList.toggle('light-mode');
-}
-function goExplore() {
-    document.getElementById('explore').scrollIntoView({ behavior: 'smooth' });
+
+// LIGHTBOX
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+document.querySelector(".close-lightbox").onclick = () => lightbox.style.display = "none";
+function openLightbox(src) {
+    lightboxImg.src = src;
+    lightbox.style.display = "flex";
 }
 </script>
+
+<style>
+.photo-feed {
+    column-count: 4; /* Pinterest tarzı çoklu sütun */
+    column-gap: 12px;
+}
+.photo-card {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 12px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 6px;
+}
+.photo-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+.photo-card:hover img { transform: scale(1.05); }
+
+.photo-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    padding: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.photo-card:hover .photo-overlay { opacity: 1; }
+
+.overlay-text { line-height: 1.2; }
+
+/* LIGHTBOX */
+.lightbox {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top:0; left:0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+.lightbox-content {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+}
+.close-lightbox {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+</style>
+
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

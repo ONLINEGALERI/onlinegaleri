@@ -9,7 +9,6 @@ from flask_login import login_user, logout_user, current_user, login_required
 from models.user import User
 from models.siteinfo import SiteInfo
 
-
 app = Flask(__name__)
 app.config.from_object(Config)
 
@@ -18,7 +17,7 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Basic upload folders and allowed extensions
+# Upload folders & allowed extensions
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 THUMB_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbs')
@@ -36,6 +35,29 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/api/photos')
+def api_photos():
+    """
+    Index.html'deki feed için JSON olarak fotoğrafları döner.
+    Eğer yüklenmiş fotoğraf yoksa placeholder döner.
+    """
+    try:
+        files = [f for f in os.listdir(THUMB_FOLDER) if os.path.isfile(os.path.join(THUMB_FOLDER, f))]
+        if files:
+            urls = [url_for('thumb_file', filename=f) for f in files]
+        else:
+            # Henüz fotoğraf yoksa placeholder
+            urls = [
+                "https://picsum.photos/200/250?random=101",
+                "https://picsum.photos/200/200?random=102",
+                "https://picsum.photos/200/230?random=103",
+                "https://picsum.photos/200/210?random=104"
+            ]
+    except Exception:
+        urls = []
+    return jsonify(urls)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -43,7 +65,6 @@ def login():
         password = request.form.get('password')
         user = None
         if username:
-            # allow login by username or email
             user = User.query.filter((User.username == username) | (User.email == username)).first()
         if user and user.check_password(password):
             login_user(user)
@@ -75,13 +96,11 @@ def register():
         db.session.commit()
         flash('Kayıt başarılı. Giriş yapabilirsiniz.', 'success')
         return redirect(url_for('login'))
-    # GET
     return render_template('register.html')
 
 
 @app.route('/profile')
 def profile():
-    # Allow optional username via query string: /profile?username=cemre
     username = request.args.get('username')
     server_profile = None
     if username:
@@ -90,7 +109,6 @@ def profile():
         if current_user.is_authenticated:
             server_profile = current_user
             username = current_user.username
-    # pass a simple dict to template if server_profile exists
     sp = None
     if server_profile:
         sp = {
@@ -103,22 +121,15 @@ def profile():
             'following': server_profile.following,
             'posts': server_profile.posts
         }
-    can_edit = False
-    try:
-        can_edit = current_user.is_authenticated and current_user.username == username
-    except Exception:
-        can_edit = False
+    can_edit = current_user.is_authenticated and current_user.username == username
     return render_template('profile.html', username=username, server_profile=sp, can_edit=can_edit)
 
 
 @app.route('/profile/save', methods=['POST'])
 @login_required
 def save_profile():
-    # Accept form POST from edit modal
     data = request.form or request.get_json() or {}
     avatar = data.get('avatar')
-    name = data.get('name')
-    handle = data.get('handle')
     bio = data.get('bio')
     followers = data.get('followers')
     following = data.get('following')
@@ -183,7 +194,6 @@ def contact():
         print(f"Yeni mesaj: {name} - {email} - {message}")
         flash('Mesajınız alındı', 'success')
         return redirect(url_for('index'))
-    # show stored site owner info if any
     si = SiteInfo.query.first()
     site_info = si.to_dict() if si else None
     return render_template('contact.html', site_info=site_info)
@@ -192,7 +202,6 @@ def contact():
 @app.route('/admin/siteinfo', methods=['GET', 'POST'])
 @login_required
 def edit_siteinfo():
-    # Only authenticated users can edit; in future refine to admin-only
     si = SiteInfo.query.first()
     if request.method == 'POST':
         email = request.form.get('contact_email')
@@ -225,15 +234,14 @@ def thumb_file(filename):
     return send_from_directory(THUMB_FOLDER, filename)
 
 
-if __name__ == '__main__':
-    # For development: ensure database tables exist then run
+if __name__ == "__main__":
     with app.app_context():
         try:
             db.create_all()
         except Exception:
             pass
-if __name__ == "__main__":
     app.run(debug=True, port=5001)
+
 
 
 
