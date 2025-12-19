@@ -204,6 +204,20 @@ body.light-mode .explore {
     pointer-events: all;
 }
 
+/* CLOSE BUTTON – ÜST SOLA TAŞI (Hakkında & İletişim overlay) */
+.overlay .close-btn {
+    position: absolute;   /* overlay-content içinde sabitler */
+    top: 10px;            /* üstten boşluk */
+    left: 10px;           /* soldan boşluk */
+    font-size: 1.5rem;    /* isteğe göre boyut */
+    background: transparent;
+    border: none;
+    color: inherit;       /* overlay yazı rengine uyumlu */
+    cursor: pointer;
+    z-index: 10;
+    padding: 5px;
+}
+
 /* FOOTER TEXT – SAĞ ALT, MINIMAL, DARK/LIGHT MOD UYUMLU */
 .footer-text {
     position: fixed;
@@ -278,6 +292,7 @@ body.light-mode .footer-text {
         width: 90%;
     }
 }
+
 
 
 
