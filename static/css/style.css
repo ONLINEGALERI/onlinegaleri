@@ -204,6 +204,24 @@ body.light-mode .explore {
     pointer-events: all;
 }
 
+/* FOOTER TEXT – SAĞ ALT, MINIMAL, DARK/LIGHT MOD UYUMLU */
+.footer-text {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.3); /* Dark mod için soluk beyaz */
+    pointer-events: none;      /* Tıklanamaz */
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+    transition: color 0.3s ease;
+}
+
+body.light-mode .footer-text {
+    color: rgba(0, 0, 0, 0.3); /* Light modda soluk siyah */
+}
+
 /* ANİMASYONLAR */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -260,6 +278,7 @@ body.light-mode .explore {
         width: 90%;
     }
 }
+
 
 
 
