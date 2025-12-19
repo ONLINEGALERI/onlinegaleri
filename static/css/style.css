@@ -1,29 +1,35 @@
-/* GENEL */
+/* ========== RESET / KİLİT ========== */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 1200px;
+    margin: 0 auto;
+    overflow-x: hidden;
+}
+
+/* ========== GENEL ========== */
 body {
-    margin: 0;
     font-family: Arial, sans-serif;
     background-color: #000;
     color: #fff;
     transition: background 0.3s, color 0.3s;
 }
 
-/* Light mode */
 body.light-mode {
     background-color: #f9f9f9;
     color: #333;
 }
 
-/* HERO (ANA SAYFA) */
+/* ========== HERO ========== */
 .hero {
+    width: 1200px;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+    margin: 0 auto;
     position: relative;
-    animation: fadeIn 1.2s ease-out forwards;
     background: #000;
+    animation: fadeIn 1.2s ease-out forwards;
 }
 
 body.light-mode .hero {
@@ -31,17 +37,51 @@ body.light-mode .hero {
     color: #000;
 }
 
-/* ANA LOGO */
+/* ========== MERKEZ ========== */
+.hero-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
 .logo {
     font-family: "Arsenica", serif;
     font-size: 6rem;
-    font-weight: 400;
     letter-spacing: 0.05em;
     margin-bottom: 20px;
 }
 
-/* AUTH BUTTONS – SAĞ ÜST (WEB) */
-.auth-buttons {
+/* ========== SOL ÜST ========== */
+.top-left {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    display: flex;
+    gap: 10px;
+}
+
+.about-btn,
+.contact-btn {
+    padding: 6px 16px;
+    border: 1px solid #fff;
+    border-radius: 25px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.3s;
+}
+
+.about-btn:hover,
+.contact-btn:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* ========== SAĞ ÜST ========== */
+.top-right {
     position: absolute;
     top: 20px;
     right: 30px;
@@ -56,12 +96,8 @@ body.light-mode .hero {
     padding: 8px 18px;
     border-radius: 25px;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
-}
-
-body.light-mode .auth-buttons a {
-    color: #000;
-    border-color: #000;
+    white-space: nowrap;
+    transition: 0.3s;
 }
 
 .auth-buttons a:hover {
@@ -69,38 +105,7 @@ body.light-mode .auth-buttons a {
     color: #000;
 }
 
-/* HAKKINDA & İLETİŞİM – SOL ÜST (WEB) */
-.about-btn,
-.contact-btn {
-    position: absolute;
-    top: 20px;
-    left: 30px;
-    padding: 6px 16px;
-    border: 1px solid #fff;
-    border-radius: 25px;
-    background: transparent;
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.contact-btn {
-    left: 140px;
-}
-
-body.light-mode .about-btn,
-body.light-mode .contact-btn {
-    border-color: #000;
-    color: #000;
-}
-
-.about-btn:hover,
-.contact-btn:hover {
-    background: #fff;
-    color: #000;
-}
-
-/* MODE */
+/* ========== MODE ========== */
 .mode-btn {
     margin-top: 15px;
     padding: 6px 16px;
@@ -111,52 +116,57 @@ body.light-mode .contact-btn {
     cursor: pointer;
 }
 
-body.light-mode .mode-btn {
-    border-color: #000;
-    color: #000;
-}
-
 .mode-btn:hover {
     background: #fff;
     color: #000;
 }
 
-/* KEŞFET YAZISI */
+/* ========== ALT ========== */
 .scroll-down {
     position: absolute;
     bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 0.8rem;
     opacity: 0.5;
     cursor: pointer;
-    animation: bounce 1.5s infinite ease-in-out;
+    animation: bounce 1.5s infinite;
 }
 
-/* ========== KEŞİF SAYFASI ========== */
+.bec {
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    font-size: 0.75rem;
+    opacity: 0.5;
+}
+
+/* ========== EXPLORE ========== */
 .explore {
+    width: 1200px;
+    margin: 0 auto;
     min-height: 100vh;
-    background: #000;
-    color: #fff;
     padding-top: 90px;
 }
 
-body.light-mode .explore {
-    background: #f9f9f9;
-    color: #000;
-}
-
-/* EXPLORE HEADER */
+/* ========== EXPLORE HEADER ========== */
 .explore-header {
-    position: sticky;
-    top: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
+    position: relative;
+    width: 100%;
+    text-align: center;
 }
 
-/* SAĞ ÜST – ARAMA */
+.mini-logo {
+    font-family: "Arsenica", serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.2em;
+    opacity: 0.6;
+}
+
+/* SEARCH */
 .search-box {
     position: absolute;
+    top: 0;
     right: 30px;
 }
 
@@ -166,26 +176,10 @@ body.light-mode .explore {
     border-radius: 20px;
     padding: 6px 14px;
     color: #fff;
-    font-size: 0.85rem;
-    outline: none;
     width: 160px;
-    transition: all 0.3s ease;
 }
 
-.search-box input:focus {
-    width: 220px;
-    background: rgba(255,255,255,0.05);
-}
-
-/* MINI LOGO */
-.mini-logo {
-    font-family: "Arsenica", serif;
-    font-size: 1.6rem;
-    letter-spacing: 0.2em;
-    opacity: 0.6;
-}
-
-/* OVERLAY */
+/* ========== OVERLAY ========== */
 .overlay {
     position: fixed;
     inset: 0;
@@ -193,10 +187,8 @@ body.light-mode .explore {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 999;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.4s ease;
 }
 
 .overlay.active {
@@ -204,62 +196,21 @@ body.light-mode .explore {
     pointer-events: all;
 }
 
-/* ANİMASYONLAR */
+/* ========== ANİMASYON ========== */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-6px); }
 }
 
-/* ===================== */
-/* 📱 MOBİL DÜZENLEME */
-/* ===================== */
-@media (max-width: 768px) {
 
-    .logo {
-        font-size: 3.5rem;
-    }
 
-    /* ÜST BUTONLAR ARTIK ORTALI VE ALT ALTA */
-    .auth-buttons {
-        position: static;
-        margin-top: 20px;
-        flex-direction: column;
-        align-items: center;
-    }
 
-    .auth-buttons a {
-        width: 200px;
-        text-align: center;
-    }
 
-    .about-btn,
-    .contact-btn {
-        position: static;
-        margin: 8px auto;
-        display: block;
-        width: 200px;
-        text-align: center;
-    }
-
-    .contact-btn {
-        left: auto;
-    }
-
-    .search-box {
-        position: static;
-        margin-top: 15px;
-        text-align: center;
-    }
-
-    .search-box input {
-        width: 90%;
-    }
-}
 
 
 
