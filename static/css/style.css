@@ -49,6 +49,7 @@ body.light-mode .hero {
     gap: 15px;
 }
 
+/* Genel buton stili */
 .auth-buttons a {
     text-decoration: none;
     color: #fff;
@@ -73,6 +74,32 @@ body.light-mode .auth-buttons a {
 
 body.light-mode .auth-buttons a:hover {
     background: #bbb;
+}
+
+/* Admin Panel linki – Dark/Light mod uyumlu ve öncelikli */
+.auth-buttons a[href$="admin"] {
+    background-color: #222 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+    padding: 8px 18px !important;
+    border-radius: 25px !important;
+    font-size: 0.9rem !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+}
+
+body.light-mode .auth-buttons a[href$="admin"] {
+    background-color: #ddd !important;
+    color: #000 !important;
+    border: 1px solid #ccc !important;
+}
+
+body.light-mode .auth-buttons a[href$="admin"]:hover {
+    background-color: #bbb !important;
+}
+
+body:not(.light-mode) .auth-buttons a[href$="admin"]:hover {
+    background-color: #555 !important;
 }
 
 /* HAKKINDA & İLETİŞİM – SOL ÜST (WEB) */
@@ -243,6 +270,8 @@ body.light-mode .search-box input {
     max-width: 90%;
     text-align: center;
     transition: background 0.3s, color 0.3s;
+    background: #111;
+    color: #fff;
 }
 
 /* Overlay arka plan dark/light mod uyumu */
@@ -266,11 +295,6 @@ body.light-mode .overlay#login-overlay,
 body.light-mode .overlay#register-overlay {
     background: #fff;
     color: #000;
-}
-
-.overlay-content {
-    background: #111;
-    color: #fff;
 }
 
 body.light-mode .overlay-content {
@@ -391,6 +415,8 @@ body.light-mode .footer-text {
         margin: 0 auto;
     }
 }
+
+
 
 
 

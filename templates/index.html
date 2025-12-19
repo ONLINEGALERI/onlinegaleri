@@ -8,8 +8,15 @@
     <div class="logo">VERZIA</div>
 
     <div class="auth-buttons">
-        <a href="javascript:void(0)" onclick="openLogin()">Giriş Yap</a>
-        <a href="javascript:void(0)" onclick="openRegister()">Kayıt Ol</a>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}">Çıkış Yap</a>
+            {% if current_user.username == "bec" %}
+                <a href="{{ url_for('admin') }}" class="admin-btn">Admin Paneli</a>
+            {% endif %}
+        {% else %}
+            <a href="javascript:void(0)" onclick="openLogin()">Giriş Yap</a>
+            <a href="javascript:void(0)" onclick="openRegister()">Kayıt Ol</a>
+        {% endif %}
     </div>
 
     <button class="about-btn" onclick="openAbout()">Hakkında</button>
@@ -93,15 +100,15 @@ function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.c
 function toggleMode() { document.body.classList.toggle('light-mode'); }
 function goExplore() { document.getElementById('explore').scrollIntoView({ behavior: 'smooth' }); }
 
-// FOTOĞRAF AKIŞI - Pinterest tarzı, daha fazla fotoğraf
+// FOTOĞRAF AKIŞI - Pinterest tarzı
 const photoFeed = document.getElementById('photo-feed');
 fetch("/api/photos")
     .then(res => res.json())
     .then(photos => {
         let placeholders = [];
         if (!photos.length) {
-            for (let i=101; i<=115; i++) { // 15 placeholder fotoğraf
-                let height = 300 + Math.floor(Math.random() * 150); // 300-450 px arası rastgele yükseklik
+            for (let i=101; i<=115; i++) { 
+                let height = 300 + Math.floor(Math.random() * 150);
                 placeholders.push({
                     url:`https://picsum.photos/300/${height}?random=${i}`,
                     username:`Kullanıcı ${i-100}`,
@@ -148,8 +155,9 @@ function openLightbox(src) {
 </script>
 
 <style>
+/* Fotoğraf akışı */
 .photo-feed {
-    column-count: 4; /* Pinterest tarzı çoklu sütun */
+    column-count: 4; 
     column-gap: 12px;
 }
 .photo-card {
@@ -212,9 +220,40 @@ function openLightbox(src) {
     font-weight: bold;
     cursor: pointer;
 }
+
+/* Admin linki Dark/Light mod */
+.admin-btn {
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid #fff;
+    background-color: #222;
+    color: #fff;
+}
+
+/* Light mode */
+body.light-mode .admin-btn {
+    background-color: #ddd;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
+/* Hover efektleri */
+.admin-btn:hover {
+    background-color: #555;
+}
+
+body.light-mode .admin-btn:hover {
+    background-color: #bbb;
+}
 </style>
 
 {% endblock %}
+
+
+
 
 
 

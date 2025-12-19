@@ -1,20 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
+    <meta charset="UTF-8">
     <title>Kullanıcı Güncelle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<div class="container mt-5">
     <h1>Kullanıcı Güncelle</h1>
-    <form method="POST">
-        <label>Kullanıcı Adı:</label><br>
-        <input type="text" name="username" value="{{ user.username }}" required><br>
-        <label>Email:</label><br>
-        <input type="email" name="email" value="{{ user.email }}" required><br>
-        <label>Şifre:</label><br>
-        <input type="text" name="password" value="{{ user.password }}" required><br><br>
-        <input type="submit" value="Güncelle">
+    <form method="POST" class="mt-3">
+        <div class="mb-3">
+            <label class="form-label">Kullanıcı Adı:</label>
+            <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email:</label>
+            <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Şifre:</label>
+            <input type="text" name="password" class="form-control" value="{{ user.password }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Güncelle</button>
+        <a href="{{ url_for('admin') }}" class="btn btn-secondary">Geri Dön</a>
     </form>
-    <br>
-    <a href="{{ url_for('admin') }}">Geri Dön</a>
+</div>
 </body>
 </html>
+
+
