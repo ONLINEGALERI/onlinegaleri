@@ -8,8 +8,8 @@
     <div class="logo">VERZIA</div>
 
     <div class="auth-buttons">
-        <a href="{{ url_for('login') }}">Giriş Yap</a>
-        <a href="{{ url_for('register') }}">Kayıt Ol</a>
+        <a href="javascript:void(0)" onclick="openLogin()">Giriş Yap</a>
+        <a href="javascript:void(0)" onclick="openRegister()">Kayıt Ol</a>
     </div>
 
     <button class="about-btn" onclick="openAbout()">Hakkında</button>
@@ -19,20 +19,16 @@
     <div class="scroll-down" onclick="goExplore()">↓ Keşfet</div>
 </div>
 
-<!-- Sağ alt BEC yazısı -->
 <div class="footer-text">BEC</div>
 
 <!-- KEŞFET -->
 <section class="explore" id="explore">
     <div class="explore-header">
         <span class="mini-logo">VERZIA</span>
-
-        <!-- SAĞ ÜST KULLANICI ARAMA -->
         <div class="search-box">
             <input type="text" placeholder="Kullanıcı ara...">
         </div>
     </div>
-
     <div class="explore-content">
         <h2>Keşfet</h2>
         <p>Fotoğrafları keşfet, ilham al.</p>
@@ -44,10 +40,7 @@
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
         <h2>Hakkında</h2>
-        <p>
-            Verzia, çarpıcı bir görsel deneyim sunar.<br>
-            Fotoğraflarınızı paylaşın, keşfedin ve ilham alın.
-        </p>
+        <p>Verzia, çarpıcı bir görsel deneyim sunar.<br>Fotoğraflarınızı paylaşın, keşfedin ve ilham alın.</p>
         <span>Beril, Ecem ve Cemre tarafından geliştirilmiştir.</span>
     </div>
 </div>
@@ -61,30 +54,60 @@
     </div>
 </div>
 
+<!-- LOGIN OVERLAY -->
+<div class="overlay" id="login-overlay">
+    <div class="overlay-content">
+        <button class="close-btn" onclick="closeOverlay()">×</button>
+        <h2>Giriş Yap</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+            <input type="text" name="username" placeholder="Kullanıcı Adı" required><br>
+            <input type="password" name="password" placeholder="Şifre" required><br>
+            <button type="submit" class="form-btn">Giriş Yap</button>
+        </form>
+    </div>
+</div>
+
+<!-- REGISTER OVERLAY -->
+<div class="overlay" id="register-overlay">
+    <div class="overlay-content">
+        <button class="close-btn" onclick="closeOverlay()">×</button>
+        <h2>Kayıt Ol</h2>
+        <form method="POST" action="{{ url_for('register') }}">
+            <input type="text" name="username" placeholder="Kullanıcı Adı" required><br>
+            <input type="email" name="email" placeholder="Email" required><br>
+            <input type="password" name="password" placeholder="Şifre" required><br>
+            <button type="submit" class="form-btn">Kayıt Ol</button>
+        </form>
+    </div>
+</div>
+
 <script>
 function openAbout() {
     document.getElementById('about-overlay').classList.add('active');
 }
-
 function openContact() {
     document.getElementById('contact-overlay').classList.add('active');
 }
-
+function openLogin() {
+    document.getElementById('login-overlay').classList.add('active');
+}
+function openRegister() {
+    document.getElementById('register-overlay').classList.add('active');
+}
 function closeOverlay() {
     document.querySelectorAll('.overlay')
         .forEach(o => o.classList.remove('active'));
 }
-
 function toggleMode() {
     document.body.classList.toggle('light-mode');
 }
-
 function goExplore() {
-    document.getElementById('explore')
-        .scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('explore').scrollIntoView({ behavior: 'smooth' });
 }
 </script>
 {% endblock %}
+
+
 
 
 

@@ -57,16 +57,22 @@ body.light-mode .hero {
     border-radius: 25px;
     font-size: 0.9rem;
     transition: all 0.3s ease;
+    background: #555; /* gri buton */
 }
 
 body.light-mode .auth-buttons a {
     color: #000;
-    border-color: #000;
+    border-color: #ccc;
+    background: #ddd; /* light mod gri ton */
 }
 
 .auth-buttons a:hover {
-    background: #fff;
-    color: #000;
+    background: #777;
+    color: #fff;
+}
+
+body.light-mode .auth-buttons a:hover {
+    background: #bbb;
 }
 
 /* HAKKINDA & İLETİŞİM – SOL ÜST (WEB) */
@@ -78,26 +84,29 @@ body.light-mode .auth-buttons a {
     padding: 6px 16px;
     border: 1px solid #fff;
     border-radius: 25px;
-    background: transparent;
+    background: #555; /* gri ton */
     color: #fff;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.contact-btn {
-    left: 140px;
-}
+.contact-btn { left: 140px; }
 
 body.light-mode .about-btn,
 body.light-mode .contact-btn {
-    border-color: #000;
+    border-color: #ccc;
+    background: #ddd; /* light mod gri ton */
     color: #000;
 }
 
 .about-btn:hover,
 .contact-btn:hover {
-    background: #fff;
-    color: #000;
+    background: #777;
+}
+
+body.light-mode .about-btn:hover,
+body.light-mode .contact-btn:hover {
+    background: #bbb;
 }
 
 /* MODE */
@@ -106,19 +115,23 @@ body.light-mode .contact-btn {
     padding: 6px 16px;
     border: 1px solid #fff;
     border-radius: 25px;
-    background: transparent;
+    background: #555;
     color: #fff;
     cursor: pointer;
 }
 
 body.light-mode .mode-btn {
-    border-color: #000;
+    border-color: #ccc;
+    background: #ddd;
     color: #000;
 }
 
 .mode-btn:hover {
-    background: #fff;
-    color: #000;
+    background: #777;
+}
+
+body.light-mode .mode-btn:hover {
+    background: #bbb;
 }
 
 /* KEŞFET YAZISI */
@@ -172,6 +185,11 @@ body.light-mode .explore {
     transition: all 0.3s ease;
 }
 
+body.light-mode .search-box input {
+    border-color: #ccc;
+    color: #000;
+}
+
 .search-box input:focus {
     width: 220px;
     background: rgba(255,255,255,0.05);
@@ -189,7 +207,6 @@ body.light-mode .explore {
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.95);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -204,59 +221,145 @@ body.light-mode .explore {
     pointer-events: all;
 }
 
-/* CLOSE BUTTON – ÜST SOLA TAŞI (Hakkında & İletişim overlay) */
+/* CLOSE BUTTON – ÜST SOLA TAŞI */
 .overlay .close-btn {
-    position: absolute;   /* overlay-content içinde sabitler */
-    top: 10px;            /* üstten boşluk */
-    left: 10px;           /* soldan boşluk */
-    font-size: 1.5rem;    /* isteğe göre boyut */
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 1.5rem;
     background: transparent;
     border: none;
-    color: inherit;       /* overlay yazı rengine uyumlu */
+    color: inherit;
     cursor: pointer;
     z-index: 10;
     padding: 5px;
 }
 
-/* FOOTER TEXT – SAĞ ALT, MINIMAL, DARK/LIGHT MOD UYUMLU */
+/* OVERLAY FORM STİLLERİ (LOGIN & REGISTER & ABOUT & CONTACT) */
+.overlay-content {
+    padding: 30px;
+    border-radius: 15px;
+    width: 380px;
+    max-width: 90%;
+    text-align: center;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Overlay arka plan dark/light mod uyumu */
+.overlay#about-overlay,
+.overlay#contact-overlay {
+    background: rgba(0,0,0,0.95);
+}
+
+body.light-mode .overlay#about-overlay,
+body.light-mode .overlay#contact-overlay {
+    background: #fff;
+    color: #000;
+}
+
+.overlay#login-overlay,
+.overlay#register-overlay {
+    background: rgba(0,0,0,0.95);
+}
+
+body.light-mode .overlay#login-overlay,
+body.light-mode .overlay#register-overlay {
+    background: #fff;
+    color: #000;
+}
+
+.overlay-content {
+    background: #111;
+    color: #fff;
+}
+
+body.light-mode .overlay-content {
+    background: #f5f5f5;
+    color: #000;
+}
+
+.overlay-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.overlay-content input {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: transparent;
+    color: #fff;
+    outline: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+body.light-mode .overlay-content input {
+    border-color: #999;
+    color: #000;
+    background: #fff;
+}
+
+.overlay-content input:focus {
+    border-color: #999;
+    box-shadow: 0 0 8px rgba(153,153,153,0.5);
+    background: rgba(255,255,255,0.05);
+}
+
+.overlay-content .form-btn {
+    padding: 10px 16px;
+    border-radius: 25px;
+    border: none;
+    background: #555;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+body.light-mode .overlay-content .form-btn {
+    background: #ccc;
+    color: #000;
+}
+
+.overlay-content .form-btn:hover {
+    background: #777;
+}
+
+body.light-mode .overlay-content .form-btn:hover {
+    background: #bbb;
+}
+
+/* FOOTER TEXT */
 .footer-text {
     position: fixed;
     bottom: 10px;
     right: 10px;
     font-size: 12px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.3); /* Dark mod için soluk beyaz */
-    pointer-events: none;      /* Tıklanamaz */
+    color: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
     z-index: 1000;
     font-family: Arial, sans-serif;
     transition: color 0.3s ease;
 }
 
 body.light-mode .footer-text {
-    color: rgba(0, 0, 0, 0.3); /* Light modda soluk siyah */
+    color: rgba(0, 0, 0, 0.3);
 }
 
 /* ANİMASYONLAR */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
 /* ===================== */
 /* 📱 MOBİL DÜZENLEME */
-/* ===================== */
 @media (max-width: 768px) {
 
-    .logo {
-        font-size: 3.5rem;
-    }
+    .logo { font-size: 3.5rem; }
 
-    /* ÜST BUTONLAR ARTIK ORTALI VE ALT ALTA */
     .auth-buttons {
         position: static;
         margin-top: 20px;
@@ -278,20 +381,20 @@ body.light-mode .footer-text {
         text-align: center;
     }
 
-    .contact-btn {
-        left: auto;
-    }
+    .contact-btn { left: auto; }
 
-    .search-box {
-        position: static;
-        margin-top: 15px;
-        text-align: center;
-    }
+    .search-box { position: static; margin-top: 15px; text-align: center; }
+    .search-box input { width: 90%; }
 
-    .search-box input {
+    .overlay-content input, .overlay-content .form-btn {
         width: 90%;
+        margin: 0 auto;
     }
 }
+
+
+
+
 
 
 
