@@ -38,7 +38,6 @@
 <div class="overlay" id="premium-overlay">
     <div class="overlay-content premium-card">
         <button class="premium-close-btn" onclick="closeOverlay()">×</button>
-        
         <h2 class="gold-title">VPRO EXPERIENCE</h2>
         <p class="premium-desc">Ayrıcalıklı özellikler ve sınırsız galeri deneyimi için topluluğumuza katılın.</p>
         <button class="buy-btn-gold">ÜYELİĞİ BAŞLAT</button>
@@ -46,7 +45,39 @@
 </div>
 
 <style>
-/* LOGO VE ANİMASYON (AYNI) */
+/* 1. EKRAN GECİKMESİNİ ÖNLEMEK İÇİN RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* Geçiş efektini (transition) kaldırıyoruz ki anlık değişsin */
+    transition: none !important; 
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* 2. MOD RENKLERİ - KESİN VE NET */
+body:not(.light-mode) {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+body.light-mode {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* 3. TÜM KATMANLARI ZORLA ARKA PLANA EŞİTLE */
+.hero, section, .explore, .signature-container {
+    background-color: transparent !important;
+}
+
+/* LOGO VE STİLLER */
 .signature-container {
     width: 100%;
     max-width: 800px;
@@ -60,12 +91,11 @@
     font-size: 150px;
     fill: none;
     stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
     stroke-dasharray: 1200;
     stroke-dashoffset: 1200;
     animation: writing 4s ease-in-out forwards; 
 }
+
 body:not(.light-mode) .signature-text { stroke: #ffffff; }
 body.light-mode .signature-text { stroke: #000000; }
 
@@ -75,7 +105,7 @@ body.light-mode .signature-text { stroke: #000000; }
     100% { stroke-dashoffset: 0; fill: currentColor; }
 }
 
-/* VPRO BUTONU (AYNI) */
+/* VPRO BUTONU */
 .vpro-btn-gold {
     position: fixed;
     bottom: 30px;
@@ -90,81 +120,35 @@ body.light-mode .signature-text { stroke: #000000; }
     letter-spacing: 1px;
     cursor: pointer;
     z-index: 1000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
     border-radius: 2px;
 }
-.vpro-btn-gold:hover { transform: translateY(-3px); filter: brightness(1.1); }
 
-/* --- PREMIUM KART DÜZENLEMESİ --- */
 .premium-card {
-    position: relative; /* Çarpı butonunun buna göre hizalanması için */
+    position: relative;
     text-align: center;
     border: 1px solid #d4af37;
-    background: rgba(0,0,0,0.98) !important; /* Daha premium koyuluk */
-    padding: 60px 40px 40px 40px !important; /* Üstten boşluk bıraktık çarpı için */
-    max-width: 450px;
+    background: #000 !important;
+    padding: 60px 40px 40px 40px !important;
 }
 
-/* KUTU İÇİ SOL ÜST ÇARPI */
-.premium-close-btn {
-    position: absolute;
-    top: 15px;
-    left: 20px;
-    background: none;
-    border: none;
-    color: #d4af37; /* Altın rengi */
-    font-size: 32px;
-    cursor: pointer;
-    line-height: 1;
-    opacity: 0.7;
-    transition: 0.3s;
+.user-link, .about-btn, .contact-btn, .mode-btn {
+    color: inherit !important;
 }
-.premium-close-btn:hover { opacity: 1; transform: scale(1.1); }
-
-.gold-title {
-    background: linear-gradient(to right, #bf953f, #fcf6ba, #aa771c);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
-    letter-spacing: 3px;
-    margin-bottom: 20px;
-    font-size: 1.8rem;
-}
-
-.premium-desc {
-    color: rgba(255,255,255,0.8);
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.95rem;
-    line-height: 1.6;
-}
-
-.buy-btn-gold {
-    margin-top: 30px;
-    padding: 12px 35px;
-    background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c);
-    color: #000;
-    border: none;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: 0.3s;
-    width: 100%; /* Daha güçlü durması için */
-}
-.buy-btn-gold:hover { filter: brightness(1.2); letter-spacing: 1px; }
-
-/* DİĞER BUTONLAR */
-.user-link { font-weight: bold; color: #fff !important; text-decoration: none; margin-right: 15px; }
-body.light-mode .user-link { color: #000 !important; }
 </style>
 
 <script>
 function openPremium() { document.getElementById('premium-overlay').classList.add('active'); }
 function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
+
+// GECİKMEYİ ÖNLEYEN YENİ FONKSİYON
 function toggleMode() { 
+    // Modu anlık değiştir
     const isLight = document.body.classList.toggle('light-mode'); 
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    
+    // NOT: location.reload() varsa kaldırıyoruz, çünkü gecikmenin ana sebebi odur!
 }
+
 function goExplore() { document.getElementById('explore').scrollIntoView({ behavior: 'smooth' }); }
 </script>
 {% endblock %}
