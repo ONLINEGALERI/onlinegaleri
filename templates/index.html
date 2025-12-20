@@ -9,6 +9,8 @@
 
     <div class="auth-buttons">
         {% if current_user.is_authenticated %}
+            <a href="{{ url_for('profile') }}" class="user-link">@{{ current_user.username }}</a>
+            
             <a href="{{ url_for('logout') }}">Çıkış Yap</a>
             {% if current_user.username == "bec" %}
                 <a href="{{ url_for('admin') }}" class="admin-btn">Admin Paneli</a>
@@ -28,7 +30,6 @@
 
 <div class="footer-text">BEC</div>
 
-<!-- KEŞFET -->
 <section class="explore" id="explore">
     <div class="explore-header">
         <span class="mini-logo">VERZIA</span>
@@ -41,7 +42,6 @@
     </div>
 </section>
 
-<!-- OVERLAYLAR -->
 <div class="overlay" id="about-overlay">
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
@@ -84,7 +84,6 @@
     </div>
 </div>
 
-<!-- LIGHTBOX -->
 <div id="lightbox" class="lightbox">
     <span class="close-lightbox">&times;</span>
     <img class="lightbox-content" id="lightbox-img">
@@ -155,6 +154,21 @@ function openLightbox(src) {
 </script>
 
 <style>
+/* KULLANICI ADI BUTONU - BEYAZ ÖZELLEŞTİRME */
+.user-link {
+    font-weight: bold;
+    color: #ffffff !important;
+    margin-right: 15px;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: 0.3s;
+    opacity: 0.9;
+}
+.user-link:hover {
+    opacity: 1;
+    border-bottom: 1px solid #ffffff;
+}
+
 /* Fotoğraf akışı */
 .photo-feed {
     column-count: 4; 
