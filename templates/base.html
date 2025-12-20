@@ -6,10 +6,10 @@
     <title>{% block title %}Online Galeri{% endblock %}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     <style>
+    /* Flash mesaj kutusu */
     .flash-notice {
         position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
         padding: 12px 24px; background-color: rgba(200,200,200,0.9); color: #000;
@@ -24,11 +24,29 @@
         align-items: center !important;
         gap: 12px !important;
     }
+
+    /* Light mode zorlaması için temel kural */
+    body.light-mode {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
     </style>
+    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.add('light-mode');
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.body.classList.add('light-mode');
+                });
+            }
+        })();
+    </script>
 </head>
 <body>
 
-{# Senin istediğin o kısıtlayıcı kontrolü burada koruyoruz #}
+{# Navbar kısıtlaması korunuyor #}
 {% if request.endpoint not in ['index', 'login', 'register', 'admin'] %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
     <div class="container">
@@ -73,7 +91,14 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+// TEMA DEĞİŞTİRME FONKSİYONU (HAFIZALI)
+function toggleMode() {
+    const isLight = document.body.classList.toggle('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
 document.addEventListener("DOMContentLoaded", function() {
+    // Flash Mesajları
     {% with messages = get_flashed_messages() %}
         {% for message in messages %}
             const flash = document.createElement('div');

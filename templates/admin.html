@@ -3,13 +3,11 @@
 
 {% block content %}
 
-<!-- Çıkış -->
 <button class="exit-btn" onclick="window.location.href='{{ url_for('index') }}'">×</button>
 
 <div class="container mt-4 admin-page">
     <h1 class="mb-4">🛠️ Yönetici Paneli</h1>
 
-    <!-- USERS -->
     <div class="section-header">
         <h3>Kullanıcılar</h3>
     </div>
@@ -40,7 +38,7 @@
                 <td class="text-center">
                     {% if user.id != current_user.id %}
                     <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline;">
-                        <button class="btn btn-danger btn-sm" onclick="return confirm('Bu kullanıcı silinsin mi?');">Sil</button>
+                        <button class="btn btn-danger btn-sm action-btn" onclick="return confirm('Bu kullanıcı silinsin mi?');">Sil</button>
                     </form>
                     {% else %}
                     <span class="text-muted small">Bu sensin</span>
@@ -51,7 +49,6 @@
         </tbody>
     </table>
 
-    <!-- PHOTOS -->
     <div class="section-header mt-5">
         <h3>Fotoğraflar</h3>
     </div>
@@ -75,7 +72,7 @@
                 <td>{{ photo.owner.username if photo.owner else '-' }}</td>
                 <td class="text-center">
                     <form method="POST" action="{{ url_for('delete_photo', photo_id=photo.id) }}" style="display:inline;">
-                        <button class="btn btn-danger btn-sm" onclick="return confirm('Fotoğraf silinsin mi?');">Sil</button>
+                        <button class="btn btn-danger btn-sm action-btn" onclick="return confirm('Fotoğraf silinsin mi?');">Sil</button>
                     </form>
                 </td>
             </tr>
@@ -84,92 +81,72 @@
     </table>
 </div>
 
-<!-- Dark/Light mod için CSS -->
 <style>
-/* Tüm admin panel tablolar */
-.admin-table {
-    border-radius: 0.5rem;
-    overflow: hidden;
-    width: 100%;
+/* --- MODLARA GÖRE ARKA PLAN ZORLAMASI --- */
+
+/* 1. DARK MODE (VARSAYILAN) */
+body {
+    background-color: #000000 !important;
+    transition: background-color 0.3s ease;
+}
+.admin-page {
+    color: #ffffff !important;
 }
 
-/* Dark mode */
-body:not(.light-mode) .admin-page {
-    background-color: #121212;
-    color: #fff;
-    padding-bottom: 50px;
+/* 2. LIGHT MODE (AKTİFKEN) */
+body.light-mode {
+    background-color: #ffffff !important; /* Arka planı beyaza zorla */
 }
+body.light-mode .admin-page {
+    color: #000000 !important; /* Yazıları siyaha zorla */
+}
+
+/* --- TABLO DÜZENLEMELERİ --- */
+.admin-table {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+/* Dark Mode Tablo */
 body:not(.light-mode) .admin-table {
-    background-color: #1f1f1f;
-    color: #000;
+    background-color: #1a1a1a;
+    color: #fff;
+    border: 1px solid #333;
 }
-body:not(.light-mode) .admin-table thead {
-    background-color: #fff;
-    color: #000;
+body:not(.light-mode) .admin-table thead th {
+    background-color: #333;
+    color: #fff;
 }
 body:not(.light-mode) .admin-table tbody tr {
-    background-color: #2a2a2a;
-}
-body:not(.light-mode) .admin-table tbody tr:hover {
-    background-color: #333;
-}
-body:not(.light-mode) .btn-danger,
-body:not(.light-mode) .btn-success,
-body:not(.light-mode) .btn-primary {
-    background-color: #fff;
-    color: #000;
-    border-color: #ccc;
-}
-body:not(.light-mode) .btn-danger:hover,
-body:not(.light-mode) .btn-success:hover,
-body:not(.light-mode) .btn-primary:hover {
-    background-color: #ddd;
+    border-bottom: 1px solid #222;
 }
 
-/* Light mode */
-body.light-mode .admin-page {
-    background-color: #f9f9f9;
-    color: #111;
-}
+/* Light Mode Tablo */
 body.light-mode .admin-table {
-    background-color: #eaeaea;
+    background-color: #f8f9fa;
     color: #000;
+    border: 1px solid #dee2e6;
 }
-body.light-mode .admin-table thead {
-    background-color: #d4d4d4;
+body.light-mode .admin-table thead th {
+    background-color: #e9ecef;
     color: #000;
 }
 body.light-mode .admin-table tbody tr {
     background-color: #fff;
-}
-body.light-mode .admin-table tbody tr:hover {
-    background-color: #ccc;
-}
-body.light-mode .btn-danger,
-body.light-mode .btn-success,
-body.light-mode .btn-primary {
-    background-color: #444;
-    color: #fff;
-    border-color: #333;
-}
-body.light-mode .btn-danger:hover,
-body.light-mode .btn-success:hover,
-body.light-mode .btn-primary:hover {
-    background-color: #555;
+    border-bottom: 1px solid #dee2e6;
 }
 
-/* Exit button */
+/* --- DİĞER ÖĞELER --- */
 .exit-btn {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    font-size: 1.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
+    position: fixed; top: 20px; left: 20px; font-size: 2rem;
+    background: none; border: none; cursor: pointer; z-index: 1000;
 }
-body:not(.light-mode) .exit-btn:hover { color: #ff5555; }
-body.light-mode .exit-btn:hover { color: #aa0000; }
+body:not(.light-mode) .exit-btn { color: #fff; }
+body.light-mode .exit-btn { color: #000; }
+.exit-btn:hover { color: #ff4444 !important; }
+
+.section-header h3 { font-weight: bold; }
 </style>
 
 {% endblock %}
