@@ -14,11 +14,13 @@
 
 <body>
 
-    <!-- NAVBAR (ŞU AN KAPALI) -->
-    {#
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    {% if request.endpoint not in ['index', 'login', 'register'] %}
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Online Galeri</a>
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+                Verzia
+            </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNav" aria-controls="navbarNav"
@@ -27,20 +29,61 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if session.get('user_id') %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}">Profilim</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('upload_photo') }}">Fotoğraf Yükle</a></li>
-                        <li class="nav-item"><a class="nav-link text-danger" href="{{ url_for('logout') }}">Çıkış Yap</a></li>
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="navbar-text text-light small me-2">
+                                Hoş geldin, <strong>{{ current_user.username }}</strong>
+                            </span>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('profile') }}">Profil</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('upload') }}">Yükle</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="btn btn-outline-danger btn-sm ms-lg-2"
+                               href="{{ url_for('logout') }}">
+                                Çıkış Yap
+                            </a>
+                        </li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Giriş Yap</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Kayıt Ol</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Giriş Yap</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm ms-lg-2"
+                               href="{{ url_for('register') }}">
+                                Kayıt Ol
+                            </a>
+                        </li>
                     {% endif %}
+
                 </ul>
             </div>
         </div>
     </nav>
-    #}
+    {% endif %}
+
+    <!-- FLASH MESAJLARI (GLOBAL) -->
+    <div class="container mt-2">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
 
     <!-- ANA İÇERİK -->
     <div class="container-fluid px-3 px-md-5">
@@ -49,8 +92,15 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
 </body>
 </html>
+
+
+
 
 
 

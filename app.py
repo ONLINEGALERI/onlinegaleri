@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify, abort
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from PIL import Image
@@ -40,16 +40,26 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
+        username_or_email = request.form.get('username')
         password = request.form.get('password')
-        user = None
-        if username:
-            user = User.query.filter((User.username == username) | (User.email == username)).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            flash('Başarıyla giriş yapıldı', 'success')
-            return redirect(request.args.get('next') or url_for('index'))
-        flash('Geçersiz kullanıcı adı veya şifre', 'danger')
+
+        user = User.query.filter(
+            (User.username == username_or_email) |
+            (User.email == username_or_email)
+        ).first()
+
+        if not user:
+            flash("Kullanıcı adı yanlış.", "danger")
+            return redirect(url_for('login'))
+
+        if not check_password_hash(user.password, password):
+            flash("Şifre yanlış.", "danger")
+            return redirect(url_for('login'))
+
+        login_user(user)
+        flash("Giriş başarılı! Hoş geldin 🎉", "success")
+        return redirect(request.args.get('next') or url_for('index'))
+
     return render_template('login_clean.html')
 
 @app.route('/logout')
@@ -67,25 +77,23 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        # Aynı kullanıcı veya email varsa hata ver
-        existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+        existing_user = User.query.filter(
+            (User.username == username) |
+            (User.email == email)
+        ).first()
+
         if existing_user:
             flash("Bu kullanıcı adı veya email zaten kayıtlı!", "danger")
             return render_template('register.html')
 
-        # Şifreyi hashle
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-
-        # Yeni kullanıcı oluştur
         new_user = User(username=username, email=email, password=hashed_password)
+
         db.session.add(new_user)
         db.session.commit()
 
-        # Kullanıcıyı otomatik login et
         login_user(new_user)
-
-        # Başarılı kayıt → flash göster ve anasayfaya yönlendir
-        flash("Kayıt başarılı! Anasayfaya yönlendiriliyorsunuz...", "success")
+        flash("Kayıt başarılı! Hoş geldin 🎉", "success")
         return redirect(url_for('index'))
 
     return render_template('register.html')
@@ -95,12 +103,13 @@ def register():
 def profile():
     username = request.args.get('username')
     server_profile = None
+
     if username:
         server_profile = User.query.filter_by(username=username).first()
-    else:
-        if current_user.is_authenticated:
-            server_profile = current_user
-            username = current_user.username
+    elif current_user.is_authenticated:
+        server_profile = current_user
+        username = current_user.username
+
     sp = None
     if server_profile:
         sp = {
@@ -113,6 +122,7 @@ def profile():
             'following': server_profile.following,
             'posts': server_profile.posts
         }
+
     can_edit = current_user.is_authenticated and current_user.username == username
     return render_template('profile.html', username=username, server_profile=sp, can_edit=can_edit)
 
@@ -127,16 +137,20 @@ def save_profile():
     posts = data.get('posts')
 
     u = current_user
-    if avatar: u.avatar = avatar
-    if bio is not None: u.bio = bio
+    if avatar:
+        u.avatar = avatar
+    if bio is not None:
+        u.bio = bio
+
     try:
         u.followers = int(followers) if followers else u.followers
         u.following = int(following) if following else u.following
         u.posts = int(posts) if posts else u.posts
     except Exception:
         pass
+
     db.session.commit()
-    return jsonify({'status':'ok'})
+    return jsonify({'status': 'ok'})
 
 # --------------------- GALLERY & UPLOAD ---------------------
 @app.route('/gallery')
@@ -148,34 +162,40 @@ def gallery():
     return render_template('gallery.html', images=images)
 
 @app.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload():
     if request.method == 'POST':
         if 'photo' not in request.files:
             flash('Dosya bulunamadı', 'warning')
             return redirect(request.url)
+
         file = request.files['photo']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             file.save(filepath)
+
             try:
                 img = Image.open(filepath)
                 img.thumbnail((300, 300))
                 img.save(os.path.join(THUMB_FOLDER, filename))
             except Exception:
                 pass
-            if current_user.is_authenticated:
-                p = Photo(
-                    title=request.form.get('title', ''),
-                    description=request.form.get('description', ''),
-                    filename=filename,
-                    owner_id=current_user.id
-                )
-                db.session.add(p)
-                db.session.commit()
+
+            p = Photo(
+                title=request.form.get('title', ''),
+                description=request.form.get('description', ''),
+                filename=filename,
+                owner_id=current_user.id
+            )
+            db.session.add(p)
+            db.session.commit()
+
             return redirect(url_for('gallery'))
+
         flash('Geçersiz dosya türü', 'danger')
+
     return render_template('upload.html')
 
 # --------------------- ABOUT & CONTACT ---------------------
@@ -192,6 +212,7 @@ def contact():
         print(f"Yeni mesaj: {name} - {email} - {message}")
         flash('Mesajınız alındı', 'success')
         return redirect(url_for('index'))
+
     si = SiteInfo.query.first()
     site_info = si.to_dict() if si else None
     return render_template('contact.html', site_info=site_info)
@@ -200,9 +221,30 @@ def contact():
 @app.route('/admin')
 @login_required
 def admin():
+    if not current_user.is_admin:
+        abort(403)
+
     users = User.query.all()
     photos = Photo.query.all()
     return render_template('admin.html', users=users, photos=photos)
+
+@app.route('/admin/delete-user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if not current_user.is_admin:
+        abort(403)
+
+    user = User.query.get_or_404(user_id)
+
+    if user.id == current_user.id:
+        flash("Kendi hesabını silemezsin!", "danger")
+        return redirect(url_for('admin'))
+
+    db.session.delete(user)
+    db.session.commit()
+
+    flash("Kullanıcı silindi", "success")
+    return redirect(url_for('admin'))
 
 # --------------------- UPLOAD SERVE ---------------------
 @app.route('/uploads/<filename>')
@@ -218,6 +260,8 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     app.run(debug=True, port=5001)
+
+
 
 
 

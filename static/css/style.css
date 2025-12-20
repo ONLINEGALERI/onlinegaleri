@@ -445,6 +445,92 @@ body:not(.light-mode) table { background-color: #1f1f1f; color: #eee; }
 body:not(.light-mode) thead { background-color: #2c2c2c; color: #fff; }
 body.light-mode table { background-color: #fff; color: #111; }
 body.light-mode thead { background-color: #f0f0f0; color: #000; }
+/* =============================== */
+/* LOGIN UX İYİLEŞTİRMELERİ */
+/* =============================== */
+
+/* Input hata & başarı durumları */
+.form-control.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 6px rgba(220, 53, 69, 0.5);
+}
+
+.form-control.is-valid {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 6px rgba(40, 167, 69, 0.5);
+}
+
+/* Login kartı (Bootstrap card override – uyumlu) */
+.card {
+    background-color: #111;
+    color: #fff;
+    border: 1px solid #222;
+}
+
+body.light-mode .card {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ddd;
+}
+
+/* Login inputları dark/light uyum */
+.card .form-control {
+    background-color: transparent;
+    color: inherit;
+    border: 1px solid #444;
+}
+
+body.light-mode .card .form-control {
+    background-color: #fff;
+    border-color: #ccc;
+    color: #000;
+}
+
+.card .form-control:focus {
+    border-color: #777;
+    box-shadow: 0 0 6px rgba(150, 150, 150, 0.4);
+}
+
+/* Login butonu hover */
+.card .btn-primary {
+    background-color: #555;
+    border-color: #555;
+}
+
+.card .btn-primary:hover {
+    background-color: #777;
+    border-color: #777;
+}
+
+/* Alert (flash mesajları) kart içi uyum */
+.alert {
+    font-size: 0.9rem;
+    border-radius: 8px;
+}
+
+/* Loading spinner (login submit) */
+.login-loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.login-loading::after {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 10px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 
 
 
