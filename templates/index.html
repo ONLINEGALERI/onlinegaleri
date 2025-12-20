@@ -154,19 +154,30 @@ function openLightbox(src) {
 </script>
 
 <style>
-/* KULLANICI ADI BUTONU - BEYAZ ÖZELLEŞTİRME */
+/* KULLANICI ADI BUTONU - DARK/LIGHT UYUMLU */
 .user-link {
     font-weight: bold;
-    color: #ffffff !important;
+    color: #ffffff !important; /* Default beyaz */
     margin-right: 15px;
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     opacity: 0.9;
 }
+
+/* Light Mode'da Siyah Yap */
+body.light-mode .user-link {
+    color: #000000 !important;
+}
+
 .user-link:hover {
     opacity: 1;
     border-bottom: 1px solid #ffffff;
+}
+
+/* Light Mode Hover Çizgisi */
+body.light-mode .user-link:hover {
+    border-bottom: 1px solid #000000;
 }
 
 /* Fotoğraf akışı */
