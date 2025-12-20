@@ -2,12 +2,12 @@
 {% block title %}Verzia{% endblock %}
 
 {% block content %}
-<link href="https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
 
 <div class="hero">
     <div class="signature-container">
-        <svg viewBox="0 0 400 150" class="signature-svg">
-            <text x="50%" y="50%" text-anchor="middle" class="signature-text">Verzia</text>
+        <svg viewBox="0 0 600 200" class="signature-svg">
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" class="signature-text">Verzia</text>
         </svg>
     </div>
 
@@ -37,7 +37,7 @@
 /* İMZA LOGO TASARIMI VE YAZMA ANİMASYONU */
 .signature-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     margin-bottom: 30px;
     display: flex;
     justify-content: center;
@@ -46,51 +46,36 @@
 .signature-svg {
     width: 100%;
     height: auto;
+    overflow: visible;
 }
 
 .signature-text {
-    font-family: 'Mrs+Saint+Delafield', cursive; /* Çok zarif bir imza fontu */
-    font-size: 120px;
+    font-family: 'Pinyon Script', cursive; 
+    font-size: 150px; /* Daha dolgun ve can alıcı boyut */
     fill: none;
-    stroke: #ffffff; /* Karanlık modda beyaz yazı hattı */
-    stroke-width: 2;
+    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-    animation: writing 4s ease-in-out forwards; /* 4 saniyede yazılacak */
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    animation: writing 4s ease-in-out forwards; 
 }
 
-/* Light Mode Uyumu */
-body.light-mode .signature-text {
-    stroke: #000000; /* Aydınlık modda siyah yazı hattı */
-}
+/* Modlara Göre Çizgi Rengi */
+body:not(.light-mode) .signature-text { stroke: #ffffff; }
+body.light-mode .signature-text { stroke: #000000; }
 
-/* Yazılma Efekti (Çizim Animasyonu) */
+/* Yazılma ve Dolgu Efekti */
 @keyframes writing {
-    0% {
-        stroke-dashoffset: 1000;
-    }
-    70% {
-        fill: rgba(255, 255, 255, 0); /* Önce sadece çizgiler */
-    }
-    100% {
-        stroke-dashoffset: 0;
-        fill: #ffffff; /* Sonra içini doldur (Karanlık mod) */
+    0% { stroke-dashoffset: 1200; }
+    80% { fill: transparent; }
+    100% { 
+        stroke-dashoffset: 0; 
+        fill: currentColor; /* Yazı bitince modun rengiyle içini doldurur */
     }
 }
 
-body.light-mode .signature-text {
-    animation: writing-light 4s ease-in-out forwards;
-}
-
-@keyframes writing-light {
-    0% { stroke-dashoffset: 1000; }
-    70% { fill: rgba(0, 0, 0, 0); }
-    100% { stroke-dashoffset: 0; fill: #000000; }
-}
-
-/* KULLANICI ADI VE DİĞER BUTON STİLLERİN (Aynen korundu) */
+/* KULLANICI ADI VE BUTONLAR */
 .user-link {
     font-weight: bold;
     color: #ffffff !important;
@@ -104,18 +89,16 @@ body.light-mode .user-link { color: #000 !important; }
 .user-link:hover { opacity: 1; border-bottom: 1px solid #ffffff; }
 body.light-mode .user-link:hover { border-bottom: 1px solid #000; }
 
-/* Mevcut diğer stillerin (photo-feed, lightbox, buttons vb.) buraya gelecek... */
+/* Diğer mevcut stillerin... */
 </style>
 
 <script>
-// Mevcut scriptlerin (overlayler, photo feed vb.) hepsini aynen buraya koy...
 function toggleMode() { 
     const isLight = document.body.classList.toggle('light-mode'); 
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    // Sayfayı yenilemeden animasyonu tekrar görmek istersen:
-    location.reload(); 
 }
-// ...
+function goExplore() { document.getElementById('explore').scrollIntoView({ behavior: 'smooth' }); }
+// Buraya diğer scriptlerini (overlay, fetch vb.) eklemeyi unutma aşkım.
 </script>
 {% endblock %}
 
