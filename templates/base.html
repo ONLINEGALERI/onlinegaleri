@@ -9,14 +9,28 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     <style>
-    /* Flash mesaj kutusu */
+    /* Flash mesaj kutusu - Tıklama engelini kaldırmak için display:none eklendi */
     .flash-notice {
-        position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
-        padding: 12px 24px; background-color: rgba(200,200,200,0.9); color: #000;
-        border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        opacity: 0; pointer-events: none; transition: all 0.5s ease; z-index: 1050;
+        position: fixed; 
+        top: 20px; 
+        left: 50%; 
+        transform: translateX(-50%) translateY(-20px);
+        padding: 12px 24px; 
+        background-color: rgba(200,200,200,0.9); 
+        color: #000;
+        border-radius: 8px; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        opacity: 0; 
+        display: none; /* Varsayılan olarak kapalı, yer kaplamaz */
+        pointer-events: none; 
+        transition: all 0.5s ease; 
+        z-index: 9999; /* Diğer her şeyin üstünde ama sadece göründüğünde */
     }
-    .flash-notice.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .flash-notice.show { 
+        display: block; /* Mesaj varken aktifleşir */
+        opacity: 1; 
+        transform: translateX(-50%) translateY(0); 
+    }
 
     /* Butonları yan yana ve hizalı tutan grup */
     .user-navbar-group {
@@ -98,20 +112,47 @@ function toggleMode() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // Flash Mesajları
+    // Flash Mesajları - Script iyileştirildi
     {% with messages = get_flashed_messages() %}
         {% for message in messages %}
             const flash = document.createElement('div');
             flash.className = 'flash-notice';
             flash.textContent = "{{ message }}";
             document.body.appendChild(flash);
+            
+            // Görünür yapmadan önce display'i açıyoruz
+            flash.style.display = 'block';
+            
             setTimeout(() => flash.classList.add('show'), 50);
-            setTimeout(() => { flash.classList.remove('show'); setTimeout(() => flash.remove(), 500); }, 3000);
+            setTimeout(() => { 
+                flash.classList.remove('show'); 
+                setTimeout(() => flash.remove(), 500); 
+            }, 3000);
         {% endfor %}
     {% endwith %}
 });
 </script>
+<script>
+// Butonların tıklanma yolunu JavaScript ile zorla açıyoruz
+document.addEventListener('DOMContentLoaded', function() {
+    const authButtons = document.querySelector('.auth-buttons');
+    if (authButtons) {
+        authButtons.style.zIndex = "999999";
+        authButtons.style.pointerEvents = "auto";
+    }
+});
 
+// Eğer buton hala tepki vermiyorsa konsola hata basar
+function openLogin() {
+    console.log("Login butonuna basıldı!");
+    const loginOverlay = document.getElementById('login-overlay');
+    if (loginOverlay) {
+        loginOverlay.classList.add('active');
+    } else {
+        alert("Giriş paneli (login-overlay) bulunamadı!");
+    }
+}
+</script>
 </body>
 </html>
 
