@@ -24,9 +24,7 @@
         {% endif %}
     </div>
 
-    <button class="vpro-btn-gold" onclick="openPremium()">
-        VPRO
-    </button>
+    <button class="vpro-btn-gold" onclick="openPremium()">VPRO</button>
 
     <button class="about-btn" onclick="openAbout()">Hakkında</button>
     <button class="contact-btn" onclick="openContact()">İletişim</button>
@@ -39,15 +37,16 @@
 
 <div class="overlay" id="premium-overlay">
     <div class="overlay-content premium-card">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
+        <button class="premium-close-btn" onclick="closeOverlay()">×</button>
+        
         <h2 class="gold-title">VPRO EXPERIENCE</h2>
-        <p>Ayrıcalıklı özellikler ve sınırsız galeri deneyimi için topluluğumuza katılın.</p>
+        <p class="premium-desc">Ayrıcalıklı özellikler ve sınırsız galeri deneyimi için topluluğumuza katılın.</p>
         <button class="buy-btn-gold">ÜYELİĞİ BAŞLAT</button>
     </div>
 </div>
 
 <style>
-/* LOGO VE ANİMASYON */
+/* LOGO VE ANİMASYON (AYNI) */
 .signature-container {
     width: 100%;
     max-width: 800px;
@@ -76,39 +75,53 @@ body.light-mode .signature-text { stroke: #000000; }
     100% { stroke-dashoffset: 0; fill: currentColor; }
 }
 
-/* TAMAMEN ALTIN VARAKLI VPRO BUTONU */
+/* VPRO BUTONU (AYNI) */
 .vpro-btn-gold {
     position: fixed;
     bottom: 30px;
     left: 30px;
-    /* Altın Varak Gradyanı */
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-    color: #000; /* Altın üzerine siyah yazı asil durur */
+    color: #000;
     border: none;
     padding: 12px 28px;
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
     font-size: 0.9rem;
-    letter-spacing: 1px; /* Harfler birbirine yakın */
+    letter-spacing: 1px;
     cursor: pointer;
     z-index: 1000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 0 5px rgba(255,255,255,0.5);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     transition: all 0.3s ease;
     border-radius: 2px;
 }
+.vpro-btn-gold:hover { transform: translateY(-3px); filter: brightness(1.1); }
 
-.vpro-btn-gold:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
-    filter: brightness(1.1);
-}
-
-/* PREMIUM KART VE ALTIN DETAYLAR */
+/* --- PREMIUM KART DÜZENLEMESİ --- */
 .premium-card {
+    position: relative; /* Çarpı butonunun buna göre hizalanması için */
     text-align: center;
     border: 1px solid #d4af37;
-    background: rgba(0,0,0,0.95) !important;
+    background: rgba(0,0,0,0.98) !important; /* Daha premium koyuluk */
+    padding: 60px 40px 40px 40px !important; /* Üstten boşluk bıraktık çarpı için */
+    max-width: 450px;
 }
+
+/* KUTU İÇİ SOL ÜST ÇARPI */
+.premium-close-btn {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #d4af37; /* Altın rengi */
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+.premium-close-btn:hover { opacity: 1; transform: scale(1.1); }
+
 .gold-title {
     background: linear-gradient(to right, #bf953f, #fcf6ba, #aa771c);
     -webkit-background-clip: text;
@@ -116,9 +129,18 @@ body.light-mode .signature-text { stroke: #000000; }
     font-weight: 700;
     letter-spacing: 3px;
     margin-bottom: 20px;
+    font-size: 1.8rem;
 }
+
+.premium-desc {
+    color: rgba(255,255,255,0.8);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
 .buy-btn-gold {
-    margin-top: 20px;
+    margin-top: 30px;
     padding: 12px 35px;
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c);
     color: #000;
@@ -127,8 +149,9 @@ body.light-mode .signature-text { stroke: #000000; }
     cursor: pointer;
     border-radius: 2px;
     transition: 0.3s;
+    width: 100%; /* Daha güçlü durması için */
 }
-.buy-btn-gold:hover { filter: brightness(1.2); }
+.buy-btn-gold:hover { filter: brightness(1.2); letter-spacing: 1px; }
 
 /* DİĞER BUTONLAR */
 .user-link { font-weight: bold; color: #fff !important; text-decoration: none; margin-right: 15px; }
