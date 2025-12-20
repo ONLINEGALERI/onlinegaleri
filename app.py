@@ -20,7 +20,7 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Upload folders & allowed extensions
+# Upload folders
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 THUMB_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbs')
@@ -86,8 +86,11 @@ def register():
             flash("Bu kullanıcı adı veya email zaten kayıtlı!", "danger")
             return render_template('register.html')
 
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(username=username, email=email, password=hashed_password)
+        new_user = User(
+            username=username,
+            email=email,
+            password=generate_password_hash(password)
+        )
 
         db.session.add(new_user)
         db.session.commit()
@@ -130,92 +133,48 @@ def profile():
 @login_required
 def save_profile():
     data = request.form or request.get_json() or {}
-    avatar = data.get('avatar')
-    bio = data.get('bio')
-    followers = data.get('followers')
-    following = data.get('following')
-    posts = data.get('posts')
-
-    u = current_user
-    if avatar:
-        u.avatar = avatar
-    if bio is not None:
-        u.bio = bio
-
-    try:
-        u.followers = int(followers) if followers else u.followers
-        u.following = int(following) if following else u.following
-        u.posts = int(posts) if posts else u.posts
-    except Exception:
-        pass
-
+    current_user.avatar = data.get('avatar', current_user.avatar)
+    current_user.bio = data.get('bio', current_user.bio)
     db.session.commit()
     return jsonify({'status': 'ok'})
 
-# --------------------- GALLERY & UPLOAD ---------------------
+# --------------------- GALLERY ---------------------
 @app.route('/gallery')
 def gallery():
-    try:
-        images = [f for f in os.listdir(THUMB_FOLDER) if os.path.isfile(os.path.join(THUMB_FOLDER, f))]
-    except Exception:
-        images = []
+    images = os.listdir(THUMB_FOLDER) if os.path.exists(THUMB_FOLDER) else []
     return render_template('gallery.html', images=images)
 
+# --------------------- UPLOAD ---------------------
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
     if request.method == 'POST':
-        if 'photo' not in request.files:
-            flash('Dosya bulunamadı', 'warning')
+        file = request.files.get('photo')
+
+        if not file or not allowed_file(file.filename):
+            flash('Geçersiz dosya', 'danger')
             return redirect(request.url)
 
-        file = request.files['photo']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            file.save(filepath)
+        filename = secure_filename(file.filename)
+        path = os.path.join(UPLOAD_FOLDER, filename)
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        file.save(path)
 
-            try:
-                img = Image.open(filepath)
-                img.thumbnail((300, 300))
-                img.save(os.path.join(THUMB_FOLDER, filename))
-            except Exception:
-                pass
+        img = Image.open(path)
+        img.thumbnail((300, 300))
+        img.save(os.path.join(THUMB_FOLDER, filename))
 
-            p = Photo(
-                title=request.form.get('title', ''),
-                description=request.form.get('description', ''),
-                filename=filename,
-                owner_id=current_user.id
-            )
-            db.session.add(p)
-            db.session.commit()
+        photo = Photo(
+            title=request.form.get('title'),
+            filename=filename,
+            owner_id=current_user.id
+        )
+        db.session.add(photo)
+        db.session.commit()
 
-            return redirect(url_for('gallery'))
-
-        flash('Geçersiz dosya türü', 'danger')
+        return redirect(url_for('gallery'))
 
     return render_template('upload.html')
-
-# --------------------- ABOUT & CONTACT ---------------------
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-@app.route('/contact', methods=['GET', 'POST'])
-def contact():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        message = request.form.get('message')
-        print(f"Yeni mesaj: {name} - {email} - {message}")
-        flash('Mesajınız alındı', 'success')
-        return redirect(url_for('index'))
-
-    si = SiteInfo.query.first()
-    site_info = si.to_dict() if si else None
-    return render_template('contact.html', site_info=site_info)
 
 # --------------------- ADMIN ---------------------
 @app.route('/admin')
@@ -228,7 +187,7 @@ def admin():
     photos = Photo.query.all()
     return render_template('admin.html', users=users, photos=photos)
 
-@app.route('/admin/delete-user/<int:user_id>', methods=['POST'])
+@app.route('/admin/delete-user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def delete_user(user_id):
     if not current_user.is_admin:
@@ -242,11 +201,10 @@ def delete_user(user_id):
 
     db.session.delete(user)
     db.session.commit()
-
     flash("Kullanıcı silindi", "success")
     return redirect(url_for('admin'))
 
-# --------------------- UPLOAD SERVE ---------------------
+# --------------------- FILE SERVE ---------------------
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
@@ -260,6 +218,7 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     app.run(debug=True, port=5001)
+
 
 
 

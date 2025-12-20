@@ -10,94 +10,122 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
 
+    <style>
+    /* Flash mesaj kutusu üst ortada, minimal gri */
+    .flash-notice {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        padding: 12px 24px;
+        background-color: rgba(200,200,200,0.9);
+        color: #000;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+        z-index: 1050;
+        font-weight: 500;
+    }
+
+    .flash-notice.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+    }
+    </style>
+</head>
 <body>
 
-    {% if request.endpoint not in ['index', 'login', 'register'] %}
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-                Verzia
-            </a>
+{% if request.endpoint not in ['index', 'login', 'register', 'admin'] %}
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">Verzia</a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarNav" aria-controls="navbarNav"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <span class="navbar-text text-light small me-2">
-                                Hoş geldin, <strong>{{ current_user.username }}</strong>
-                            </span>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('profile') }}">Profil</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('upload') }}">Yükle</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="btn btn-outline-danger btn-sm ms-lg-2"
-                               href="{{ url_for('logout') }}">
-                                Çıkış Yap
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">Giriş Yap</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm ms-lg-2"
-                               href="{{ url_for('register') }}">
-                                Kayıt Ol
-                            </a>
-                        </li>
-                    {% endif %}
-
-                </ul>
-            </div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <span class="navbar-text text-light small me-2">
+                            Hoş geldin, <strong>{{ current_user.username }}</strong>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('profile') }}">Profil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('upload') }}">Yükle</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-danger btn-sm ms-lg-2" href="{{ url_for('logout') }}">Çıkış Yap</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Giriş Yap</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light btn-sm ms-lg-2" href="{{ url_for('register') }}">Kayıt Ol</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-    </nav>
-    {% endif %}
-
-    <!-- FLASH MESAJLARI (GLOBAL) -->
-    <div class="container mt-2">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
     </div>
+</nav>
+{% endif %}
 
-    <!-- ANA İÇERİK -->
-    <div class="container-fluid px-3 px-md-5">
-        {% block content %}{% endblock %}
-    </div>
+<!-- ANA İÇERİK -->
+<div class="container-fluid px-3 px-md-5">
+    {% block content %}{% endblock %}
+</div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- FLASH MESAJ ANİMASYONU -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            const flashNotice = document.createElement('div');
+            flashNotice.className = 'flash-notice';
+            flashNotice.textContent = "{{ message }}";
+            document.body.appendChild(flashNotice);
+
+            // Göster
+            setTimeout(() => flashNotice.classList.add('show'), 50);
+
+            // 3 saniye sonra kaybol
+            setTimeout(() => {
+                flashNotice.classList.remove('show');
+                setTimeout(() => flashNotice.remove(), 500);
+            }, 3000);
+        {% endfor %}
+    {% endwith %}
+});
+</script>
 
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 
