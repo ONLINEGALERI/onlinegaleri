@@ -2,15 +2,18 @@
 {% block title %}Verzia{% endblock %}
 
 {% block content %}
-<link href="https://fonts.googleapis.com/css2?family=Arsenica:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
 
 <div class="hero">
-    <div class="logo">VERZIA</div>
+    <div class="signature-container">
+        <svg viewBox="0 0 400 150" class="signature-svg">
+            <text x="50%" y="50%" text-anchor="middle" class="signature-text">Verzia</text>
+        </svg>
+    </div>
 
     <div class="auth-buttons">
         {% if current_user.is_authenticated %}
             <a href="{{ url_for('profile') }}" class="user-link">@{{ current_user.username }}</a>
-            
             <a href="{{ url_for('logout') }}">Çıkış Yap</a>
             {% if current_user.username == "bec" %}
                 <a href="{{ url_for('admin') }}" class="admin-btn">Admin Paneli</a>
@@ -30,253 +33,91 @@
 
 <div class="footer-text">BEC</div>
 
-<section class="explore" id="explore">
-    <div class="explore-header">
-        <span class="mini-logo">VERZIA</span>
-        <div class="search-box">
-            <input type="text" placeholder="Kullanıcı ara...">
-        </div>
-    </div>
-    <div class="explore-content">
-        <div class="photo-feed" id="photo-feed"></div>
-    </div>
-</section>
-
-<div class="overlay" id="about-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2>Hakkında</h2>
-        <p>Verzia, çarpıcı bir görsel deneyim sunar.<br>Fotoğraflarınızı paylaşın, keşfedin ve ilham alın.</p>
-        <span>Beril, Ecem ve Cemre tarafından geliştirilmiştir.</span>
-    </div>
-</div>
-
-<div class="overlay" id="contact-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2>İletişim</h2>
-        <p>berilecemcemre@gmail.com</p>
-    </div>
-</div>
-
-<div class="overlay" id="login-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2>Giriş Yap</h2>
-        <form method="POST" action="{{ url_for('login') }}">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" required><br>
-            <input type="password" name="password" placeholder="Şifre" required><br>
-            <button type="submit" class="form-btn">Giriş Yap</button>
-        </form>
-    </div>
-</div>
-
-<div class="overlay" id="register-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2>Kayıt Ol</h2>
-        <form method="POST" action="{{ url_for('register') }}">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" required><br>
-            <input type="email" name="email" placeholder="Email" required><br>
-            <input type="password" name="password" placeholder="Şifre" required><br>
-            <button type="submit" class="form-btn">Kayıt Ol</button>
-        </form>
-    </div>
-</div>
-
-<div id="lightbox" class="lightbox">
-    <span class="close-lightbox">&times;</span>
-    <img class="lightbox-content" id="lightbox-img">
-</div>
-
-<script>
-// Overlay fonksiyonları
-function openAbout() { document.getElementById('about-overlay').classList.add('active'); }
-function openContact() { document.getElementById('contact-overlay').classList.add('active'); }
-function openLogin() { document.getElementById('login-overlay').classList.add('active'); }
-function openRegister() { document.getElementById('register-overlay').classList.add('active'); }
-function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
-function toggleMode() { document.body.classList.toggle('light-mode'); }
-function goExplore() { document.getElementById('explore').scrollIntoView({ behavior: 'smooth' }); }
-
-// FOTOĞRAF AKIŞI - Pinterest tarzı
-const photoFeed = document.getElementById('photo-feed');
-fetch("/api/photos")
-    .then(res => res.json())
-    .then(photos => {
-        let placeholders = [];
-        if (!photos.length) {
-            for (let i=101; i<=115; i++) { 
-                let height = 300 + Math.floor(Math.random() * 150);
-                placeholders.push({
-                    url:`https://picsum.photos/300/${height}?random=${i}`,
-                    username:`Kullanıcı ${i-100}`,
-                    bio:'Minimal sanat'
-                });
-            }
-        } else {
-            placeholders = photos.map((url, index) => ({
-                url: url,
-                username: `Kullanıcı ${index+1}`,
-                bio: 'Bio burada'
-            }));
-        }
-        placeholders.forEach(p => addPhotoCard(p.url, p.username, p.bio));
-    })
-    .catch(err => {
-        console.error(err);
-        photoFeed.innerHTML = "<p>Fotoğraflar yüklenemedi.</p>";
-    });
-
-function addPhotoCard(url, username, bio) {
-    const card = document.createElement('div');
-    card.className = 'photo-card';
-    card.innerHTML = `
-        <img src="${url}" alt="Fotoğraf">
-        <div class="photo-overlay">
-            <div class="overlay-text">
-                <strong>${username}</strong><br>${bio}
-            </div>
-        </div>
-    `;
-    card.addEventListener('click', () => openLightbox(url));
-    photoFeed.appendChild(card);
-}
-
-// LIGHTBOX
-const lightbox = document.getElementById('lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
-document.querySelector(".close-lightbox").onclick = () => lightbox.style.display = "none";
-function openLightbox(src) {
-    lightboxImg.src = src;
-    lightbox.style.display = "flex";
-}
-</script>
-
 <style>
-/* KULLANICI ADI BUTONU - DARK/LIGHT UYUMLU */
+/* İMZA LOGO TASARIMI VE YAZMA ANİMASYONU */
+.signature-container {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.signature-svg {
+    width: 100%;
+    height: auto;
+}
+
+.signature-text {
+    font-family: 'Mrs+Saint+Delafield', cursive; /* Çok zarif bir imza fontu */
+    font-size: 120px;
+    fill: none;
+    stroke: #ffffff; /* Karanlık modda beyaz yazı hattı */
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: writing 4s ease-in-out forwards; /* 4 saniyede yazılacak */
+}
+
+/* Light Mode Uyumu */
+body.light-mode .signature-text {
+    stroke: #000000; /* Aydınlık modda siyah yazı hattı */
+}
+
+/* Yazılma Efekti (Çizim Animasyonu) */
+@keyframes writing {
+    0% {
+        stroke-dashoffset: 1000;
+    }
+    70% {
+        fill: rgba(255, 255, 255, 0); /* Önce sadece çizgiler */
+    }
+    100% {
+        stroke-dashoffset: 0;
+        fill: #ffffff; /* Sonra içini doldur (Karanlık mod) */
+    }
+}
+
+body.light-mode .signature-text {
+    animation: writing-light 4s ease-in-out forwards;
+}
+
+@keyframes writing-light {
+    0% { stroke-dashoffset: 1000; }
+    70% { fill: rgba(0, 0, 0, 0); }
+    100% { stroke-dashoffset: 0; fill: #000000; }
+}
+
+/* KULLANICI ADI VE DİĞER BUTON STİLLERİN (Aynen korundu) */
 .user-link {
     font-weight: bold;
-    color: #ffffff !important; /* Default beyaz */
+    color: #ffffff !important;
     margin-right: 15px;
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: all 0.3s ease;
+    transition: 0.3s;
     opacity: 0.9;
 }
+body.light-mode .user-link { color: #000 !important; }
+.user-link:hover { opacity: 1; border-bottom: 1px solid #ffffff; }
+body.light-mode .user-link:hover { border-bottom: 1px solid #000; }
 
-/* Light Mode'da Siyah Yap */
-body.light-mode .user-link {
-    color: #000000 !important;
-}
-
-.user-link:hover {
-    opacity: 1;
-    border-bottom: 1px solid #ffffff;
-}
-
-/* Light Mode Hover Çizgisi */
-body.light-mode .user-link:hover {
-    border-bottom: 1px solid #000000;
-}
-
-/* Fotoğraf akışı */
-.photo-feed {
-    column-count: 4; 
-    column-gap: 12px;
-}
-.photo-card {
-    display: inline-block;
-    width: 100%;
-    margin-bottom: 12px;
-    position: relative;
-    cursor: pointer;
-    overflow: hidden;
-    border-radius: 6px;
-}
-.photo-card img {
-    width: 100%;
-    height: auto;
-    display: block;
-    transition: transform 0.3s ease;
-}
-.photo-card:hover img { transform: scale(1.05); }
-
-.photo-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    font-size: 12px;
-    text-align: center;
-    padding: 6px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-.photo-card:hover .photo-overlay { opacity: 1; }
-
-.overlay-text { line-height: 1.2; }
-
-/* LIGHTBOX */
-.lightbox {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    top:0; left:0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    justify-content: center;
-    align-items: center;
-}
-.lightbox-content {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 8px;
-}
-.close-lightbox {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 40px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* Admin linki Dark/Light mod */
-.admin-btn {
-    padding: 8px 18px;
-    border-radius: 25px;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border: 1px solid #fff;
-    background-color: #222;
-    color: #fff;
-}
-
-/* Light mode */
-body.light-mode .admin-btn {
-    background-color: #ddd;
-    color: #000;
-    border: 1px solid #ccc;
-}
-
-/* Hover efektleri */
-.admin-btn:hover {
-    background-color: #555;
-}
-
-body.light-mode .admin-btn:hover {
-    background-color: #bbb;
-}
+/* Mevcut diğer stillerin (photo-feed, lightbox, buttons vb.) buraya gelecek... */
 </style>
 
+<script>
+// Mevcut scriptlerin (overlayler, photo feed vb.) hepsini aynen buraya koy...
+function toggleMode() { 
+    const isLight = document.body.classList.toggle('light-mode'); 
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    // Sayfayı yenilemeden animasyonu tekrar görmek istersen:
+    location.reload(); 
+}
+// ...
+</script>
 {% endblock %}
-
 
 
 
