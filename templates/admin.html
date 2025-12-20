@@ -3,123 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <title>Yönetici Paneli</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
-/* GENEL */
 body {
     padding: 20px;
     font-family: Arial, sans-serif;
     transition: background 0.3s, color 0.3s;
 }
 
-/* DARK & LIGHT MOD */
-body.dark-mode {
-    background-color: #121212;
-    color: #eee;
-}
-body.light-mode {
-    background-color: #f8f9fa;
-    color: #111;
-}
+/* DARK / LIGHT */
+body.dark-mode { background:#121212; color:#eee; }
+body.light-mode { background:#f8f9fa; color:#111; }
 
-/* Başlıklar */
-h1, h3 { transition: color 0.3s; }
+.container { max-width: 1200px; margin:auto; }
 
-/* Container */
-.container { max-width: 1200px; margin: auto; }
-
-/* Section header */
 .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
 }
 
-/* Butonlar */
-.btn {
-    transition: all 0.3s;
-    border-radius: 6px;
-    border: 1px solid;
-}
-
-/* Buton renkleri mod durumuna göre */
-body.dark-mode .btn-success, body.dark-mode .btn-primary, body.dark-mode .btn-danger {
-    background-color: #fff;
-    color: #000;
-    border-color: #fff;
-}
-body.light-mode .btn-success, body.light-mode .btn-primary, body.light-mode .btn-danger {
-    background-color: #000;
-    color: #fff;
-    border-color: #000;
-}
-
-.btn-sm { padding: 4px 10px; font-size: 0.85rem; }
-
-/* Tables */
 table {
-    width: 100%;
-    margin-bottom: 2rem;
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: 0.5rem;
-    overflow: hidden;
+    width:100%;
+    border-radius:8px;
+    overflow:hidden;
 }
-body.dark-mode table { background-color: #1f1f1f; color: #eee; }
-body.light-mode table { background-color: #fff; color: #111; }
 
-thead { background-color: #2c2c2c; color: #fff; }
-body.light-mode thead { background-color: #343a40; color: #fff; }
+thead { background:#343a40; color:#fff; }
 
-tbody tr:nth-child(even) { background-color: #2a2a2a; }
-tbody tr:hover { background-color: #333; }
-body.light-mode tbody tr:nth-child(even) { background-color: #f1f1f1; }
-body.light-mode tbody tr:hover { background-color: #ddd; }
+tbody tr:hover { opacity:0.85; }
 
-/* Çıkış butonu (sol üst) */
 .exit-btn {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-    font-size: 1.5rem;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: color 0.3s;
+    position:fixed;
+    top:20px;
+    left:20px;
+    font-size:1.5rem;
+    background:none;
+    border:none;
+    cursor:pointer;
 }
-body.dark-mode .exit-btn { color: #fff; }
-body.light-mode .exit-btn { color: #111; }
-.exit-btn:hover { color: #dc3545; }
-
-/* Responsive */
-@media (max-width: 768px) {
-    .section-header { flex-direction: column; align-items: flex-start; }
-    .btn-add { margin-top: 10px; }
-}
+.exit-btn:hover { color:#dc3545; }
 </style>
 </head>
+
 <body id="admin-body">
-<!-- Çıkış butonu sol üst -->
+
+<!-- Çıkış -->
 <button class="exit-btn" onclick="window.location.href='{{ url_for('index') }}'">×</button>
 
 <div class="container">
-    <h1>Yönetici Paneli</h1>
+    <h1 class="mb-4">🛠️ Yönetici Paneli</h1>
 
-    <!-- Kullanıcılar -->
+    <!-- USERS -->
     <div class="section-header">
         <h3>Kullanıcılar</h3>
-        <a href="{{ url_for('add_user_form') }}" class="btn btn-success btn-add">Yeni Kullanıcı Ekle</a>
     </div>
-    <table>
+
+    <table class="table table-striped table-hover align-middle">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Kullanıcı Adı</th>
                 <th>Email</th>
-                <th>Şifre</th>
-                <th>İşlemler</th>
+                <th>Admin</th>
+                <th class="text-center">İşlem</th>
             </tr>
         </thead>
         <tbody>
@@ -128,30 +77,42 @@ body.light-mode .exit-btn { color: #111; }
                 <td>{{ user.id }}</td>
                 <td>{{ user.username }}</td>
                 <td>{{ user.email }}</td>
-                <td>********</td> <!-- Şifre gizlendi -->
                 <td>
-                    <a href="{{ url_for('update_user_form', user_id=user.id) }}" class="btn btn-primary btn-sm">Güncelle</a>
-                    <a href="{{ url_for('delete_user', user_id=user.id) }}" class="btn btn-danger btn-sm">Sil</a>
+                    {% if user.is_admin %}
+                        <span class="badge bg-success">Admin</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Üye</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if user.id != current_user.id %}
+                    <a href="{{ url_for('delete_user', user_id=user.id) }}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Bu kullanıcı silinsin mi?');">
+                        Sil
+                    </a>
+                    {% else %}
+                    <span class="text-muted small">Bu sensin</span>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <!-- Fotoğraflar -->
+    <!-- PHOTOS -->
     <div class="section-header mt-5">
         <h3>Fotoğraflar</h3>
-        <a href="{{ url_for('add_photo_form') }}" class="btn btn-success btn-add">Yeni Fotoğraf Ekle</a>
     </div>
-    <table>
+
+    <table class="table table-striped table-hover align-middle">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Başlık</th>
-                <th>Açıklama</th>
-                <th>Dosya Adı</th>
-                <th>Ekleyen Kullanıcı</th>
-                <th>İşlemler</th>
+                <th>Dosya</th>
+                <th>Sahip</th>
+                <th class="text-center">İşlem</th>
             </tr>
         </thead>
         <tbody>
@@ -159,33 +120,33 @@ body.light-mode .exit-btn { color: #111; }
             <tr>
                 <td>{{ photo.id }}</td>
                 <td>{{ photo.title }}</td>
-                <td>{{ photo.description }}</td>
                 <td>{{ photo.filename }}</td>
-                <td>{{ photo.owner.username }}</td>
-                <td>
-                    <a href="{{ url_for('update_photo_form', photo_id=photo.id) }}" class="btn btn-primary btn-sm">Güncelle</a>
-                    <a href="{{ url_for('delete_photo', photo_id=photo.id) }}" class="btn btn-danger btn-sm">Sil</a>
+                <td>{{ photo.owner.username if photo.owner else '-' }}</td>
+                <td class="text-center">
+                    <a href="{{ url_for('delete_photo', photo_id=photo.id) }}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Fotoğraf silinsin mi?');">
+                        Sil
+                    </a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Site modunu localStorage'dan al ve admin paneline uygula
-(function() {
-    let mode = localStorage.getItem('siteMode'); // 'light' veya 'dark'
-    if(mode === 'light') {
-        document.getElementById('admin-body').classList.add('light-mode');
-    } else {
-        document.getElementById('admin-body').classList.add('dark-mode');
-    }
+(function(){
+    let mode = localStorage.getItem("siteMode");
+    document.getElementById("admin-body")
+        .classList.add(mode === "light" ? "light-mode" : "dark-mode");
 })();
 </script>
+
 </body>
 </html>
+
 
 
 
