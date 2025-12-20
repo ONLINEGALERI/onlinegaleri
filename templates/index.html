@@ -48,7 +48,7 @@
     <div class="scroll-down" onclick="goExplore()">↓ Keşfet</div>
 </div>
 
-<div class="footer-text">BEC</div>
+<div class="footer-text gold-title">BEC</div>
 
 <div class="overlay" id="premium-overlay">
     <div class="overlay-content premium-card">
@@ -109,12 +109,10 @@ body { width: 100%; min-height: 100vh; overflow-x: hidden; transition: backgroun
     font-family: 'Pinyon Script', cursive; 
     font-size: 150px; 
     stroke-width: 2.5; 
-    /* Çizilme efektini (dasharray) kaldırdık, direkt görünür yaptık */
     opacity: 0;
     animation: appear 0.5s ease-out forwards; 
 }
 
-/* Hafif bir parlama ve opaklık ile anında geliş */
 @keyframes appear { 
     0% { opacity: 0; transform: scale(0.98); } 
     100% { opacity: 1; transform: scale(1); } 
@@ -148,6 +146,16 @@ body.light-mode .pay-input { background: #f9f9f9; border-color: #ddd; color: #00
 .premium-close-btn { position: absolute; top: 15px; left: 20px; background: none; border: none; color: #d4af37; font-size: 32px; cursor: pointer; }
 .premium-card { position: relative; text-align: center; border: 1px solid #d4af37; padding: 50px 30px 40px 30px !important; max-width: 450px; width: 90%; margin: auto; }
 .back-btn { background: none; border: none; margin-top: 15px; cursor: pointer; color: inherit; font-size: 0.8rem; opacity: 0.6; }
+
+/* FOOTER-TEXT BEC YAZISININ YERİ */
+.footer-text { 
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px; 
+    font-size: 0.8rem; 
+    letter-spacing: 3px; 
+    z-index: 1000;
+}
 </style>
 
 <script>
