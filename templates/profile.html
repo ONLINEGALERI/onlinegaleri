@@ -6,72 +6,57 @@
     .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; }
     .ig-avatar-area { flex: 1; display: flex; justify-content: center; position: relative; }
     .avatar-wrapper { position: relative; cursor: pointer; }
-    .profile-avatar { width: 150px !important; height: 150px !important; border-radius: 50% !important; object-fit: cover; border: 1px solid var(--ig-border); padding: 5px; background-color: var(--ig-bg); transition: opacity 0.3s; }
-    .avatar-wrapper:hover .profile-avatar { opacity: 0.8; }
+    .profile-avatar { width: 150px !important; height: 150px !important; border-radius: 50% !important; object-fit: cover; border: 1px solid var(--ig-border); padding: 5px; background-color: var(--ig-bg); }
     .ig-info-area { flex: 2; padding-left: 30px; }
     .ig-user-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .profile-name { font-size: 28px; font-weight: 300; margin: 0; color: var(--ig-text); }
+    .profile-name { font-size: 28px; font-weight: 300; margin: 0; color: var(--ig-text); text-transform: uppercase; }
 
-    /* --- GÖSTERİŞLİ GOLD TİK --- */
     .gold-verify {
-        font-size: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #a67c00 0%, #ffbf00 50%, #b8860b 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.3));
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-size: 20px; background: linear-gradient(135deg, #a67c00 0%, #ffbf00 50%, #b8860b 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.3));
     }
-    body:not(.light-mode) .gold-verify {
-        background: linear-gradient(135deg, #d4af37 0%, #fff9e3 50%, #c5a028 100%);
-        -webkit-background-clip: text;
-        filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
-    }
-    .gold-verify:hover { transform: scale(1.2) rotate(5deg); filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.9)); }
+    body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37 0%, #fff9e3 50%, #c5a028 100%); -webkit-background-clip: text; }
 
-    .btn-ig-edit { background: var(--ig-bg) !important; border: 1px solid var(--ig-border) !important; border-radius: 4px !important; color: var(--ig-text) !important; font-weight: 600 !important; font-size: 14px !important; padding: 5px 9px !important; cursor: pointer; }
+    .btn-ig-edit { background: var(--ig-bg) !important; border: 1px solid var(--ig-border) !important; border-radius: 4px !important; color: var(--ig-text) !important; font-weight: 600; font-size: 14px; padding: 5px 9px; cursor: pointer; }
     .ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
     .ig-stats li { font-size: 16px; color: var(--ig-text); }
-    .ig-stats b { font-weight: 600; color: var(--ig-text); }
-    
-    /* Biyografi Alanı */
-    .ig-bio { font-size: 16px; line-height: 1.5; color: var(--ig-text); margin-top: 10px; }
-    .bio-link { color: #00376b; text-decoration: none; font-weight: 600; font-size: 16px; }
+    .ig-stats b { font-weight: 600; }
+    .ig-bio { font-size: 16px; line-height: 1.5; color: var(--ig-text); }
+    .bio-link { color: #00376b; text-decoration: none; font-weight: 600; }
     body:not(.light-mode) .bio-link { color: #e0f1ff; }
 
     .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 20px; }
     .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); }
     .grid-item img { width: 100%; height: 100%; object-fit: cover; }
     #fileInput { display: none; }
-
-    .modal-content { background-color: var(--ig-bg); color: var(--ig-text); border: 1px solid var(--ig-border); }
-    .form-control { background-color: var(--ig-bg); border: 1px solid var(--ig-border); color: var(--ig-text); }
 </style>
 
 <div class="ig-container">
     <header class="ig-header">
         <div class="ig-avatar-area">
-            <div class="avatar-wrapper" onclick="document.getElementById('fileInput').click()">
-                <img class="profile-avatar" id="avatarPreview" src="https://picsum.photos/seed/bec/400/400" alt="avatar">
-                <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+            <div class="avatar-wrapper" {% if can_edit %}onclick="document.getElementById('fileInput').click()"{% endif %}>
+                <img class="profile-avatar" id="avatarPreview" src="{{ server_profile.avatar }}" alt="avatar">
+                {% if can_edit %}<input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">{% endif %}
             </div>
         </div>
         <div class="ig-info-area">
             <div class="ig-user-row">
-                <h2 id="profileName" class="profile-name">VERZİA OFFİCİAL</h2>
-                <i class="fa-solid fa-circle-check gold-verify" title="Verified Official Account"></i>
-                <button id="editProfileBtn" class="btn-ig-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">Profili Düzenle</button>
+                <h2 class="profile-name">{{ server_profile.username }}</h2>
+                {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check gold-verify"></i>{% endif %}
+                {% if can_edit %}<button class="btn-ig-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">Profili Düzenle</button>{% endif %}
             </div>
             <ul class="ig-stats">
-                <li><b id="postCount">6</b> gönderi</li>
-                <li><b id="followerCount">2M</b> takipçi</li>
-                <li><b id="followingCount">3</b> takip</li>
+                <li><b>{{ server_profile.posts }}</b> gönderi</li>
+                <li><b>{{ server_profile.followers }}</b> takipçi</li>
+                <li><b>{{ server_profile.following }}</b> takip</li>
             </ul>
             <div class="ig-bio">
                 <div id="profileBio">
-                    <a href="#" class="bio-link" id="bioLinkText">VERZİA OFFİCİAL</a>
+                    {% if server_profile.is_vip %}
+                        <a href="#" class="bio-link">VERZİA OFFİCİAL</a>
+                    {% else %}
+                        <span>{{ server_profile.bio }}</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -83,10 +68,8 @@
     <div class="modal-header"><h5 class="modal-title">Profili Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
         <form id="editProfileForm">
-            <div class="mb-2"><label class="form-label">Görünen Ad</label><input id="editName" class="form-control" type="text" placeholder="VERZİA OFFİCİAL"></div>
-            <div class="mb-2"><label class="form-label">Biyografi Yazısı</label><input id="editBioLink" class="form-control" type="text" placeholder="VERZİA OFFİCİAL"></div>
-            <div class="mb-2"><label class="form-label">Detaylı Biyo</label><textarea id="editBioDetail" class="form-control" placeholder="Ekstra bilgiler..."></textarea></div>
-            <div class="mt-3 text-end"><button type="button" id="saveProfileBtn" class="btn btn-success">Kaydet</button></div>
+            <div class="mb-2"><label class="form-label">Biyografi</label><textarea id="editBio" class="form-control">{{ server_profile.bio }}</textarea></div>
+            <div class="mt-3 text-end"><button type="button" id="saveProfileBtn" class="btn btn-success" onclick="saveProfileData()">Kaydet</button></div>
         </form>
     </div>
 </div></div></div>
@@ -95,31 +78,29 @@
     const grid = document.getElementById('masonry');
     for(let i=1; i<=6; i++) {
         const item = document.createElement('div'); item.className = 'grid-item';
-        item.innerHTML = `<img src="https://picsum.photos/seed/${i+500}/600/600">`;
+        item.innerHTML = `<img src="https://picsum.photos/seed/${i+100}/600/600">`;
         grid.appendChild(item);
     }
 
     function previewImage(event) {
         const reader = new FileReader();
         reader.onload = function() {
-            const output = document.getElementById('avatarPreview');
-            output.src = reader.result;
-            localStorage.setItem('profile_img', reader.result);
+            const base64 = reader.result;
+            document.getElementById('avatarPreview').src = base64;
+            fetch('/profile/save', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({avatar: base64})
+            });
         };
         reader.readAsDataURL(event.target.files[0]);
     }
 
-    document.getElementById('saveProfileBtn').addEventListener('click', () => {
-        const newName = document.getElementById('editName').value;
-        const newBioLink = document.getElementById('editBioLink').value;
-        if(newName) { document.getElementById('profileName').textContent = newName; }
-        if(newBioLink) { document.getElementById('bioLinkText').textContent = newBioLink; }
-        bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
-    });
-
-    window.onload = function() {
-        const savedImg = localStorage.getItem('profile_img');
-        if(savedImg) document.getElementById('avatarPreview').src = savedImg;
+    function saveProfileData() {
+        const bio = document.getElementById('editBio').value;
+        fetch('/profile/save', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({bio: bio})
+        }).then(() => location.reload());
     }
 </script>
 {% endblock %}
