@@ -4,177 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Online Galeri{% endblock %}</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-    <style>
-    /* Flash mesaj kutusu - Tıklama engelini kaldırmak için display:none eklendi */
-    .flash-notice {
-        position: fixed; 
-        top: 20px; 
-        left: 50%; 
-        transform: translateX(-50%) translateY(-20px);
-        padding: 12px 24px; 
-        background-color: rgba(200,200,200,0.9); 
-        color: #000;
-        border-radius: 8px; 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        opacity: 0; 
-        display: none; /* Varsayılan olarak kapalı, yer kaplamaz */
-        pointer-events: none; 
-        transition: all 0.5s ease; 
-        z-index: 9999; /* Diğer her şeyin üstünde ama sadece göründüğünde */
-    }
-    .flash-notice.show { 
-        display: block; /* Mesaj varken aktifleşir */
-        opacity: 1; 
-        transform: translateX(-50%) translateY(0); 
-    }
-
-    /* Butonları yan yana ve hizalı tutan grup */
-    .user-navbar-group {
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-    }
-
-    /* Light mode zorlaması için temel kural */
-    body.light-mode {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-    </style>
     
-    <script>
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.documentElement.classList.add('light-mode');
-                document.addEventListener("DOMContentLoaded", function() {
-                    document.body.classList.add('light-mode');
-                });
-            }
-        })();
-    </script>
+    <style>
+    /* GENEL SIFIRLAMA */
+    body { margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+
+    /* SADECE PROFİL SAYFASINDA ÇALIŞACAK KODLAR */
+    {% if request.endpoint == 'profile' %}
+    body { background-color: #fff !important; }
+    
+    .ig-sidebar {
+        position: fixed; left: 0; top: 0; bottom: 0; width: 72px;
+        border-right: 1px solid #dbdbdb; background: #fff;
+        display: flex; flex-direction: column; align-items: center; padding: 20px 0; z-index: 9999;
+    }
+    .sidebar-item { margin-bottom: 30px; color: #000; text-decoration: none; font-size: 24px; display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; }
+    
+    .main-content-wrapper { 
+        margin-left: 72px !important; 
+        min-height: 100vh;
+        background: #fff !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    {% else %}
+    /* ANA SAYFA VE DİĞER SAYFALARDA SIDEBAR'I YOK ET VE İÇERİĞİ ORTALA */
+    .main-content-wrapper { width: 100%; margin-left: 0 !important; }
+    {% endif %}
+
+    .flash-notice { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; background: rgba(0,0,0,0.8); color: #fff; border-radius: 8px; z-index: 10000; display: none; }
+    </style>
 </head>
 <body>
 
-{# Navbar kısıtlaması korunuyor #}
-{% if request.endpoint not in ['index', 'login', 'register', 'admin'] %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">Verzia</a>
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('about') if 'about' in request.url_rule.endpoint else '#' }}">Hakkında</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('contact') if 'contact' in request.url_rule.endpoint else '#' }}">İletişim</a>
-                </li>
-            </ul>
-
-            {% if current_user.is_authenticated %}
-            <div class="user-navbar-group ms-auto">
-                <a href="{{ url_for('profile') }}" class="btn btn-outline-info btn-sm fw-bold">
-                    {{ current_user.username }}
-                </a>
-                
-                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
-                    Çıkış Yap
-                </a>
-
-                <a class="nav-link text-light small" href="{{ url_for('upload') }}">Yükle</a>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</nav>
+{# Sidebar sadece profil sayfasında görünür #}
+{% if request.endpoint == 'profile' %}
+<div class="ig-sidebar">
+    <a href="{{ url_for('index') }}" class="sidebar-item" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
+    <a href="#" class="sidebar-item" title="Ara"><i class="fa-solid fa-magnifying-glass"></i></a>
+    <a href="{{ url_for('upload') }}" class="sidebar-item" title="Yükle"><i class="fa-regular fa-square-plus"></i></a>
+    <a href="{{ url_for('profile') }}" class="sidebar-item" title="Profil"><i class="fa-solid fa-circle-user"></i></a>
+    <div class="mt-auto"><a href="{{ url_for('logout') }}" class="sidebar-item" title="Çıkış Yap"><i class="fa-solid fa-right-from-bracket"></i></a></div>
+</div>
 {% endif %}
 
-<div class="container-fluid px-3 px-md-5">
+<div class="main-content-wrapper">
     {% block content %}{% endblock %}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-// TEMA DEĞİŞTİRME FONKSİYONU (HAFIZALI)
-function toggleMode() {
-    const isLight = document.body.classList.toggle('light-mode');
-    localStorage.setItem('theme', isLight ? 'light' : 'dark');
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    // Flash Mesajları - Script iyileştirildi
-    {% with messages = get_flashed_messages() %}
-        {% for message in messages %}
-            const flash = document.createElement('div');
-            flash.className = 'flash-notice';
-            flash.textContent = "{{ message }}";
-            document.body.appendChild(flash);
-            
-            // Görünür yapmadan önce display'i açıyoruz
-            flash.style.display = 'block';
-            
-            setTimeout(() => flash.classList.add('show'), 50);
-            setTimeout(() => { 
-                flash.classList.remove('show'); 
-                setTimeout(() => flash.remove(), 500); 
-            }, 3000);
-        {% endfor %}
-    {% endwith %}
-});
-</script>
-<script>
-// Butonların tıklanma yolunu JavaScript ile zorla açıyoruz
-document.addEventListener('DOMContentLoaded', function() {
-    const authButtons = document.querySelector('.auth-buttons');
-    if (authButtons) {
-        authButtons.style.zIndex = "999999";
-        authButtons.style.pointerEvents = "auto";
-    }
-});
-
-// Eğer buton hala tepki vermiyorsa konsola hata basar
-function openLogin() {
-    console.log("Login butonuna basıldı!");
-    const loginOverlay = document.getElementById('login-overlay');
-    if (loginOverlay) {
-        loginOverlay.classList.add('active');
-    } else {
-        alert("Giriş paneli (login-overlay) bulunamadı!");
-    }
-}
-</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
