@@ -2,23 +2,51 @@
 
 {% block content %}
 <style>
-    .ig-container { width: 100%; max-width: 935px; margin: 0 auto; padding: 30px 20px; }
-    .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid #efefef; padding-bottom: 40px; }
+    /* PROFİL İÇERİĞİ DARK/LIGHT UYUMU */
+    .ig-container { width: 100%; max-width: 935px; margin: 0 auto; padding: 30px 20px; color: var(--ig-text); }
+    
+    .ig-header { 
+        display: flex; margin-bottom: 44px; align-items: center; 
+        border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; 
+    }
+    
     .ig-avatar-area { flex: 1; display: flex; justify-content: center; }
-    .profile-avatar { width: 150px !important; height: 150px !important; border-radius: 50% !important; object-fit: cover; border: 1px solid #dbdbdb; padding: 5px; }
+    
+    .profile-avatar { 
+        width: 150px !important; height: 150px !important; border-radius: 50% !important; 
+        object-fit: cover; border: 1px solid var(--ig-border); padding: 5px; 
+        background-color: var(--ig-bg);
+    }
+
     .ig-info-area { flex: 2; padding-left: 30px; }
     .ig-user-row { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-    .profile-name { font-size: 28px; font-weight: 300; margin: 0; color: #262626; }
+    .profile-name { font-size: 28px; font-weight: 300; margin: 0; color: var(--ig-text); }
     .verify-badge { color: #bca05d; font-size: 18px; }
-    .btn-ig-edit { background: #fff !important; border: 1px solid #dbdbdb !important; border-radius: 4px !important; color: #262626 !important; font-weight: 600 !important; font-size: 14px !important; padding: 5px 9px !important; cursor: pointer; }
+
+    .btn-ig-edit { 
+        background: var(--ig-bg) !important; 
+        border: 1px solid var(--ig-border) !important; 
+        border-radius: 4px !important; 
+        color: var(--ig-text) !important; 
+        font-weight: 600 !important; font-size: 14px !important; padding: 5px 9px !important; cursor: pointer; 
+    }
+
     .ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
-    .ig-stats li { font-size: 16px; color: #262626; }
-    .ig-stats b { font-weight: 600; }
-    .ig-bio { font-size: 16px; line-height: 1.5; color: #262626; }
+    .ig-stats li { font-size: 16px; color: var(--ig-text); }
+    .ig-stats b { font-weight: 600; color: var(--ig-text); }
+
+    .ig-bio { font-size: 16px; line-height: 1.5; color: var(--ig-text); }
     .ig-handle { font-weight: 600; display: block; margin-bottom: 2px; }
+
     .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 20px; }
-    .grid-item { aspect-ratio: 1/1; overflow: hidden; background: #fafafa; }
+    .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); }
     .grid-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* MODAL DARK MOD UYUMU */
+    .modal-content { background-color: var(--ig-bg); color: var(--ig-text); border: 1px solid var(--ig-border); }
+    .modal-header { border-bottom: 1px solid var(--ig-border); }
+    .form-control { background-color: var(--ig-bg); border: 1px solid var(--ig-border); color: var(--ig-text); }
+    .form-control:focus { background-color: var(--ig-bg); color: var(--ig-text); }
 </style>
 
 <div class="ig-container">

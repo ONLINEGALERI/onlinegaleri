@@ -12,36 +12,62 @@
     /* GENEL SIFIRLAMA */
     body { margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
 
+    /* PROFİL SAYFASI RENK DEĞİŞKENLERİ */
+    :root {
+        --ig-bg: #000000; /* Varsayılan Dark */
+        --ig-sidebar-bg: #000000;
+        --ig-border: #262626;
+        --ig-text: #f5f5f5;
+    }
+
+    body.light-mode {
+        --ig-bg: #ffffff;
+        --ig-sidebar-bg: #ffffff;
+        --ig-border: #dbdbdb;
+        --ig-text: #262626;
+    }
+
     /* SADECE PROFİL SAYFASINDA ÇALIŞACAK KODLAR */
     {% if request.endpoint == 'profile' %}
-    body { background-color: #fff !important; }
+    body { background-color: var(--ig-bg) !important; color: var(--ig-text) !important; }
     
     .ig-sidebar {
         position: fixed; left: 0; top: 0; bottom: 0; width: 72px;
-        border-right: 1px solid #dbdbdb; background: #fff;
+        border-right: 1px solid var(--ig-border); background: var(--ig-sidebar-bg);
         display: flex; flex-direction: column; align-items: center; padding: 20px 0; z-index: 9999;
     }
-    .sidebar-item { margin-bottom: 30px; color: #000; text-decoration: none; font-size: 24px; display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; }
+    .sidebar-item { margin-bottom: 30px; color: var(--ig-text); text-decoration: none; font-size: 24px; display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; }
     
     .main-content-wrapper { 
         margin-left: 72px !important; 
         min-height: 100vh;
-        background: #fff !important;
+        background: var(--ig-bg) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
     }
     {% else %}
-    /* ANA SAYFA VE DİĞER SAYFALARDA SIDEBAR'I YOK ET VE İÇERİĞİ ORTALA */
     .main-content-wrapper { width: 100%; margin-left: 0 !important; }
     {% endif %}
 
     .flash-notice { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; background: rgba(0,0,0,0.8); color: #fff; border-radius: 8px; z-index: 10000; display: none; }
     </style>
+    
+    <script>
+        // Sayfa yüklendiğinde temayı hatırla
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.add('light-mode');
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.body.classList.add('light-mode');
+                });
+            }
+        })();
+    </script>
 </head>
-<body>
+<body class="{% if request.endpoint == 'profile' %}profile-page-body{% endif %}">
 
-{# Sidebar sadece profil sayfasında görünür #}
 {% if request.endpoint == 'profile' %}
 <div class="ig-sidebar">
     <a href="{{ url_for('index') }}" class="sidebar-item" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
