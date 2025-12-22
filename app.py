@@ -109,7 +109,7 @@ def profile():
         'avatar': user_to_show.avatar if user_to_show.avatar else 'https://picsum.photos/seed/default/400/400',
         'bio': user_to_show.bio if user_to_show.bio else 'Henüz bir biyografi eklenmedi.',
         'followers': '2M' if is_vip else user_to_show.followers_list.count(),
-        'following': '3' if is_vip else user_to_show.followed.count(),
+        'following': user_to_show.followed.count(), # BURASI SIFIRLANDI: Artık admin olsa bile gerçek veri gelir.
         'posts': len(user_photos),
         'is_vip': is_vip
     }
@@ -173,7 +173,6 @@ def add_comment(photo_id):
     if not comment_body:
         return jsonify({'status': 'error', 'message': 'Yorum boş olamaz'}), 400
     
-    # MODELLERİNLE %100 UYUMLU: 'body' sütunu kullanılıyor
     new_comment = Comment(body=comment_body, user_id=current_user.id, photo_id=photo_id)
     db.session.add(new_comment)
     db.session.commit()
@@ -187,7 +186,6 @@ def add_comment(photo_id):
 
 @app.route('/get_comments/<int:photo_id>')
 def get_comments(photo_id):
-    # timestamp'e göre sırala ve body'yi çek
     comments = Comment.query.filter_by(photo_id=photo_id).order_by(Comment.timestamp.asc()).all()
     return jsonify([{
         'id': c.id,
