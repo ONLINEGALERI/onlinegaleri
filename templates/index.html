@@ -161,46 +161,14 @@ body.light-mode .pay-input { background: #f9f9f9; border-color: #ddd; color: #00
 }
 </style>
 
-<script>
-function openPremium() { showPlans(); document.getElementById('premium-overlay').classList.add('active'); }
-function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
-function selectPlan(element) { document.querySelectorAll('.plan-card').forEach(card => card.classList.remove('active')); element.classList.add('active'); }
-function showPayment() { document.getElementById('premium-step-1').style.display = 'none'; document.getElementById('premium-step-2').style.display = 'block'; }
-function showPlans() { document.getElementById('premium-step-2').style.display = 'none'; document.getElementById('premium-step-1').style.display = 'block'; }
-function toggleMode() { const isLight = document.body.classList.toggle('light-mode'); localStorage.setItem('theme', isLight ? 'light' : 'dark'); }
-</script>
-<script>
-function openLogin() {
-    const overlay = document.getElementById('login-overlay');
-    if (overlay) overlay.classList.add('active');
-}
-function openRegister() {
-    const overlay = document.getElementById('register-overlay');
-    if (overlay) overlay.classList.add('active');
-}
-function openAbout() {
-    const overlay = document.getElementById('about-overlay');
-    if (overlay) overlay.classList.add('active');
-}
-function openContact() {
-    const overlay = document.getElementById('contact-overlay');
-    if (overlay) overlay.classList.add('active');
-}
-function closeOverlay() {
-    document.querySelectorAll('.overlay').forEach(o => {
-        o.classList.remove('active');
-    });
-}
-function goExplore() {
-    window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-}
-</script>
-
 <div class="overlay" id="login-overlay">
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()" style="position: absolute; top: 15px; left: 15px; background: none; border: none; color: #d4af37; font-size: 30px; cursor: pointer;">×</button>
         <h2 class="gold-title">GİRİŞ YAP</h2>
-        <form action="{{ url_for('login') }}" method="POST">
+        
+        <div id="login-error-msg" style="color: #ff4d4d; font-size: 0.9rem; margin-bottom: 10px; display: none; font-weight: bold;"></div>
+        
+        <form id="ajax-login-form">
             <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
             <input type="password" name="password" placeholder="Şifre" class="pay-input" required>
             <button type="submit" class="buy-btn-gold">GİRİŞ</button>
@@ -236,6 +204,47 @@ function goExplore() {
         <p style="margin-top: 25px; font-size: 1.1rem;">Destek için: <br> <strong style="font-size: 1.4rem; display: block; margin-top: 10px;">verziateam@outlook.com</strong></p>
     </div>
 </div>
+
+<script>
+// SİHİRLİ GİRİŞ KODU (HATA MESAJINI OVERLAY'DE GÖSTERİR)
+document.getElementById('ajax-login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const errorDiv = document.getElementById('login-error-msg');
+    
+    fetch('/login', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.href = data.redirect;
+        } else {
+            errorDiv.innerText = data.message;
+            errorDiv.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        errorDiv.innerText = "Sistem hatası. Lütfen tekrar deneyin.";
+        errorDiv.style.display = 'block';
+    });
+});
+
+// DİĞER FONKSİYONLARIN
+function openPremium() { showPlans(); document.getElementById('premium-overlay').classList.add('active'); }
+function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
+function selectPlan(element) { document.querySelectorAll('.plan-card').forEach(card => card.classList.remove('active')); element.classList.add('active'); }
+function showPayment() { document.getElementById('premium-step-1').style.display = 'none'; document.getElementById('premium-step-2').style.display = 'block'; }
+function showPlans() { document.getElementById('premium-step-2').style.display = 'none'; document.getElementById('premium-step-1').style.display = 'block'; }
+function toggleMode() { const isLight = document.body.classList.toggle('light-mode'); localStorage.setItem('theme', isLight ? 'light' : 'dark'); }
+
+function openLogin() { document.getElementById('login-overlay').classList.add('active'); }
+function openRegister() { document.getElementById('register-overlay').classList.add('active'); }
+function openAbout() { document.getElementById('about-overlay').classList.add('active'); }
+function openContact() { document.getElementById('contact-overlay').classList.add('active'); }
+function goExplore() { window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); }
+</script>
 {% endblock %}
 
 

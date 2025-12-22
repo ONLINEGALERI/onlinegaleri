@@ -41,18 +41,22 @@ def index():
     all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
     return render_template('index.html', photos=all_photos)
 
-# --------------------- AUTH ---------------------
+# --------------------- AUTH (GÜNCELLENDİ) ---------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username_or_email = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email)).first()
+        
         if not user or not check_password_hash(user.password, password):
-            flash("Giriş bilgileri hatalı.", "danger")
-            return redirect(url_for('login'))
+            # Burası değişti: Hata olduğunda JSON dönüyoruz
+            return jsonify({'status': 'error', 'message': 'Kullanıcı adı veya şifre hatalı.'}), 401
+        
         login_user(user)
-        return redirect(url_for('index'))
+        # Burası değişti: Başarılıysa JSON ile yönlendirme adresi dönüyoruz
+        return jsonify({'status': 'success', 'redirect': url_for('index')})
+        
     return render_template('login_clean.html')
 
 @app.route('/logout')
@@ -68,13 +72,15 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         if User.query.filter((User.username == username) | (User.email == email)).first():
-            flash("Kullanıcı zaten mevcut!", "danger")
-            return redirect(url_for('register'))
+            # Kayıt hatası için de JSON desteği (İsteğe bağlı)
+            return jsonify({'status': 'error', 'message': 'Kullanıcı zaten mevcut!'}), 400
+            
         new_user = User(username=username, email=email, password=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)
-        return redirect(url_for('index'))
+        return jsonify({'status': 'success', 'redirect': url_for('index')})
+        
     return render_template('register.html')
 
 # --------------------- PROFILE ---------------------
@@ -156,7 +162,7 @@ def unfollow(username):
     db.session.commit()
     return jsonify({'status': 'success', 'followers': user.followers_list.count()})
 
-# --------------------- TAKİP LİSTELERİ (YENİ) ---------------------
+# --------------------- TAKİP LİSTELERİ ---------------------
 @app.route('/get_followers/<username>')
 @login_required
 def get_followers(username):
