@@ -37,8 +37,8 @@
         --v-glow: rgba(184, 134, 11, 0.2);
     }
 
-    /* PROFİL SAYFASI ÖZEL YAPI */
-    {% if request.endpoint == 'profile' %}
+    /* PROFİL VE ARAMA SAYFASI ÖZEL YAPI */
+    {% if request.endpoint == 'profile' or request.endpoint == 'search' %}
     body { background-color: var(--ig-bg) !important; color: var(--ig-text) !important; }
     
     .ig-sidebar {
@@ -111,12 +111,13 @@
         })();
     </script>
 </head>
-<body class="{% if request.endpoint == 'profile' %}profile-page-body{% endif %}">
+<body class="{% if request.endpoint == 'profile' or request.endpoint == 'search' %}profile-page-body{% endif %}">
 
-{% if request.endpoint == 'profile' %}
+{% if request.endpoint == 'profile' or request.endpoint == 'search' %}
 <div class="ig-sidebar">
     <a href="{{ url_for('index') }}" class="sidebar-item" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
-    <a href="#" class="sidebar-item" title="Ara"><i class="fa-solid fa-magnifying-glass"></i></a>
+    
+    <a href="{{ url_for('search') }}" class="sidebar-item" title="Kullanıcı Ara"><i class="fa-solid fa-magnifying-glass"></i></a>
     
     <a href="{{ url_for('upload') }}" class="sidebar-item" title="Verzia Yükle">
         <span class="v-logo-btn">V</span>

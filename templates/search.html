@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 search-page-container">
+    <div class="text-center mb-5">
+        <h2 class="verzia-gold-title">KEŞFET & ARA</h2>
+        <p class="text-muted">Verzia dünyasındaki diğer kullanıcıları keşfet.</p>
+    </div>
+    
+    <div class="search-box-wrapper mx-auto mb-5">
+        <form action="{{ url_for('search') }}" method="GET">
+            <div class="input-group search-input-group shadow-lg">
+                <span class="input-group-text bg-transparent border-0">
+                    <i class="fa-solid fa-magnifying-glass search-icon-gold"></i>
+                </span>
+                <input type="text" name="q" class="form-control search-input" 
+                       placeholder="Kullanıcı adı ara..." value="{{ query or '' }}" autocomplete="off">
+                <button class="btn verzia-search-btn" type="submit">BUL</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="results-wrapper mx-auto">
+        {% if results %}
+            <div class="results-count mb-4">
+                <small class="text-muted">{{ results|length }} kullanıcı bulundu</small>
+            </div>
+            <div class="row g-3">
+                {% for user in results %}
+                <div class="col-12">
+                    <a href="{{ url_for('profile', username=user.username) }}" class="search-result-link">
+                        <div class="user-search-card d-flex align-items-center">
+                            <div class="user-avatar-wrapper">
+                                <img src="{{ user.avatar if user.avatar else 'https://picsum.photos/seed/' + user.username + '/200/200' }}" 
+                                     alt="{{ user.username }}" class="rounded-circle search-avatar">
+                            </div>
+                            <div class="ms-3 flex-grow-1">
+                                <h6 class="mb-0 user-name-text">{{ user.username }}</h6>
+                                <small class="text-muted">{{ user.bio[:50] if user.bio else 'Verzia Üyesi' }}</small>
+                            </div>
+                            <div class="me-2">
+                                <i class="fa-solid fa-chevron-right gold-arrow"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        {% elif query %}
+            <div class="text-center mt-5 no-results">
+                <i class="fa-solid fa-user-slash mb-3 d-block" style="font-size: 40px; color: #555;"></i>
+                <p class="text-muted">"{{ query }}" için bir sonuç bulunamadı.</p>
+            </div>
+        {% else %}
+            <div class="text-center mt-5 search-placeholder">
+                <i class="fa-solid fa-users mb-3 d-block" style="font-size: 50px; opacity: 0.1;"></i>
+                <p class="text-muted small">Aramaya başlamak için bir kullanıcı adı girin.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .search-page-container { max-width: 700px; padding-bottom: 100px; }
+
+    /* GOLD BAŞLIK */
+    .verzia-gold-title {
+        background: var(--v-gold-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 900;
+        letter-spacing: 4px;
+        font-size: 2.5rem;
+    }
+
+    /* ARAMA KUTUSU TASARIMI */
+    .search-box-wrapper { max-width: 500px; }
+    
+    .search-input-group {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        border-radius: 50px !important;
+        overflow: hidden;
+        padding: 5px 15px;
+        transition: 0.3s;
+    }
+    
+    body.light-mode .search-input-group {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+
+    .search-input-group:focus-within {
+        border-color: var(--v-icon-color);
+        box-shadow: 0 0 15px var(--v-glow) !important;
+    }
+
+    .search-input {
+        background: transparent !important;
+        border: none !important;
+        color: var(--ig-text) !important;
+        box-shadow: none !important;
+        padding: 12px 10px;
+    }
+
+    .search-icon-gold { color: var(--v-icon-color); font-size: 1.2rem; }
+
+    .verzia-search-btn {
+        background: var(--v-gold-gradient);
+        color: #000 !important;
+        font-weight: bold;
+        border-radius: 50px !important;
+        padding: 8px 25px !important;
+        border: none;
+    }
+
+    /* SONUÇ KARTLARI */
+    .search-result-link { text-decoration: none; }
+    
+    .user-search-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 15px;
+        transition: 0.3s;
+    }
+
+    body.light-mode .user-search-card {
+        background: #fff;
+        border: 1px solid #eee;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+
+    .user-search-card:hover {
+        transform: translateY(-3px);
+        background: rgba(212, 175, 55, 0.05);
+        border-color: var(--v-icon-color);
+    }
+
+    .search-avatar {
+        width: 55px;
+        height: 55px;
+        object-fit: cover;
+        border: 2px solid var(--v-icon-color);
+        padding: 2px;
+    }
+
+    .user-name-text { color: var(--ig-text); font-weight: bold; }
+    .gold-arrow { color: var(--v-icon-color); opacity: 0.5; }
+    
+    .user-search-card:hover .gold-arrow { opacity: 1; transform: translateX(5px); transition: 0.3s; }
+</style>
+{% endblock %}
