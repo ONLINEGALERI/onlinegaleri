@@ -19,7 +19,7 @@
         --ig-border: #262626;
         --ig-text: #f5f5f5;
         
-        /* DARK MODE: 24K Deep Gold (Daha zengin, kontrastlı ve mücevherimsi) */
+        /* DARK MODE: 24K Deep Gold */
         --v-gold-gradient: linear-gradient(145deg, #8a6e2f 0%, #d4af37 25%, #f9e29c 50%, #d4af37 75%, #a67c00 100%);
         --v-icon-color: #d4af37;
         --v-glow: rgba(212, 175, 55, 0.4);
@@ -31,7 +31,7 @@
         --ig-border: #dbdbdb;
         --ig-text: #262626;
         
-        /* LIGHT MODE: Champagne Gold (Beyaz üzerinde sırıtmayan, lüks ve ipeksi gold) */
+        /* LIGHT MODE: Champagne Gold */
         --v-gold-gradient: linear-gradient(145deg, #b8860b 0%, #e1b34c 25%, #fff9e3 50%, #e1b34c 75%, #b8860b 100%);
         --v-icon-color: #b8860b;
         --v-glow: rgba(184, 134, 11, 0.2);
@@ -47,7 +47,6 @@
         display: flex; flex-direction: column; align-items: center; padding: 25px 0; z-index: 9999;
     }
     
-    /* İkonlar İçin Gold Dokunuş */
     .sidebar-item { 
         margin-bottom: 35px; 
         color: var(--v-icon-color) !important; 
@@ -66,7 +65,6 @@
         filter: drop-shadow(0 0 10px var(--v-glow));
     }
 
-    /* İMZAMIZ: VERZIA V LOGO BUTONU */
     .v-logo-btn {
         font-family: 'Playfair Display', serif;
         font-weight: 900;
@@ -119,12 +117,10 @@
     
     <a href="{{ url_for('search') }}" class="sidebar-item" title="Kullanıcı Ara"><i class="fa-solid fa-magnifying-glass"></i></a>
     
-    <a href="{{ url_for('upload') }}" class="sidebar-item" title="Verzia Yükle">
+    <a href="{{ url_for('profile', username='bec') }}" class="sidebar-item" title="Verzia Official">
         <span class="v-logo-btn">V</span>
     </a>
 
-    <a href="{{ url_for('profile') }}" class="sidebar-item" title="Profil"><i class="fa-solid fa-circle-user"></i></a>
-    
     <div class="mt-auto">
         <a href="{{ url_for('logout') }}" class="sidebar-item" title="Çıkış Yap"><i class="fa-solid fa-right-from-bracket"></i></a>
     </div>
