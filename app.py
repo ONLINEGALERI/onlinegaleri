@@ -7,7 +7,7 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 from flask_login import login_user, logout_user, current_user, login_required
-from models.user import User, Comment, Like 
+from models.user import User, Comment, Like, Notification
 from models.siteinfo import SiteInfo
 from models.photo import Photo
 
@@ -109,7 +109,7 @@ def profile():
         'avatar': user_to_show.avatar if user_to_show.avatar else 'https://picsum.photos/seed/default/400/400',
         'bio': user_to_show.bio if user_to_show.bio else 'Henüz bir biyografi eklenmedi.',
         'followers': '2M' if is_vip else user_to_show.followers_list.count(),
-        'following': user_to_show.followed.count(), # BURASI SIFIRLANDI: Artık admin olsa bile gerçek veri gelir.
+        'following': user_to_show.followed.count(),
         'posts': len(user_photos),
         'is_vip': is_vip
     }
@@ -162,6 +162,18 @@ def like_photo(photo_id):
     
     new_like = Like(user_id=current_user.id, photo_id=photo_id)
     db.session.add(new_like)
+    
+    # ✨ BİLDİRİM DÜZELTMESİ (İSİM TEKRARI SİLİNDİ)
+    if photo.owner_id != current_user.id:
+        notif = Notification(
+            user_id=photo.owner_id,
+            sender_username=current_user.username,
+            notif_type='like',
+            photo_id=photo.id,
+            message="bir fotoğrafını beğendi."
+        )
+        db.session.add(notif)
+        
     db.session.commit()
     return jsonify({'status': 'liked', 'like_count': Like.query.filter_by(photo_id=photo_id).count()})
 
@@ -173,8 +185,22 @@ def add_comment(photo_id):
     if not comment_body:
         return jsonify({'status': 'error', 'message': 'Yorum boş olamaz'}), 400
     
+    photo = Photo.query.get_or_404(photo_id)
     new_comment = Comment(body=comment_body, user_id=current_user.id, photo_id=photo_id)
     db.session.add(new_comment)
+    
+    # ✨ BİLDİRİM DÜZELTMESİ (İSİM TEKRARI SİLİNDİ)
+    if photo.owner_id != current_user.id:
+        preview = (comment_body[:20] + '...') if len(comment_body) > 20 else comment_body
+        notif = Notification(
+            user_id=photo.owner_id,
+            sender_username=current_user.username,
+            notif_type='comment',
+            photo_id=photo.id,
+            message=f"fotoğrafına yorum yaptı: {preview}"
+        )
+        db.session.add(notif)
+        
     db.session.commit()
     
     return jsonify({
@@ -183,6 +209,34 @@ def add_comment(photo_id):
         'username': current_user.username, 
         'content': comment_body
     })
+
+# --------------------- BİLDİRİM SERVİSLERİ ---------------------
+@app.route('/notifications')
+@login_required
+def get_notifications():
+    notifs = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.timestamp.desc()).limit(20).all()
+    return jsonify([{
+        'id': n.id,
+        'sender': n.sender_username,
+        'type': n.notif_type,
+        'message': n.message,
+        'is_read': n.is_read,
+        'photo_id': n.photo_id,
+        'time': n.timestamp.strftime('%H:%M')
+    } for n in notifs])
+
+@app.route('/notifications/unread-count')
+@login_required
+def unread_count():
+    count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+    return jsonify({'count': count})
+
+@app.route('/notifications/mark-as-read', methods=['POST'])
+@login_required
+def mark_notifications_read():
+    Notification.query.filter_by(user_id=current_user.id, is_read=False).update({Notification.is_read: True})
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
 @app.route('/get_comments/<int:photo_id>')
 def get_comments(photo_id):
@@ -212,6 +266,16 @@ def follow(username):
     if not user or user == current_user:
         return jsonify({'status': 'error'}), 400
     current_user.follow(user)
+    
+    # ✨ BİLDİRİM DÜZELTMESİ (İSİM TEKRARI SİLİNDİ)
+    notif = Notification(
+        user_id=user.id,
+        sender_username=current_user.username,
+        notif_type='follow',
+        message="seni takip etmeye başladı."
+    )
+    db.session.add(notif)
+    
     db.session.commit()
     return jsonify({'status': 'success', 'followers': user.followers_list.count()})
 

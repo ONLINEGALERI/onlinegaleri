@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     <style>
-    /* ✨ ANA DEĞİŞKENLER VE GEÇİŞ EFEKTİ ✨ */
+    /* ✨ ANA DEĞİŞKENLER ✨ */
     :root {
         --ig-bg: #000000;
         --ig-sidebar-bg: #000000;
@@ -32,14 +32,12 @@
         --input-bg: #ffffff;
     }
 
-    /* Tüm sayfalarda pürüzsüz geçiş için ✨ */
     body, .main-content-wrapper, .ig-sidebar, .card, input, .overlay-content, .v-modal-content {
         transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease !important;
         background-color: var(--ig-bg);
         color: var(--ig-text);
     }
 
-    /* GENEL SIFIRLAMA */
     body { margin: 0; padding: 0; }
 
     /* SIDEBAR YAPISI */
@@ -50,11 +48,28 @@
     }
     
     .sidebar-item { 
-        margin-bottom: 35px; color: var(--v-icon-color) !important; text-decoration: none; 
-        font-size: 26px; display: flex; align-items: center; justify-content: center; 
+        margin-bottom: 30px; color: var(--v-icon-color) !important; text-decoration: none; 
+        font-size: 24px; display: flex; align-items: center; justify-content: center; 
         width: 100%; height: 50px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
     }
-    .sidebar-item:hover { transform: scale(1.2); filter: drop-shadow(0 0 10px var(--v-glow)); }
+    .sidebar-item:hover { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--v-glow)); }
+
+    /* ✨ BİLDİRİM NOKTASI VE ANİMASYONU ✨ */
+    .notif-badge {
+        position: absolute; top: 8px; right: 18px; width: 10px; height: 10px;
+        background: #ff4d4d; border-radius: 50%; border: 2px solid var(--ig-sidebar-bg);
+        display: none; /* Başlangıçta gizli */
+    }
+
+    .shake-notif { animation: shakeMe 0.5s infinite; color: #fff !important; }
+    @keyframes shakeMe {
+        0% { transform: rotate(0); }
+        25% { transform: rotate(10deg); }
+        50% { transform: rotate(-10deg); }
+        75% { transform: rotate(10deg); }
+        100% { transform: rotate(0); }
+    }
 
     .v-logo-btn {
         font-family: 'Playfair Display', serif; font-weight: 900; font-size: 32px;
@@ -63,45 +78,36 @@
     }
     .v-logo-btn:hover { transform: rotateY(360deg) scale(1.3); filter: drop-shadow(0 0 15px var(--v-glow)); }
 
-    /* İÇERİK DÜZENLEYİCİ */
-    .main-content-wrapper { 
-        min-height: 100vh;
-        background: var(--ig-bg);
-    }
+    .main-content-wrapper { min-height: 100vh; background: var(--ig-bg); }
 
     {% if request.endpoint in ['profile', 'search'] %}
-    .main-content-wrapper { 
-        margin-left: 72px !important; 
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-    }
+    .main-content-wrapper { margin-left: 72px !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
     {% else %}
     .main-content-wrapper { margin-left: 0 !important; width: 100%; }
     {% endif %}
 
-    /* Inputlar için mod uyumu */
-    input.pay-input, input.form-control {
-        background-color: var(--input-bg) !important;
-        color: var(--ig-text) !important;
-        border: 1px solid var(--ig-border) !important;
-    }
+    input.pay-input, input.form-control { background-color: var(--input-bg) !important; color: var(--ig-text) !important; border: 1px solid var(--ig-border) !important; }
     </style>
 </head>
 <body class="{% if request.endpoint in ['profile', 'search'] %}profile-page-body{% endif %}">
 
 <script>
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.add('light-mode');
-    }
+    if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); }
 </script>
 
 {% if request.endpoint in ['profile', 'search'] %}
 <div class="ig-sidebar">
     <a href="{{ url_for('index') }}" class="sidebar-item" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
     <a href="{{ url_for('search') }}" class="sidebar-item" title="Kullanıcı Ara"><i class="fa-solid fa-magnifying-glass"></i></a>
+    
+    <a href="javascript:void(0)" class="sidebar-item" id="notif-btn" title="Bildirimler" onclick="showNotifModal()">
+        <i class="fa-solid fa-bell" id="notif-icon"></i>
+        <span class="notif-badge" id="notif-count-dot"></span>
+    </a>
+
     <a href="{{ url_for('profile', username=current_user.username if current_user.is_authenticated else '') }}" class="sidebar-item" title="Profilim"><i class="fa-solid fa-circle-user"></i></a>
     <a href="{{ url_for('profile', username='bec') }}" class="sidebar-item" title="Verzia Official"><span class="v-logo-btn">V</span></a>
+    
     <div class="mt-auto">
         <a href="{{ url_for('logout') }}" class="sidebar-item" title="Çıkış Yap"><i class="fa-solid fa-right-from-bracket"></i></a>
     </div>
@@ -112,7 +118,76 @@
     {% block content %}{% endblock %}
 </div>
 
+<div class="modal fade" id="notifModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 400px;">
+        <div class="modal-content v-modal-content" style="border: 1px solid var(--v-icon-color); background: var(--ig-bg);">
+            <div class="modal-header border-bottom border-secondary">
+                <h6 class="modal-title fw-bold" style="color: var(--v-icon-color);">BİLDİRİMLER</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" id="notif-list-area" style="max-height: 400px; overflow-y: auto;">
+                </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // ✨ BİLDİRİM SİSTEMİ SCRIPTLERİ ✨
+    function checkNotifications() {
+        if (!document.getElementById('notif-btn')) return;
+
+        fetch('/notifications/unread-count')
+        .then(res => res.json())
+        .then(data => {
+            const dot = document.getElementById('notif-count-dot');
+            const icon = document.getElementById('notif-icon');
+            if (data.count > 0) {
+                dot.style.display = 'block';
+                icon.classList.add('shake-notif');
+            } else {
+                dot.style.display = 'none';
+                icon.classList.remove('shake-notif');
+            }
+        });
+    }
+
+    function showNotifModal() {
+        const listArea = document.getElementById('notif-list-area');
+        listArea.innerHTML = '<div class="p-4 text-center opacity-50">Yükleniyor...</div>';
+        
+        const myModal = new bootstrap.Modal(document.getElementById('notifModal'));
+        myModal.show();
+
+        fetch('/notifications')
+        .then(res => res.json())
+        .then(data => {
+            if (data.length === 0) {
+                listArea.innerHTML = '<div class="p-4 text-center opacity-50">Henüz bildirim yok.</div>';
+            } else {
+                listArea.innerHTML = data.map(n => `
+                    <div class="p-3 border-bottom border-dark d-flex align-items-center" style="font-size: 14px; background: ${n.is_read ? 'transparent' : 'rgba(212, 175, 55, 0.05)'}">
+                        <div class="flex-grow-1">
+                            <strong style="color: var(--v-icon-color);">@${n.sender}</strong> ${n.message}
+                            <div class="opacity-50 small">${n.time}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Bildirimleri okundu olarak işaretle
+                fetch('/notifications/mark-as-read', {method: 'POST'});
+                document.getElementById('notif-count-dot').style.display = 'none';
+                document.getElementById('notif-icon').classList.remove('shake-notif');
+            }
+        });
+    }
+
+    // Her 10 saniyede bir yeni bildirim var mı diye bak ✨
+    setInterval(checkNotifications, 10000);
+    checkNotifications();
+</script>
+
 </body>
 </html>
 
