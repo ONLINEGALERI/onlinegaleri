@@ -125,7 +125,7 @@ def save_profile():
         return jsonify({'status': 'ok'})
     return jsonify({'status': 'error'}), 400
 
-# --------------------- SEARCH (HATAYI ÇÖZEN KISIM) ---------------------
+# --------------------- SEARCH ---------------------
 @app.route('/search')
 @login_required
 def search():
@@ -155,6 +155,21 @@ def unfollow(username):
     current_user.unfollow(user)
     db.session.commit()
     return jsonify({'status': 'success', 'followers': user.followers_list.count()})
+
+# --------------------- TAKİP LİSTELERİ (YENİ) ---------------------
+@app.route('/get_followers/<username>')
+@login_required
+def get_followers(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    followers = [{"username": u.username, "avatar": u.avatar if u.avatar else 'https://picsum.photos/seed/default/100/100'} for u in user.followers_list]
+    return jsonify(followers)
+
+@app.route('/get_following/<username>')
+@login_required
+def get_following(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    following = [{"username": u.username, "avatar": u.avatar if u.avatar else 'https://picsum.photos/seed/default/100/100'} for u in user.followed]
+    return jsonify(following)
 
 # --------------------- FOTOĞRAF YÜKLEME ---------------------
 @app.route('/upload', methods=['POST'])

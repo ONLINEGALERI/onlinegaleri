@@ -70,6 +70,23 @@
         color: white; border: none; border-radius: 50%; cursor: pointer; width: 26px; height: 26px; 
         display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 10;
     }
+
+    /* VERZIA GOLD MODAL TASARIMI */
+    .v-modal-content {
+        background: #000000 !important;
+        border: 1px solid #d4af37 !important;
+        color: #f5f5f5;
+        border-radius: 12px;
+    }
+    .v-modal-header { border-bottom: 1px solid #262626; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .v-close-btn { color: #d4af37; font-size: 28px; cursor: pointer; background: none; border: none; line-height: 1; }
+    .user-list-item {
+        display: flex; align-items: center; gap: 15px; padding: 12px 20px;
+        border-bottom: 1px solid #1a1a1a; text-decoration: none !important; color: #f5f5f5 !important;
+    }
+    .user-list-item:hover { background: #1a1a1a; color: #d4af37 !important; }
+    .user-list-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid #d4af37; }
+
     /* DOSYA INPUTLARINI GİZLİ TUTUYORUZ */
     #avatarInput, #photoUploadInput, #plusPhotoInput { display: none; }
 </style>
@@ -99,8 +116,11 @@
             </div>
             <ul class="ig-stats">
                 <li><b>{{ photos|length }}</b> gönderi</li>
-                <li id="followerCount"><b>{% if server_profile.is_vip %}2M{% else %}{{ server_profile.followers }}{% endif %}</b> takipçi</li>
-                <li><b>{{ server_profile.following }}</b> takip</li>
+                <li onclick="showUserList('followers')" style="cursor:pointer">
+                    <b id="followerCount">{% if server_profile.is_vip %}2M{% else %}{{ server_profile.followers }}{% endif %}</b> takipçi
+                </li>
+                <li onclick="showUserList('following')" style="cursor:pointer">
+                    <b>{{ server_profile.following }}</b> takip</li>
             </ul>
             <div class="ig-bio">
                 <div id="profileBio">
@@ -159,6 +179,19 @@
     </div>
 </div>
 
+<div class="modal fade" id="userListModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content v-modal-content">
+            <div class="v-modal-header">
+                <h6 class="mb-0 verzia-gold-text" id="modalTitle">Kullanıcılar</h6>
+                <button type="button" class="v-close-btn" data-bs-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-0" id="userListBody" style="max-height: 400px; overflow-y: auto;">
+                </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="editProfileModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
     <div class="modal-header"><h5 class="modal-title">Profili Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
@@ -211,6 +244,35 @@
                 }
             }
         });
+    }
+
+    // 4. Takipçi/Takip Edilen Listesini Gösterme
+    function showUserList(type) {
+        const username = "{{ server_profile.username }}";
+        const title = type === 'followers' ? 'Takipçiler' : 'Takip Edilenler';
+        const url = type === 'followers' ? `/get_followers/${username}` : `/get_following/${username}`;
+        
+        document.getElementById('modalTitle').innerText = title;
+        const body = document.getElementById('userListBody');
+        body.innerHTML = '<div class="p-4 text-center verzia-gold-text">Yükleniyor...</div>';
+        
+        const listModal = new bootstrap.Modal(document.getElementById('userListModal'));
+        listModal.show();
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length === 0) {
+                    body.innerHTML = '<div class="p-4 text-center opacity-50">Henüz kimse yok.</div>';
+                    return;
+                }
+                body.innerHTML = data.map(user => `
+                    <a href="/profile?username=${user.username}" class="user-list-item">
+                        <img src="${user.avatar}" class="user-list-avatar">
+                        <span style="font-weight: 500;">${user.username}</span>
+                    </a>
+                `).join('');
+            });
     }
 </script>
 {% endblock %}
