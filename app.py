@@ -7,7 +7,7 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 from flask_login import login_user, logout_user, current_user, login_required
-from models.user import User
+from models.user import User, Comment, Like  # Yeni modeller eklendi
 from models.siteinfo import SiteInfo
 from models.photo import Photo
 
@@ -93,21 +93,25 @@ def profile():
         abort(404)
 
     user_photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
-
     is_vip = (user_to_show.username.lower() == 'bec')
     
+    # Takip kontrolü
+    is_following = False
+    if current_user.is_authenticated and current_user.id != user_to_show.id:
+        is_following = current_user.is_following(user_to_show)
+
     sp = {
         'username': user_to_show.username,
         'avatar': user_to_show.avatar if user_to_show.avatar else 'https://picsum.photos/seed/default/400/400',
         'bio': user_to_show.bio if user_to_show.bio else 'Henüz bir biyografi eklenmedi.',
-        'followers': '2M' if is_vip else (user_to_show.followers or 0),
-        'following': '3' if is_vip else (user_to_show.following or 0),
+        'followers': '2M' if is_vip else user_to_show.followers_list.count(),
+        'following': '3' if is_vip else user_to_show.followed.count(),
         'posts': len(user_photos),
         'is_vip': is_vip
     }
 
     can_edit = current_user.is_authenticated and current_user.id == user_to_show.id
-    return render_template('profile.html', server_profile=sp, can_edit=can_edit, photos=user_photos)
+    return render_template('profile.html', server_profile=sp, can_edit=can_edit, photos=user_photos, is_following=is_following)
 
 @app.route('/profile/save', methods=['POST'])
 @login_required
@@ -120,6 +124,30 @@ def save_profile():
         return jsonify({'status': 'ok'})
     return jsonify({'status': 'error'}), 400
 
+# --------------------- SOCIAL ACTIONS ---------------------
+
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if not user or user == current_user:
+        return jsonify({'status': 'error'}), 400
+    current_user.follow(user)
+    db.session.commit()
+    return jsonify({'status': 'success', 'followers': user.followers_list.count()})
+
+@app.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'status': 'error'}), 404
+    current_user.unfollow(user)
+    db.session.commit()
+    return jsonify({'status': 'success', 'followers': user.followers_list.count()})
+
+# --------------------- OTHER ---------------------
+
 @app.route('/delete_photo_profile/<int:photo_id>', methods=['POST'])
 @login_required
 def delete_photo_profile(photo_id):
@@ -130,18 +158,15 @@ def delete_photo_profile(photo_id):
     db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
 
-# --------------------- SEARCH (YENİ EKLENDİ) ---------------------
 @app.route('/search')
 @login_required
 def search():
     query = request.args.get('q', '')
     results = []
     if query:
-        # Kullanıcı adına göre filtreleme yapar
         results = User.query.filter(User.username.icontains(query)).all()
     return render_template('search.html', results=results, query=query)
 
-# --------------------- ADMIN ---------------------
 @app.route('/admin')
 @login_required
 def admin():
@@ -172,12 +197,6 @@ def delete_photo(photo_id):
     flash("Fotoğraf silindi.", "success")
     return redirect(url_for('admin'))
 
-# --------------------- GALLERY & UPLOAD ---------------------
-@app.route('/gallery')
-def gallery():
-    images = os.listdir(THUMB_FOLDER) if os.path.exists(THUMB_FOLDER) else []
-    return render_template('gallery.html', images=images)
-
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
@@ -205,14 +224,3 @@ def thumb_file(filename): return send_from_directory(THUMB_FOLDER, filename)
 if __name__ == "__main__":
     with app.app_context(): db.create_all()
     app.run(debug=True, port=5001)
-
-
-
-
-
-
-
-
-
-
-

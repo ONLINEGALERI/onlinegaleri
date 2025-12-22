@@ -24,11 +24,20 @@
     body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37 0%, #fff9e3 50%, #c5a028 100%); -webkit-background-clip: text; }
 
     .btn-ig-edit { background: var(--ig-bg) !important; border: 1px solid var(--ig-border) !important; border-radius: 4px !important; color: var(--ig-text) !important; font-weight: 600; font-size: 14px; padding: 5px 9px; cursor: pointer; }
+    
+    /* GOLD TAKİP ET BUTONU */
     .verzia-gold-btn {
         background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728) !important;
         color: #000 !important; font-weight: bold; border: none !important; padding: 8px 20px; border-radius: 5px; cursor: pointer; transition: transform 0.2s;
     }
     .verzia-gold-btn:hover { transform: scale(1.05); }
+    
+    .btn-unfollow { 
+        background: transparent !important; 
+        color: var(--v-icon-color) !important; 
+        border: 1px solid var(--v-icon-color) !important; 
+        padding: 5px 20px; border-radius: 5px; font-weight: 600; font-size: 14px; cursor: pointer; 
+    }
 
     /* İSTATİSTİKLER */
     .ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
@@ -42,6 +51,14 @@
     .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
     .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
     .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+    
+    /* POST ÜZERİ ETKİLEŞİM */
+    .grid-item-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center;
+        gap: 20px; color: white; opacity: 0; transition: 0.3s; pointer-events: none;
+    }
+    .grid-item:hover .grid-item-overlay { opacity: 1; }
     .grid-item:hover img { filter: brightness(0.8); }
     
     .no-posts {
@@ -68,11 +85,20 @@
             <div class="ig-user-row">
                 <h2 class="profile-name">{{ server_profile.username }}</h2>
                 {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check gold-verify"></i>{% endif %}
-                {% if can_edit %}<button class="btn-ig-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">Profili Düzenle</button>{% endif %}
+                
+                {% if can_edit %}
+                    <button class="btn-ig-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">Profili Düzenle</button>
+                {% else %}
+                    {% if is_following %}
+                        <button class="btn-unfollow" onclick="toggleFollow('{{ server_profile.username }}', this)">Takibi Bırak</button>
+                    {% else %}
+                        <button class="verzia-gold-btn" onclick="toggleFollow('{{ server_profile.username }}', this)">Takip Et</button>
+                    {% endif %}
+                {% endif %}
             </div>
             <ul class="ig-stats">
                 <li><b>{{ photos|length }}</b> gönderi</li>
-                <li><b>{{ server_profile.followers }}</b> takipçi</li>
+                <li id="followerCount"><b>{{ server_profile.followers }}</b> takipçi</li>
                 <li><b>{{ server_profile.following }}</b> takip</li>
             </ul>
             <div class="ig-bio">
@@ -105,6 +131,10 @@
             {% for photo in photos %}
             <div class="grid-item">
                 <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" alt="{{ photo.title }}">
+                <div class="grid-item-overlay">
+                    <span><i class="fa-solid fa-heart"></i> {{ photo.like_count() if photo.like_count else 0 }}</span>
+                    <span><i class="fa-solid fa-comment"></i> {{ photo.comment_count() if photo.comment_count else 0 }}</span>
+                </div>
                 {% if can_edit %}
                 <form action="{{ url_for('delete_photo_profile', photo_id=photo.id) }}" method="POST" style="display:inline;">
                     <button type="submit" class="delete-btn" onclick="return confirm('Silmek istediğine emin misin?')">&times;</button>
@@ -140,7 +170,7 @@
 </div></div></div>
 
 <script>
-    // Avatar Önizleme ve Kaydetme
+    // Avatar Önizleme ve Kaydetme (Orijinal Mantık)
     function previewImage(event) {
         const reader = new FileReader();
         reader.onload = function() {
@@ -154,13 +184,34 @@
         reader.readAsDataURL(event.target.files[0]);
     }
 
-    // Biyografi Kaydetme
+    // Biyografi Kaydetme (Orijinal Mantık)
     function saveProfileData() {
         const bio = document.getElementById('editBio').value;
         fetch('/profile/save', {
             method: 'POST', headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({bio: bio})
         }).then(() => location.reload());
+    }
+
+    // TAKİP ETME FONKSİYONU
+    function toggleFollow(username, btn) {
+        const isFollowing = btn.classList.contains('btn-unfollow');
+        const url = isFollowing ? `/unfollow/${username}` : `/follow/${username}`;
+        
+        fetch(url, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                btn.textContent = isFollowing ? 'Takip Et' : 'Takibi Bırak';
+                btn.className = isFollowing ? 'verzia-gold-btn' : 'btn-unfollow';
+                
+                // VIP (BEC) ise 2M'i bozma, değilse güncelle
+                const isVip = {{ 'true' if server_profile.is_vip else 'false' }};
+                if (!isVip) {
+                    document.getElementById('followerCount').innerHTML = `<b>${data.followers}</b> takipçi`;
+                }
+            }
+        });
     }
 </script>
 {% endblock %}
