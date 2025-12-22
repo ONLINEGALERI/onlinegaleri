@@ -10,7 +10,7 @@
     
     <style>
     /* GENEL SIFIRLAMA */
-    body { margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+    body { margin: 0; padding: 0; transition: background 0.3s, color 0.3s; background: #000; }
 
     /* VERZIA ULTRA-PREMIUM GOLD DEĞİŞKENLERİ */
     :root {
@@ -33,10 +33,7 @@
         --v-glow: rgba(184, 134, 11, 0.2);
     }
 
-    /* PROFİL, ARAMA VE INDEX İÇİN ORTAK YAPI */
-    {% if request.endpoint in ['profile', 'search', 'index'] %}
-    body { background-color: var(--ig-bg) !important; color: var(--ig-text) !important; }
-    
+    /* SIDEBAR YAPISI (Sadece Profil ve Arama Sayfalarında) */
     .ig-sidebar {
         position: fixed; left: 0; top: 0; bottom: 0; width: 72px;
         border-right: 1px solid var(--ig-border); background: var(--ig-sidebar-bg);
@@ -44,69 +41,47 @@
     }
     
     .sidebar-item { 
-        margin-bottom: 35px; 
-        color: var(--v-icon-color) !important; 
-        text-decoration: none; 
-        font-size: 26px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        width: 100%; 
-        height: 50px;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-bottom: 35px; color: var(--v-icon-color) !important; text-decoration: none; 
+        font-size: 26px; display: flex; align-items: center; justify-content: center; 
+        width: 100%; height: 50px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-
-    .sidebar-item:hover {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px var(--v-glow));
-    }
+    .sidebar-item:hover { transform: scale(1.2); filter: drop-shadow(0 0 10px var(--v-glow)); }
 
     .v-logo-btn {
-        font-family: 'Playfair Display', serif;
-        font-weight: 900;
-        font-size: 32px;
-        background: var(--v-gold-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        display: inline-block;
-        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));
-        transition: 0.5s ease-in-out;
+        font-family: 'Playfair Display', serif; font-weight: 900; font-size: 32px;
+        background: var(--v-gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        display: inline-block; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); transition: 0.5s ease-in-out;
     }
-    
-    .v-logo-btn:hover {
-        transform: rotateY(360deg) scale(1.3);
-        filter: drop-shadow(0 0 15px var(--v-glow));
+    .v-logo-btn:hover { transform: rotateY(360deg) scale(1.3); filter: drop-shadow(0 0 15px var(--v-glow)); }
+
+    /* İÇERİK DÜZENLEYİCİ - ANASAYFAYI KURTARAN KISIM */
+    .main-content-wrapper { 
+        min-height: 100vh;
+        background: transparent;
     }
-    
+
+    /* Eğer sayfa Profil veya Arama ise boşluk bırak, Anasayfada (index) bırakma */
+    {% if request.endpoint in ['profile', 'search'] %}
     .main-content-wrapper { 
         margin-left: 72px !important; 
-        min-height: 100vh;
         background: var(--ig-bg) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
     }
     {% else %}
-    .main-content-wrapper { width: 100%; margin-left: 0 !important; }
+    .main-content-wrapper { margin-left: 0 !important; width: 100%; }
     {% endif %}
     </style>
 </head>
-<body class="{% if request.endpoint in ['profile', 'search', 'index'] %}profile-page-body{% endif %}">
+<body class="{% if request.endpoint in ['profile', 'search'] %}profile-page-body{% endif %}">
 
-{% if request.endpoint in ['profile', 'search', 'index'] %}
+{% if request.endpoint in ['profile', 'search'] %}
 <div class="ig-sidebar">
     <a href="{{ url_for('index') }}" class="sidebar-item" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
-    
     <a href="{{ url_for('search') }}" class="sidebar-item" title="Kullanıcı Ara"><i class="fa-solid fa-magnifying-glass"></i></a>
-    
-    <a href="{{ url_for('profile', username=current_user.username if current_user.is_authenticated else '') }}" class="sidebar-item" title="Profilim">
-        <i class="fa-solid fa-circle-user"></i>
-    </a>
-
-    <a href="{{ url_for('profile', username='bec') }}" class="sidebar-item" title="Verzia Official">
-        <span class="v-logo-btn">V</span>
-    </a>
-
+    <a href="{{ url_for('profile', username=current_user.username if current_user.is_authenticated else '') }}" class="sidebar-item" title="Profilim"><i class="fa-solid fa-circle-user"></i></a>
+    <a href="{{ url_for('profile', username='bec') }}" class="sidebar-item" title="Verzia Official"><span class="v-logo-btn">V</span></a>
     <div class="mt-auto">
         <a href="{{ url_for('logout') }}" class="sidebar-item" title="Çıkış Yap"><i class="fa-solid fa-right-from-bracket"></i></a>
     </div>
