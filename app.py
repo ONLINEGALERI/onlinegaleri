@@ -91,7 +91,6 @@ def profile():
     if not server_profile:
         abort(404)
 
-    # ÖZEL AYAR: Sadece 'bec' hesabı VIP olur
     is_vip = (server_profile.username.lower() == 'bec')
     
     sp = {
@@ -118,13 +117,39 @@ def save_profile():
         return jsonify({'status': 'ok'})
     return jsonify({'status': 'error'}), 400
 
-# --------------------- ADMIN (HATA ÇÖZÜCÜ) ---------------------
+# --------------------- ADMIN ---------------------
 @app.route('/admin')
 @login_required
 def admin():
+    # Sadece bec admin paneline girebilir
     if current_user.username.lower() != 'bec':
         abort(403)
     return render_template('admin.html', users=User.query.all(), photos=Photo.query.all())
+
+# KULLANICI SİLME (Hata Çözümü)
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.username.lower() != 'bec':
+        abort(403)
+    user = User.query.get_or_404(user_id)
+    if user.id != current_user.id:
+        db.session.delete(user)
+        db.session.commit()
+        flash(f"{user.username} silindi.", "success")
+    return redirect(url_for('admin'))
+
+# FOTOĞRAF SİLME (Hata Çözümü)
+@app.route('/delete_photo/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo(photo_id):
+    if current_user.username.lower() != 'bec':
+        abort(403)
+    photo = Photo.query.get_or_404(photo_id)
+    db.session.delete(photo)
+    db.session.commit()
+    flash("Fotoğraf silindi.", "success")
+    return redirect(url_for('admin'))
 
 # --------------------- GALLERY & UPLOAD ---------------------
 @app.route('/gallery')

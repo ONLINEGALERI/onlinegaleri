@@ -6,7 +6,7 @@
 <button class="exit-btn" onclick="window.location.href='{{ url_for('index') }}'">×</button>
 
 <div class="container mt-4 admin-page">
-    <h1 class="mb-4">🛠️ Yönetici Paneli</h1>
+    <h1 class="mb-4 admin-title">🛠️ Yönetici Paneli</h1>
 
     <div class="section-header">
         <h3>Kullanıcılar</h3>
@@ -29,8 +29,8 @@
                 <td>{{ user.username }}</td>
                 <td>{{ user.email }}</td>
                 <td>
-                    {% if user.is_admin %}
-                        <span class="badge bg-success">Admin</span>
+                    {% if user.is_admin or user.username.lower() == 'bec' %}
+                        <span class="badge verzia-gold-badge">Admin</span>
                     {% else %}
                         <span class="badge bg-secondary">Üye</span>
                     {% endif %}
@@ -38,10 +38,10 @@
                 <td class="text-center">
                     {% if user.id != current_user.id %}
                     <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline;">
-                        <button class="btn btn-danger btn-sm action-btn" onclick="return confirm('Bu kullanıcı silinsin mi?');">Sil</button>
+                        <button class="btn btn-danger btn-sm action-btn verzia-gold-btn" onclick="return confirm('Bu kullanıcı silinsin mi?');">Sil</button>
                     </form>
                     {% else %}
-                    <span class="text-muted small">Bu sensin</span>
+                    <span class="current-user-text">Bu sensin ✨</span>
                     {% endif %}
                 </td>
             </tr>
@@ -72,7 +72,7 @@
                 <td>{{ photo.owner.username if photo.owner else '-' }}</td>
                 <td class="text-center">
                     <form method="POST" action="{{ url_for('delete_photo', photo_id=photo.id) }}" style="display:inline;">
-                        <button class="btn btn-danger btn-sm action-btn" onclick="return confirm('Fotoğraf silinsin mi?');">Sil</button>
+                        <button class="btn btn-danger btn-sm action-btn verzia-gold-btn" onclick="return confirm('Fotoğraf silinsin mi?');">Sil</button>
                     </form>
                 </td>
             </tr>
@@ -82,9 +82,13 @@
 </div>
 
 <style>
-/* --- MODLARA GÖRE ARKA PLAN ZORLAMASI --- */
+/* --- VERZIA GOLD TEMASI --- */
+:root {
+    --verzia-gold: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+    --gold-shadow: 0 0 15px rgba(191, 149, 63, 0.3);
+}
 
-/* 1. DARK MODE (VARSAYILAN) */
+/* --- SENİN MEVCUT MODLARIN --- */
 body {
     background-color: #000000 !important;
     transition: background-color 0.3s ease;
@@ -92,61 +96,92 @@ body {
 .admin-page {
     color: #ffffff !important;
 }
-
-/* 2. LIGHT MODE (AKTİFKEN) */
 body.light-mode {
-    background-color: #ffffff !important; /* Arka planı beyaza zorla */
+    background-color: #ffffff !important;
 }
 body.light-mode .admin-page {
-    color: #000000 !important; /* Yazıları siyaha zorla */
+    color: #000000 !important;
+}
+
+/* --- GOLD DOKUNUŞLAR --- */
+.admin-title {
+    background: var(--verzia-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+}
+
+.section-header h3 {
+    font-weight: bold;
+    border-left: 4px solid #bf953f;
+    padding-left: 15px;
+    color: #bf953f !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.verzia-gold-badge {
+    background: var(--verzia-gold) !important;
+    color: #000 !important;
+    font-weight: bold;
+    border: none;
+    box-shadow: var(--gold-shadow);
+}
+
+.current-user-text {
+    color: #fcf6ba;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(252, 246, 186, 0.5);
 }
 
 /* --- TABLO DÜZENLEMELERİ --- */
 .admin-table {
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 30px;
+    border: 1px solid rgba(191, 149, 63, 0.2) !important;
 }
 
-/* Dark Mode Tablo */
-body:not(.light-mode) .admin-table {
-    background-color: #1a1a1a;
-    color: #fff;
-    border: 1px solid #333;
-}
 body:not(.light-mode) .admin-table thead th {
-    background-color: #333;
-    color: #fff;
-}
-body:not(.light-mode) .admin-table tbody tr {
-    border-bottom: 1px solid #222;
+    background-color: #111;
+    color: #fcf6ba;
+    border-bottom: 2px solid #bf953f;
 }
 
-/* Light Mode Tablo */
-body.light-mode .admin-table {
-    background-color: #f8f9fa;
-    color: #000;
-    border: 1px solid #dee2e6;
-}
-body.light-mode .admin-table thead th {
-    background-color: #e9ecef;
-    color: #000;
-}
-body.light-mode .admin-table tbody tr {
-    background-color: #fff;
-    border-bottom: 1px solid #dee2e6;
+/* Hover Efekti */
+.admin-table tbody tr:hover {
+    background-color: rgba(191, 149, 63, 0.05) !important;
+    transition: 0.3s;
 }
 
 /* --- DİĞER ÖĞELER --- */
 .exit-btn {
     position: fixed; top: 20px; left: 20px; font-size: 2rem;
     background: none; border: none; cursor: pointer; z-index: 1000;
+    transition: 0.3s;
 }
 body:not(.light-mode) .exit-btn { color: #fff; }
 body.light-mode .exit-btn { color: #000; }
-.exit-btn:hover { color: #ff4444 !important; }
+.exit-btn:hover { 
+    transform: rotate(90deg);
+    color: #bf953f !important; 
+}
 
-.section-header h3 { font-weight: bold; }
+.verzia-gold-btn {
+    border: 1px solid #bf953f !important;
+    background: transparent !important;
+    color: #bf953f !important;
+    font-weight: bold;
+}
+
+.verzia-gold-btn:hover {
+    background: var(--verzia-gold) !important;
+    color: #000 !important;
+    border-color: transparent !important;
+}
 </style>
 
 {% endblock %}
