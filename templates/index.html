@@ -96,7 +96,7 @@
 .hero, section, .signature-container { background-color: transparent !important; }
 body { width: 100%; min-height: 100vh; overflow-x: hidden; transition: background-color 0.1s linear !important; }
 
-/* 2. LOGO: ANLIK BELİRME (SIFIR GECİKME) */
+/* 2. LOGO: ANLIK BELİRME (SIFUR GECİKME) */
 .signature-container { 
     width: 100%; 
     max-width: 800px; 
@@ -170,7 +170,11 @@ body.light-mode .pay-input { background: #f9f9f9; border-color: #ddd; color: #00
         
         <form id="ajax-login-form">
             <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
-            <input type="password" name="password" placeholder="Şifre" class="pay-input" required>
+            <div style="position: relative;">
+                <input type="password" id="modalPasswordInput" name="password" placeholder="Şifre" class="pay-input" required style="padding-right: 45px;">
+                <i class="fa-solid fa-eye" id="modalToggleIcon" 
+                   style="position: absolute; right: 15px; top: 18px; color: #d4af37; cursor: pointer; opacity: 0.7; transition: 0.3s; z-index: 100;"></i>
+            </div>
             <button type="submit" class="buy-btn-gold">GİRİŞ</button>
         </form>
     </div>
@@ -206,6 +210,17 @@ body.light-mode .pay-input { background: #f9f9f9; border-color: #ddd; color: #00
 </div>
 
 <script>
+// ✨ ŞİFRE GÖSTER/GİZLE SİHRİ ✨
+document.getElementById('modalToggleIcon').addEventListener('click', function() {
+    const pwdInput = document.getElementById('modalPasswordInput');
+    const isPwd = pwdInput.type === 'password';
+    pwdInput.type = isPwd ? 'text' : 'password';
+    
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
+    this.style.opacity = isPwd ? '1' : '0.7';
+});
+
 // SİHİRLİ GİRİŞ KODU (HATA MESAJINI OVERLAY'DE GÖSTERİR)
 document.getElementById('ajax-login-form').addEventListener('submit', function(e) {
     e.preventDefault();

@@ -3,22 +3,23 @@
 {% block title %}Giriş Yap{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="card shadow p-4" style="max-width: 420px; width: 100%; border-radius: 12px;">
-        <h3 class="text-center mb-4 fw-bold">Giriş Yap</h3>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        <!-- FLASH MESAJLARI -->
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh; background-color: transparent;">
+    <div class="card shadow p-4" style="max-width: 420px; width: 100%; border-radius: 12px; background-color: #111; color: #fff; border: 1px solid #262626;">
+        <h3 class="text-center mb-4 fw-bold" style="color: #d4af37;">Giriş Yap</h3>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} text-center small">
+                    <div class="alert alert-danger text-center small" style="background-color: rgba(255,0,0,0.1); border: none; color: #ff4d4d;">
                         {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('login') }}" novalidate>
+        <form id="loginForm" method="POST" action="{{ url_for('login') }}" novalidate>
             <div class="mb-3">
                 <label class="form-label fw-semibold">Kullanıcı Adı veya Email</label>
                 <input
@@ -28,35 +29,68 @@
                     required
                     placeholder="kullaniciadi veya mail@example.com"
                     autocomplete="username"
+                    style="background: #1a1a1a; border: 1px solid #333; color: white;"
                 >
             </div>
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Şifre</label>
-                <input
-                    type="password"
-                    name="password"
-                    class="form-control"
-                    required
-                    placeholder="••••••••"
-                    autocomplete="current-password"
-                >
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input
+                        type="password"
+                        id="passwordInput"
+                        name="password"
+                        class="form-control"
+                        required
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                        style="background: #1a1a1a; border: 1px solid #333; color: white; padding-right: 45px;"
+                    >
+                    <div id="btnToggle" style="position: absolute; right: 0; top: 0; height: 100%; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 999;">
+                        <i class="fa-solid fa-eye" id="eyeIcon" style="color: #d4af37; transition: 0.3s; opacity: 0.8; font-size: 1.1rem;"></i>
+                    </div>
+                </div>
             </div>
 
-            <button class="btn btn-primary w-100 py-2 fw-semibold" type="submit">
+            <button class="btn w-100 py-2 fw-semibold" type="submit" style="background: linear-gradient(145deg, #bf953f, #d4af37); color: black; border: none;">
                 Giriş Yap
             </button>
         </form>
 
-        <hr class="my-4">
+        <hr class="my-4" style="border-color: #333;">
 
         <div class="text-center small">
             <p class="mb-0">
                 Hesabın yok mu?
-                <a href="{{ url_for('register') }}" class="fw-semibold">Kayıt Ol</a>
+                <a href="{{ url_for('register') }}" class="fw-semibold" style="color: #d4af37; text-decoration: none;">Kayıt Ol</a>
             </p>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnToggle = document.querySelector('#btnToggle');
+        const eyeIcon = document.querySelector('#eyeIcon');
+        const passwordInput = document.querySelector('#passwordInput');
+
+        if (btnToggle && passwordInput) {
+            btnToggle.addEventListener('click', function(e) {
+                e.preventDefault(); // Formun gönderilmesini engelle
+                
+                // Şifre tipini değiştir
+                const isPassword = passwordInput.type === 'password';
+                passwordInput.type = isPassword ? 'text' : 'password';
+                
+                // İkonu asaletle değiştir
+                eyeIcon.classList.toggle('fa-eye');
+                eyeIcon.classList.toggle('fa-eye-slash');
+                
+                // Görünürlük parlaklığını ayarla
+                eyeIcon.style.opacity = isPassword ? '1' : '0.8';
+            });
+        }
+    });
+</script>
 {% endblock %}
 
