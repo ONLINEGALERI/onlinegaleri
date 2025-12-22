@@ -41,7 +41,7 @@ def index():
     all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
     return render_template('index.html', photos=all_photos)
 
-# --------------------- AUTH (JSON DESTEKLİ) ---------------------
+# --------------------- AUTH ---------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -117,18 +117,7 @@ def profile():
     can_edit = current_user.is_authenticated and current_user.id == user_to_show.id
     return render_template('profile.html', server_profile=sp, can_edit=can_edit, photos=user_photos, is_following=is_following)
 
-@app.route('/profile/save', methods=['POST'])
-@login_required
-def save_profile():
-    data = request.get_json()
-    if data:
-        if 'bio' in data: current_user.bio = data.get('bio')
-        if 'avatar' in data: current_user.avatar = data.get('avatar')
-        db.session.commit()
-        return jsonify({'status': 'ok'})
-    return jsonify({'status': 'error'}), 400
-
-# --------------------- SEARCH ---------------------
+# --------------------- SEARCH (GERİ EKLENDİ ✨) ---------------------
 @app.route('/search')
 @login_required
 def search():
@@ -137,78 +126,6 @@ def search():
     if query:
         results = User.query.filter(User.username.icontains(query)).all()
     return render_template('search.html', results=results, query=query)
-
-# --------------------- ADMIN PANELI ---------------------
-@app.route('/admin')
-@login_required
-def admin():
-    if current_user.username.lower() != 'bec':
-        abort(403)
-    users = User.query.all()
-    photos = Photo.query.all()
-    return render_template('admin.html', users=users, photos=photos)
-
-# --------------------- BEĞENİ VE YORUM İŞLEMLERİ ---------------------
-@app.route('/like/<int:photo_id>', methods=['POST'])
-@login_required
-def like_photo(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    existing_like = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first()
-    
-    if existing_like:
-        db.session.delete(existing_like)
-        db.session.commit()
-        return jsonify({'status': 'unliked', 'like_count': Like.query.filter_by(photo_id=photo_id).count()})
-    
-    new_like = Like(user_id=current_user.id, photo_id=photo_id)
-    db.session.add(new_like)
-    
-    # ✨ BİLDİRİM DÜZELTMESİ (İSİM TEKRARI SİLİNDİ)
-    if photo.owner_id != current_user.id:
-        notif = Notification(
-            user_id=photo.owner_id,
-            sender_username=current_user.username,
-            notif_type='like',
-            photo_id=photo.id,
-            message="bir fotoğrafını beğendi."
-        )
-        db.session.add(notif)
-        
-    db.session.commit()
-    return jsonify({'status': 'liked', 'like_count': Like.query.filter_by(photo_id=photo_id).count()})
-
-@app.route('/comment/<int:photo_id>', methods=['POST'])
-@login_required
-def add_comment(photo_id):
-    data = request.get_json()
-    comment_body = data.get('content') 
-    if not comment_body:
-        return jsonify({'status': 'error', 'message': 'Yorum boş olamaz'}), 400
-    
-    photo = Photo.query.get_or_404(photo_id)
-    new_comment = Comment(body=comment_body, user_id=current_user.id, photo_id=photo_id)
-    db.session.add(new_comment)
-    
-    # ✨ BİLDİRİM DÜZELTMESİ (İSİM TEKRARI SİLİNDİ)
-    if photo.owner_id != current_user.id:
-        preview = (comment_body[:20] + '...') if len(comment_body) > 20 else comment_body
-        notif = Notification(
-            user_id=photo.owner_id,
-            sender_username=current_user.username,
-            notif_type='comment',
-            photo_id=photo.id,
-            message=f"fotoğrafına yorum yaptı: {preview}"
-        )
-        db.session.add(notif)
-        
-    db.session.commit()
-    
-    return jsonify({
-        'status': 'success', 
-        'comment_id': new_comment.id,
-        'username': current_user.username, 
-        'content': comment_body
-    })
 
 # --------------------- BİLDİRİM SERVİSLERİ ---------------------
 @app.route('/notifications')
@@ -238,73 +155,63 @@ def mark_notifications_read():
     db.session.commit()
     return jsonify({'status': 'success'})
 
-@app.route('/get_comments/<int:photo_id>')
-def get_comments(photo_id):
-    comments = Comment.query.filter_by(photo_id=photo_id).order_by(Comment.timestamp.asc()).all()
-    return jsonify([{
-        'id': c.id,
-        'username': User.query.get(c.user_id).username, 
-        'content': c.body, 
-        'can_delete': (current_user.is_authenticated and (c.user_id == current_user.id or current_user.username.lower() == 'bec'))
-    } for c in comments])
-
-@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+# ✨ BİLDİRİM SİLME ROTASI ✨
+@app.route('/notifications/delete/<int:notif_id>', methods=['POST'])
 @login_required
-def delete_comment(comment_id):
-    comment = Comment.query.get_or_404(comment_id)
-    if comment.user_id != current_user.id and current_user.username.lower() != 'bec':
+def delete_notification(notif_id):
+    notif = Notification.query.get_or_404(notif_id)
+    if notif.user_id != current_user.id:
         abort(403)
-    db.session.delete(comment)
+    db.session.delete(notif)
     db.session.commit()
     return jsonify({'status': 'success'})
 
-# --------------------- SOSYAL AKSİYONLAR ---------------------
+# --------------------- BEĞENİ, YORUM, SOSYAL ---------------------
+@app.route('/like/<int:photo_id>', methods=['POST'])
+@login_required
+def like_photo(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    existing_like = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first()
+    if existing_like:
+        db.session.delete(existing_like)
+        db.session.commit()
+        return jsonify({'status': 'unliked', 'like_count': Like.query.filter_by(photo_id=photo_id).count()})
+    
+    new_like = Like(user_id=current_user.id, photo_id=photo_id)
+    db.session.add(new_like)
+    if photo.owner_id != current_user.id:
+        notif = Notification(user_id=photo.owner_id, sender_username=current_user.username, notif_type='like', photo_id=photo.id, message="bir fotoğrafını beğendi.")
+        db.session.add(notif)
+    db.session.commit()
+    return jsonify({'status': 'liked', 'like_count': Like.query.filter_by(photo_id=photo_id).count()})
+
+@app.route('/comment/<int:photo_id>', methods=['POST'])
+@login_required
+def add_comment(photo_id):
+    data = request.get_json()
+    comment_body = data.get('content') 
+    if not comment_body: return jsonify({'status': 'error', 'message': 'Yorum boş olamaz'}), 400
+    photo = Photo.query.get_or_404(photo_id)
+    new_comment = Comment(body=comment_body, user_id=current_user.id, photo_id=photo_id)
+    db.session.add(new_comment)
+    if photo.owner_id != current_user.id:
+        preview = (comment_body[:20] + '...') if len(comment_body) > 20 else comment_body
+        notif = Notification(user_id=photo.owner_id, sender_username=current_user.username, notif_type='comment', photo_id=photo.id, message=f"fotoğrafına yorum yaptı: {preview}")
+        db.session.add(notif)
+    db.session.commit()
+    return jsonify({'status': 'success', 'comment_id': new_comment.id, 'username': current_user.username, 'content': comment_body})
+
 @app.route('/follow/<username>', methods=['POST'])
 @login_required
 def follow(username):
     user = User.query.filter_by(username=username).first()
-    if not user or user == current_user:
-        return jsonify({'status': 'error'}), 400
+    if not user or user == current_user: return jsonify({'status': 'error'}), 400
     current_user.follow(user)
-    
-    # ✨ BİLDİRİM DÜZELTMESİ (İSİM TEKRARI SİLİNDİ)
-    notif = Notification(
-        user_id=user.id,
-        sender_username=current_user.username,
-        notif_type='follow',
-        message="seni takip etmeye başladı."
-    )
+    notif = Notification(user_id=user.id, sender_username=current_user.username, notif_type='follow', message="seni takip etmeye başladı.")
     db.session.add(notif)
-    
     db.session.commit()
     return jsonify({'status': 'success', 'followers': user.followers_list.count()})
 
-@app.route('/unfollow/<username>', methods=['POST'])
-@login_required
-def unfollow(username):
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({'status': 'error'}), 404
-    current_user.unfollow(user)
-    db.session.commit()
-    return jsonify({'status': 'success', 'followers': user.followers_list.count()})
-
-# --------------------- TAKİP LİSTELERİ ---------------------
-@app.route('/get_followers/<username>')
-@login_required
-def get_followers(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    followers = [{"username": u.username, "avatar": u.avatar if u.avatar else 'https://picsum.photos/seed/default/100/100'} for u in user.followers_list]
-    return jsonify(followers)
-
-@app.route('/get_following/<username>')
-@login_required
-def get_following(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    following = [{"username": u.username, "avatar": u.avatar if u.avatar else 'https://picsum.photos/seed/default/100/100'} for u in user.followed]
-    return jsonify(following)
-
-# --------------------- FOTOĞRAF YÜKLEME ---------------------
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload():
@@ -314,63 +221,19 @@ def upload():
         filename = f"{current_user.id}_{filename}"
         path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(path)
-        
         try:
             img = Image.open(path)
             img.thumbnail((400, 400))
             img.save(os.path.join(THUMB_FOLDER, filename))
-        except:
-            pass
-            
-        new_photo = Photo(
-            title=request.form.get('title', 'Verzia Post'),
-            filename=filename,
-            owner_id=current_user.id
-        )
+        except: pass
+        new_photo = Photo(title=request.form.get('title', 'Verzia Post'), filename=filename, owner_id=current_user.id)
         db.session.add(new_photo)
         db.session.commit()
-        
     return redirect(url_for('profile', username=current_user.username))
-
-# --------------------- SİLME VE SERVİS ---------------------
-@app.route('/delete_photo_profile/<int:photo_id>', methods=['POST'])
-@login_required
-def delete_photo_profile(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    if photo.owner_id != current_user.id and current_user.username.lower() != 'bec':
-        abort(403)
-    db.session.delete(photo)
-    db.session.commit()
-    return redirect(url_for('profile', username=current_user.username))
-
-@app.route('/delete_user/<int:user_id>', methods=['POST'])
-@login_required
-def delete_user(user_id):
-    if current_user.username.lower() != 'bec':
-        abort(403)
-    user = User.query.get_or_404(user_id)
-    if user.id != current_user.id:
-        db.session.delete(user)
-        db.session.commit()
-    return redirect(url_for('admin'))
-
-@app.route('/delete_photo/<int:photo_id>', methods=['POST'])
-@login_required
-def delete_photo(photo_id):
-    if current_user.username.lower() != 'bec':
-        abort(403)
-    photo = Photo.query.get_or_404(photo_id)
-    db.session.delete(photo)
-    db.session.commit()
-    return redirect(url_for('admin'))
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename): return send_from_directory(UPLOAD_FOLDER, filename)
 
-@app.route('/uploads/thumbs/<filename>')
-def thumb_file(filename): return send_from_directory(THUMB_FOLDER, filename)
-
 if __name__ == "__main__":
-    with app.app_context(): 
-        db.create_all()
+    with app.app_context(): db.create_all()
     app.run(debug=True, port=5001)

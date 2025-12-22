@@ -1,4 +1,3 @@
-# models/photo.py
 from extensions import db
 from datetime import datetime
 
@@ -7,6 +6,8 @@ class Photo(db.Model):
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255))
     filename = db.Column(db.String(100), nullable=False)
+    
+    # ✨ AI kodlarını tamamen temizledik, stabiliteye döndük!
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

@@ -55,14 +55,14 @@
     }
     .sidebar-item:hover { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--v-glow)); }
 
-    /* ✨ BİLDİRİM NOKTASI VE ANİMASYONU ✨ */
+    /* ✨ BİLDİRİM NOKTASI ✨ */
     .notif-badge {
         position: absolute; top: 8px; right: 18px; width: 10px; height: 10px;
         background: #ff4d4d; border-radius: 50%; border: 2px solid var(--ig-sidebar-bg);
         display: none;
     }
 
-    .shake-notif { animation: shakeMe 0.5s infinite; color: #fff !important; }
+    .shake-notif { animation: shakeMe 0.5s infinite; }
     @keyframes shakeMe {
         0% { transform: rotate(0); }
         25% { transform: rotate(10deg); }
@@ -87,6 +87,9 @@
     {% endif %}
 
     input.pay-input, input.form-control { background-color: var(--input-bg) !important; color: var(--ig-text) !important; border: 1px solid var(--ig-border) !important; }
+
+    /* Silme Animasyonu ✨ */
+    .notif-row { transition: all 0.3s ease; }
     </style>
 </head>
 <body class="{% if request.endpoint in ['profile', 'search'] %}profile-page-body{% endif %}">
@@ -126,7 +129,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0" id="notif-list-area" style="max-height: 400px; overflow-y: auto;">
-            </div>
+                </div>
         </div>
     </div>
 </div>
@@ -165,16 +168,19 @@
             if (data.length === 0) {
                 listArea.innerHTML = '<div class="p-4 text-center opacity-50">Henüz bildirim yok.</div>';
             } else {
-                // ✨ SİHİRLİ TEMİZLİK BURADA ✨
                 listArea.innerHTML = data.map(n => {
-                    // Mesajın içindeki kullanıcı adını asaletle ayıklıyoruz ✨
                     let cleanMessage = n.message.replace(n.sender, "").trim();
                     
                     return `
-                    <div class="p-3 border-bottom border-dark d-flex align-items-center" style="font-size: 14px; background: ${n.is_read ? 'transparent' : 'rgba(212, 175, 55, 0.05)'}">
+                    <div class="p-3 border-bottom border-dark d-flex align-items-center justify-content-between notif-row" id="notif-row-${n.id}" style="font-size: 14px; background: ${n.is_read ? 'transparent' : 'rgba(212, 175, 55, 0.05)'}">
                         <div class="flex-grow-1">
                             <strong style="color: var(--v-icon-color);">@${n.sender}</strong> ${cleanMessage}
                             <div class="opacity-50 small">${n.time}</div>
+                        </div>
+                        <div class="ms-2">
+                            <a href="javascript:void(0)" onclick="deleteNotif(${n.id})" style="color: var(--v-icon-color); opacity: 0.4; transition: 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.4">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
                         </div>
                     </div>
                 `;}).join('');
@@ -182,6 +188,25 @@
                 fetch('/notifications/mark-as-read', {method: 'POST'});
                 document.getElementById('notif-count-dot').style.display = 'none';
                 document.getElementById('notif-icon').classList.remove('shake-notif');
+            }
+        });
+    }
+
+    // ✨ BİLDİRİMİ SİLEN ASİL FONKSİYON ✨
+    function deleteNotif(id) {
+        fetch(`/notifications/delete/${id}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                const row = document.getElementById(`notif-row-${id}`);
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    row.remove();
+                    if (document.getElementById('notif-list-area').querySelectorAll('.notif-row').length === 0) {
+                        document.getElementById('notif-list-area').innerHTML = '<div class="p-4 text-center opacity-50">Henüz bildirim yok.</div>';
+                    }
+                }, 300);
             }
         });
     }
