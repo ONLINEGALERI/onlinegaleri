@@ -119,18 +119,21 @@ body { width: 100%; min-height: 100vh; overflow-x: hidden; transition: backgroun
     100% { opacity: 1; transform: scale(1); } 
 }
 
-/* MODA GÖRE RENKLER */
+/* ✨ MODA GÖRE RENKLER (TÜM SAYFA) ✨ */
 body:not(.light-mode) { background-color: #000 !important; color: #ffffff; }
 body:not(.light-mode) .signature-text { stroke: url(#goldDark); fill: #ffffff; }
 body:not(.light-mode) .gold-title { background: linear-gradient(to right, #bf953f, #fcf6ba, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 body:not(.light-mode) .vpro-btn-gold, body:not(.light-mode) .buy-btn-gold, body:not(.light-mode) .final-pay-btn { background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); color: #000; }
 body:not(.light-mode) .popular-badge-fixed { background: #d4af37; color: #000; }
+body:not(.light-mode) .overlay-content { background: #000; border: 1px solid #d4af37; }
 
 body.light-mode { background-color: #ffffff !important; color: #000000; }
 body.light-mode .signature-text { stroke: url(#goldLight); fill: #000000; filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1)); }
 body.light-mode .gold-title { background: linear-gradient(to right, #8a6d3b, #a67c00, #5d4037); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 body.light-mode .vpro-btn-gold, body.light-mode .buy-btn-gold, body.light-mode .final-pay-btn { background: linear-gradient(135deg, #8a6d3b, #a67c00, #5d4037); color: #fff; }
 body.light-mode .popular-badge-fixed { background: #8a6d3b; color: #fff; }
+body.light-mode .overlay-content { background: #fff; border: 1px solid #8a6d3b; }
+body.light-mode .premium-desc { color: #555; }
 
 /* 3. PREMIUM VE DİĞERLERİ */
 .popular-badge-fixed { position: absolute; top: -10px; right: 15px; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 2px; z-index: 5; }
@@ -142,13 +145,16 @@ body.light-mode .popular-badge-fixed { background: #8a6d3b; color: #fff; }
 .vpro-btn-gold { position: fixed; bottom: 30px; left: 30px; padding: 12px 28px; z-index: 1000; }
 .buy-btn-gold { padding: 18px; width: 100%; font-size: 1rem; }
 .final-pay-btn { padding: 20px; width: 100%; margin-top: 15px; font-size: 1.1rem; letter-spacing: 3px; }
+
+/* ✨ INPUT MOD UYUMU ✨ */
 .pay-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #333; background: #111; color: #fff; font-family: 'Montserrat', sans-serif; }
 body.light-mode .pay-input { background: #f9f9f9; border-color: #ddd; color: #000; }
+
 .premium-card { position: relative; text-align: center; border: 1px solid #d4af37; padding: 50px 30px 40px 30px !important; max-width: 450px; width: 90%; margin: auto; }
 .back-btn { background: none; border: none; margin-top: 15px; cursor: pointer; color: inherit; font-size: 0.8rem; opacity: 0.6; }
 
 /* OVERLAY GENEL DÜZENLEME */
-.overlay-content { position: relative; padding: 60px 30px 40px 30px !important; }
+.overlay-content { position: relative; padding: 60px 30px 40px 30px !important; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
 
 /* FOOTER-TEXT BEC YAZISININ YERİ */
 .footer-text { 
@@ -221,7 +227,7 @@ document.getElementById('modalToggleIcon').addEventListener('click', function() 
     this.style.opacity = isPwd ? '1' : '0.7';
 });
 
-// SİHİRLİ GİRİŞ KODU (HATA MESAJINI OVERLAY'DE GÖSTERİR)
+// SİHİRLİ GİRİŞ KODU
 document.getElementById('ajax-login-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const formData = new FormData(this);
@@ -246,13 +252,17 @@ document.getElementById('ajax-login-form').addEventListener('submit', function(e
     });
 });
 
-// DİĞER FONKSİYONLARIN
+// FONKSİYONLAR
 function openPremium() { showPlans(); document.getElementById('premium-overlay').classList.add('active'); }
 function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
 function selectPlan(element) { document.querySelectorAll('.plan-card').forEach(card => card.classList.remove('active')); element.classList.add('active'); }
 function showPayment() { document.getElementById('premium-step-1').style.display = 'none'; document.getElementById('premium-step-2').style.display = 'block'; }
 function showPlans() { document.getElementById('premium-step-2').style.display = 'none'; document.getElementById('premium-step-1').style.display = 'block'; }
-function toggleMode() { const isLight = document.body.classList.toggle('light-mode'); localStorage.setItem('theme', isLight ? 'light' : 'dark'); }
+
+function toggleMode() { 
+    const isLight = document.body.classList.toggle('light-mode'); 
+    localStorage.setItem('theme', isLight ? 'light' : 'dark'); 
+}
 
 function openLogin() { document.getElementById('login-overlay').classList.add('active'); }
 function openRegister() { document.getElementById('register-overlay').classList.add('active'); }

@@ -9,10 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     <style>
-    /* GENEL SIFIRLAMA */
-    body { margin: 0; padding: 0; transition: background 0.3s, color 0.3s; background: #000; }
-
-    /* VERZIA ULTRA-PREMIUM GOLD DEĞİŞKENLERİ */
+    /* ✨ ANA DEĞİŞKENLER VE GEÇİŞ EFEKTİ ✨ */
     :root {
         --ig-bg: #000000;
         --ig-sidebar-bg: #000000;
@@ -21,19 +18,31 @@
         --v-gold-gradient: linear-gradient(145deg, #8a6e2f 0%, #d4af37 25%, #f9e29c 50%, #d4af37 75%, #a67c00 100%);
         --v-icon-color: #d4af37;
         --v-glow: rgba(212, 175, 55, 0.4);
+        --input-bg: #1a1a1a;
     }
 
     body.light-mode {
-        --ig-bg: #ffffff;
+        --ig-bg: #fafafa;
         --ig-sidebar-bg: #ffffff;
         --ig-border: #dbdbdb;
         --ig-text: #262626;
         --v-gold-gradient: linear-gradient(145deg, #b8860b 0%, #e1b34c 25%, #fff9e3 50%, #e1b34c 75%, #b8860b 100%);
         --v-icon-color: #b8860b;
         --v-glow: rgba(184, 134, 11, 0.2);
+        --input-bg: #ffffff;
     }
 
-    /* SIDEBAR YAPISI (Sadece Profil ve Arama Sayfalarında) */
+    /* Tüm sayfalarda pürüzsüz geçiş için ✨ */
+    body, .main-content-wrapper, .ig-sidebar, .card, input, .overlay-content, .v-modal-content {
+        transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease !important;
+        background-color: var(--ig-bg);
+        color: var(--ig-text);
+    }
+
+    /* GENEL SIFIRLAMA */
+    body { margin: 0; padding: 0; }
+
+    /* SIDEBAR YAPISI */
     .ig-sidebar {
         position: fixed; left: 0; top: 0; bottom: 0; width: 72px;
         border-right: 1px solid var(--ig-border); background: var(--ig-sidebar-bg);
@@ -54,17 +63,15 @@
     }
     .v-logo-btn:hover { transform: rotateY(360deg) scale(1.3); filter: drop-shadow(0 0 15px var(--v-glow)); }
 
-    /* İÇERİK DÜZENLEYİCİ - ANASAYFAYI KURTARAN KISIM */
+    /* İÇERİK DÜZENLEYİCİ */
     .main-content-wrapper { 
         min-height: 100vh;
-        background: transparent;
+        background: var(--ig-bg);
     }
 
-    /* Eğer sayfa Profil veya Arama ise boşluk bırak, Anasayfada (index) bırakma */
     {% if request.endpoint in ['profile', 'search'] %}
     .main-content-wrapper { 
         margin-left: 72px !important; 
-        background: var(--ig-bg) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -72,9 +79,22 @@
     {% else %}
     .main-content-wrapper { margin-left: 0 !important; width: 100%; }
     {% endif %}
+
+    /* Inputlar için mod uyumu */
+    input.pay-input, input.form-control {
+        background-color: var(--input-bg) !important;
+        color: var(--ig-text) !important;
+        border: 1px solid var(--ig-border) !important;
+    }
     </style>
 </head>
 <body class="{% if request.endpoint in ['profile', 'search'] %}profile-page-body{% endif %}">
+
+<script>
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+    }
+</script>
 
 {% if request.endpoint in ['profile', 'search'] %}
 <div class="ig-sidebar">

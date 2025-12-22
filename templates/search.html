@@ -7,16 +7,16 @@
         <p class="text-muted">Verzia dünyasındaki diğer kullanıcıları keşfet.</p>
     </div>
     
-    <div class="search-box-wrapper mx-auto mb-5">
+    <div class="search-box-wrapper mx-auto mb-5 text-center">
         <form action="{{ url_for('search') }}" method="GET">
-            <div class="input-group search-input-group shadow-lg">
+            <div class="input-group search-input-group shadow-lg mb-3">
                 <span class="input-group-text bg-transparent border-0">
                     <i class="fa-solid fa-magnifying-glass search-icon-gold"></i>
                 </span>
                 <input type="text" name="q" class="form-control search-input" 
                        placeholder="Kullanıcı adı ara..." value="{{ query or '' }}" autocomplete="off">
-                <button class="btn verzia-search-btn" type="submit">BUL</button>
             </div>
+            <button class="v-minimal-gold-btn" type="submit">BUL</button>
         </form>
     </div>
 
@@ -105,13 +105,27 @@
 
     .search-icon-gold { color: var(--v-icon-color); font-size: 1.2rem; }
 
-    .verzia-search-btn {
+    /* ✨ ZARİF VE KÜÇÜK GOLD BUTON ✨ */
+    .v-minimal-gold-btn {
         background: var(--v-gold-gradient);
         color: #000 !important;
-        font-weight: bold;
-        border-radius: 50px !important;
-        padding: 8px 25px !important;
+        font-weight: 800;
+        border-radius: 30px !important;
+        padding: 6px 25px !important;
         border: none;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: 0.3s ease;
+        display: inline-block;
+        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .v-minimal-gold-btn:hover {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 10px var(--v-glow));
+        letter-spacing: 2px;
     }
 
     /* SONUÇ KARTLARI */
