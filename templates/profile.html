@@ -51,7 +51,7 @@
     /* GALERİ VE POSTLAR */
     .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
     .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
-    .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+    .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; cursor: pointer; }
     
     .grid-item-overlay {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -61,31 +61,75 @@
     .grid-item:hover .grid-item-overlay { opacity: 1; }
     .grid-item:hover img { filter: brightness(0.8); }
     
-    .no-posts {
-        grid-column: 1 / -1; text-align: center; padding: 80px 20px;
-        border: 1px dashed #d4af37; border-radius: 12px; background: rgba(212, 175, 55, 0.03);
-    }
     .delete-btn {
         position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6);
         color: white; border: none; border-radius: 50%; cursor: pointer; width: 26px; height: 26px; 
         display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 10;
     }
 
-    /* VERZIA GOLD MODAL TASARIMI */
-    .v-modal-content {
-        background: #000000 !important;
-        border: 1px solid #d4af37 !important;
-        color: #f5f5f5;
-        border-radius: 12px;
+    /* GELİŞMİŞ LIGHTBOX TASARIMI */
+    .v-lightbox {
+        display: none; position: fixed; z-index: 10001; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center;
     }
-    .v-modal-header { border-bottom: 1px solid #262626; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-    .v-close-btn { color: #d4af37; font-size: 28px; cursor: pointer; background: none; border: none; line-height: 1; }
-    .user-list-item {
-        display: flex; align-items: center; gap: 15px; padding: 12px 20px;
-        border-bottom: 1px solid #1a1a1a; text-decoration: none !important; color: #f5f5f5 !important;
+    .v-lightbox.active { display: flex; animation: fadeIn 0.3s ease; }
+    
+    .lightbox-main-wrapper {
+        display: flex; width: 90%; max-width: 1100px; height: 85vh; 
+        background: #000; border: 1px solid #d4af37; border-radius: 8px; overflow: hidden;
     }
-    .user-list-item:hover { background: #1a1a1a; color: #d4af37 !important; }
-    .user-list-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid #d4af37; }
+    .lightbox-img-side { flex: 2; background: #050505; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
+    .lightbox-img-side img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    
+    /* ÇİFT TIKLAMA GOLD KALP ANİMASYONU */
+    .heart-boom {
+        position: absolute; color: #d4af37; font-size: 100px; opacity: 0;
+        pointer-events: none; transform: scale(0);
+        filter: drop-shadow(0 0 20px #d4af37);
+        z-index: 10;
+    }
+    .heart-boom.animate { animation: heartPop 0.8s ease-out; }
+    @keyframes heartPop {
+        0% { transform: scale(0); opacity: 0; }
+        30% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(2); opacity: 0; }
+    }
+
+    .lightbox-info-side { flex: 1; background: #000; display: flex; flex-direction: column; border-left: 1px solid #262626; padding: 0; }
+    .info-header { padding: 15px; border-bottom: 1px solid #1a1a1a; font-weight: bold; color: #d4af37; text-align: center; letter-spacing: 2px; }
+    
+    /* YORUM ALANI VE YAZI BOYUTU (GÜNCELLENDİ) */
+    .comment-area { flex-grow: 1; overflow-y: auto; padding: 15px; }
+    .comment-item { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; color: #f5f5f5; line-height: 1.5; }
+    .comment-item-content { flex: 1; font-size: 16px; } /* Yazı boyutu 14'ten 16'ya çıkarıldı */
+    .comment-item b { color: #d4af37; margin-right: 5px; font-size: 16px; } /* Kullanıcı adı büyütüldü */
+    
+    .comment-delete-btn { background: none; border: none; color: #ff4d4d; font-size: 12px; cursor: pointer; opacity: 0.5; transition: 0.3s; margin-left: 5px; }
+    .comment-delete-btn:hover { opacity: 1; transform: scale(1.1); }
+    
+    .interaction-bar { padding: 15px; border-top: 1px solid #1a1a1a; background: #050505; }
+    .like-section { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 18px; }
+    
+    /* GOLD KÜÇÜK KALP (DÜZELTİLDİ) */
+    .like-btn-heart { cursor: pointer; color: #f5f5f5; transition: 0.2s; }
+    .like-btn-heart.active { color: #d4af37 !important; transform: scale(1.2); filter: drop-shadow(0 0 5px #d4af37); }
+    
+    .comment-input-box { display: flex; gap: 10px; align-items: center; }
+    .comment-input-box input { 
+        flex: 1; background: #1a1a1a; border: 1px solid #262626; color: white; 
+        padding: 8px 12px; border-radius: 4px; outline: none; font-size: 15px; /* Input yazısı da büyütüldü */
+    }
+
+    /* ASİL GOLD GÖNDER SİMGESİ (YENİ) */
+    .send-comment-btn {
+        background: none; border: none; color: #d4af37; font-size: 20px; 
+        cursor: pointer; transition: 0.3s; padding: 0 5px;
+    }
+    .send-comment-btn:hover { transform: scale(1.2); filter: drop-shadow(0 0 5px #d4af37); }
+
+    .v-lightbox-close { position: absolute; top: 20px; right: 30px; color: #d4af37; font-size: 40px; cursor: pointer; z-index: 10002; }
+    
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* DOSYA INPUTLARINI GİZLİ TUTUYORUZ */
     #avatarInput, #photoUploadInput, #plusPhotoInput { display: none; }
@@ -150,10 +194,12 @@
         {% if photos %}
             {% for photo in photos %}
             <div class="grid-item">
-                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" alt="{{ photo.title }}">
+                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" 
+                     alt="{{ photo.title }}" 
+                     onclick="openLightbox(this.src, '{{ photo.id }}', '{{ photo.likes.count() if photo.likes else 0 }}')">
                 <div class="grid-item-overlay">
-                    <span><i class="fa-solid fa-heart"></i> {{ photo.like_count() if photo.like_count else 0 }}</span>
-                    <span><i class="fa-solid fa-comment"></i> {{ photo.comment_count() if photo.comment_count else 0 }}</span>
+                    <span><i class="fa-solid fa-heart"></i> {{ photo.likes.count() if photo.likes else 0 }}</span>
+                    <span><i class="fa-solid fa-comment"></i> {{ photo.comments.count() if photo.comments else 0 }}</span>
                 </div>
                 {% if can_edit %}
                 <form action="{{ url_for('delete_photo_profile', photo_id=photo.id) }}" method="POST" style="display:inline;">
@@ -179,6 +225,33 @@
     </div>
 </div>
 
+<div id="photoLightbox" class="v-lightbox">
+    <span class="v-lightbox-close" onclick="closeLightbox()">&times;</span>
+    <div class="lightbox-main-wrapper" onclick="event.stopPropagation()">
+        <div class="lightbox-img-side" ondblclick="handleDblClick()">
+            <i id="bigHeart" class="fa-solid fa-heart heart-boom"></i>
+            <img id="lightboxImg" src="">
+        </div>
+        <div class="lightbox-info-side">
+            <div class="info-header">VERZİA POST</div>
+            <div class="comment-area" id="lightboxComments"></div>
+            <div class="interaction-bar">
+                <div class="like-section">
+                    <i id="lightboxHeart" class="fa-solid fa-heart like-btn-heart" onclick="toggleLike()"></i>
+                    <span id="lightboxLikeCount" style="font-size: 14px; font-weight: bold;">0</span>
+                    <span style="font-size: 14px; opacity: 0.7;">Beğeni</span>
+                </div>
+                <div class="comment-input-box">
+                    <input type="text" id="lightboxCommentInput" placeholder="Yorum ekle..." onkeypress="if(event.key === 'Enter') sendComment()">
+                    <button class="send-comment-btn" onclick="sendComment()">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="userListModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content v-modal-content">
@@ -186,8 +259,7 @@
                 <h6 class="mb-0 verzia-gold-text" id="modalTitle">Kullanıcılar</h6>
                 <button type="button" class="v-close-btn" data-bs-dismiss="modal">&times;</button>
             </div>
-            <div class="modal-body p-0" id="userListBody" style="max-height: 400px; overflow-y: auto;">
-                </div>
+            <div class="modal-body p-0" id="userListBody" style="max-height: 400px; overflow-y: auto;"></div>
         </div>
     </div>
 </div>
@@ -203,6 +275,113 @@
 </div></div></div>
 
 <script>
+    let activePhotoId = null;
+
+    // 0. Gelişmiş Lightbox & Etkileşim
+    function openLightbox(src, photoId, likeCount) {
+        activePhotoId = photoId;
+        const lb = document.getElementById('photoLightbox');
+        const img = document.getElementById('lightboxImg');
+        const countSpan = document.getElementById('lightboxLikeCount');
+        const heart = document.getElementById('lightboxHeart');
+        
+        img.src = src;
+        countSpan.innerText = likeCount;
+        heart.classList.remove('active'); 
+        
+        lb.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        loadComments(photoId);
+    }
+
+    function closeLightbox() {
+        const lb = document.getElementById('photoLightbox');
+        lb.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        activePhotoId = null;
+        document.getElementById('lightboxCommentInput').value = '';
+    }
+
+    // ÇİFT TIKLAMA İLE BEĞENİ VE KALP
+    function handleDblClick() {
+        const bigHeart = document.getElementById('bigHeart');
+        bigHeart.classList.add('animate');
+        setTimeout(() => bigHeart.classList.remove('animate'), 800);
+        
+        const heart = document.getElementById('lightboxHeart');
+        if(!heart.classList.contains('active')) {
+            toggleLike();
+        }
+    }
+
+    function loadComments(photoId) {
+        if(!photoId) return;
+        const area = document.getElementById('lightboxComments');
+        area.innerHTML = '<div style="opacity:0.5; text-align:center;">Yükleniyor...</div>';
+        
+        fetch(`/get_comments/${photoId}`)
+        .then(res => res.json())
+        .then(data => {
+            if(data.length === 0) {
+                area.innerHTML = '<div style="opacity:0.5; text-align:center; margin-top:20px;">Henüz yorum yok.</div>';
+            } else {
+                area.innerHTML = data.map(c => `
+                    <div class="comment-item">
+                        <div class="comment-item-content">
+                            <b>${c.username}</b> ${c.content}
+                        </div>
+                        ${c.can_delete ? `<button class="comment-delete-btn" onclick="deleteComment(${c.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </div>
+                `).join('');
+            }
+        });
+    }
+
+    function toggleLike() {
+        if(!activePhotoId) return;
+        const heart = document.getElementById('lightboxHeart');
+        const countSpan = document.getElementById('lightboxLikeCount');
+
+        fetch(`/like/${activePhotoId}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            countSpan.innerText = data.like_count;
+            if(data.status === 'liked') heart.classList.add('active');
+            else heart.classList.remove('active');
+        });
+    }
+
+    function sendComment() {
+        const input = document.getElementById('lightboxCommentInput');
+        const content = input.value.trim();
+        
+        if(!content || !activePhotoId) return;
+
+        fetch(`/comment/${activePhotoId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: content})
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                input.value = '';
+                loadComments(activePhotoId);
+            }
+        });
+    }
+
+    function deleteComment(commentId) {
+        if(!confirm('Yorumu silmek istediğine emin misin?')) return;
+        fetch(`/delete_comment/${commentId}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                loadComments(activePhotoId);
+            }
+        });
+    }
+
     // 1. Profil Fotoğrafı Yükleme Mantığı
     function previewImage(event) {
         const reader = new FileReader();
@@ -259,20 +438,18 @@
         const listModal = new bootstrap.Modal(document.getElementById('userListModal'));
         listModal.show();
 
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (data.length === 0) {
-                    body.innerHTML = '<div class="p-4 text-center opacity-50">Henüz kimse yok.</div>';
-                    return;
-                }
-                body.innerHTML = data.map(user => `
-                    <a href="/profile?username=${user.username}" class="user-list-item">
-                        <img src="${user.avatar}" class="user-list-avatar">
-                        <span style="font-weight: 500;">${user.username}</span>
-                    </a>
-                `).join('');
-            });
+        fetch(url).then(res => res.json()).then(data => {
+            if (data.length === 0) {
+                body.innerHTML = '<div class="p-4 text-center opacity-50">Henüz kimse yok.</div>';
+                return;
+            }
+            body.innerHTML = data.map(user => `
+                <a href="/profile?username=${user.username}" class="user-list-item">
+                    <img src="${user.avatar}" class="user-list-avatar">
+                    <span style="font-weight: 500;">${user.username}</span>
+                </a>
+            `).join('');
+        });
     }
 </script>
 {% endblock %}

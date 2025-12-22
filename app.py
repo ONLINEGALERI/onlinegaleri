@@ -41,7 +41,7 @@ def index():
     all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
     return render_template('index.html', photos=all_photos)
 
-# --------------------- AUTH (GÜNCELLENDİ) ---------------------
+# --------------------- AUTH (JSON DESTEKLİ) ---------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -50,11 +50,9 @@ def login():
         user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email)).first()
         
         if not user or not check_password_hash(user.password, password):
-            # Burası değişti: Hata olduğunda JSON dönüyoruz
             return jsonify({'status': 'error', 'message': 'Kullanıcı adı veya şifre hatalı.'}), 401
         
         login_user(user)
-        # Burası değişti: Başarılıysa JSON ile yönlendirme adresi dönüyoruz
         return jsonify({'status': 'success', 'redirect': url_for('index')})
         
     return render_template('login_clean.html')
@@ -72,7 +70,6 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         if User.query.filter((User.username == username) | (User.email == email)).first():
-            # Kayıt hatası için de JSON desteği (İsteğe bağlı)
             return jsonify({'status': 'error', 'message': 'Kullanıcı zaten mevcut!'}), 400
             
         new_user = User(username=username, email=email, password=generate_password_hash(password))
@@ -140,6 +137,74 @@ def search():
     if query:
         results = User.query.filter(User.username.icontains(query)).all()
     return render_template('search.html', results=results, query=query)
+
+# --------------------- ADMIN PANELI ---------------------
+@app.route('/admin')
+@login_required
+def admin():
+    if current_user.username.lower() != 'bec':
+        abort(403)
+    users = User.query.all()
+    photos = Photo.query.all()
+    return render_template('admin.html', users=users, photos=photos)
+
+# --------------------- BEĞENİ VE YORUM İŞLEMLERİ ---------------------
+@app.route('/like/<int:photo_id>', methods=['POST'])
+@login_required
+def like_photo(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    existing_like = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first()
+    
+    if existing_like:
+        db.session.delete(existing_like)
+        db.session.commit()
+        return jsonify({'status': 'unliked', 'like_count': Like.query.filter_by(photo_id=photo_id).count()})
+    
+    new_like = Like(user_id=current_user.id, photo_id=photo_id)
+    db.session.add(new_like)
+    db.session.commit()
+    return jsonify({'status': 'liked', 'like_count': Like.query.filter_by(photo_id=photo_id).count()})
+
+@app.route('/comment/<int:photo_id>', methods=['POST'])
+@login_required
+def add_comment(photo_id):
+    data = request.get_json()
+    comment_body = data.get('content') 
+    if not comment_body:
+        return jsonify({'status': 'error', 'message': 'Yorum boş olamaz'}), 400
+    
+    # MODELLERİNLE %100 UYUMLU: 'body' sütunu kullanılıyor
+    new_comment = Comment(body=comment_body, user_id=current_user.id, photo_id=photo_id)
+    db.session.add(new_comment)
+    db.session.commit()
+    
+    return jsonify({
+        'status': 'success', 
+        'comment_id': new_comment.id,
+        'username': current_user.username, 
+        'content': comment_body
+    })
+
+@app.route('/get_comments/<int:photo_id>')
+def get_comments(photo_id):
+    # timestamp'e göre sırala ve body'yi çek
+    comments = Comment.query.filter_by(photo_id=photo_id).order_by(Comment.timestamp.asc()).all()
+    return jsonify([{
+        'id': c.id,
+        'username': User.query.get(c.user_id).username, 
+        'content': c.body, 
+        'can_delete': (current_user.is_authenticated and (c.user_id == current_user.id or current_user.username.lower() == 'bec'))
+    } for c in comments])
+
+@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.user_id != current_user.id and current_user.username.lower() != 'bec':
+        abort(403)
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
 # --------------------- SOSYAL AKSİYONLAR ---------------------
 @app.route('/follow/<username>', methods=['POST'])
@@ -215,6 +280,27 @@ def delete_photo_profile(photo_id):
     db.session.delete(photo)
     db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.username.lower() != 'bec':
+        abort(403)
+    user = User.query.get_or_404(user_id)
+    if user.id != current_user.id:
+        db.session.delete(user)
+        db.session.commit()
+    return redirect(url_for('admin'))
+
+@app.route('/delete_photo/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo(photo_id):
+    if current_user.username.lower() != 'bec':
+        abort(403)
+    photo = Photo.query.get_or_404(photo_id)
+    db.session.delete(photo)
+    db.session.commit()
+    return redirect(url_for('admin'))
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename): return send_from_directory(UPLOAD_FOLDER, filename)
