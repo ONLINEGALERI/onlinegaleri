@@ -142,10 +142,53 @@
     .send-comment-btn:hover { transform: scale(1.2); filter: drop-shadow(0 0 5px #d4af37); }
 
     .v-lightbox-close { position: absolute; top: 20px; right: 30px; color: #d4af37; font-size: 40px; cursor: pointer; z-index: 10002; }
+
+    /* ✨ MİNİMAL KULLANICI LİSTESİ TASARIMI ✨ */
+    .user-list-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        text-decoration: none !important;
+        transition: background 0.3s;
+        border-bottom: 1px solid #1a1a1a;
+    }
+    .user-list-item:hover { background: rgba(212, 175, 55, 0.05); }
+    .user-list-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 12px;
+        border: 1px solid #262626;
+    }
+    .user-list-username {
+        color: #f5f5f5;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    .v-modal-content {
+        background: #000 !important;
+        border: 1px solid #d4af37 !important;
+        border-radius: 12px !important;
+        overflow: hidden;
+    }
+    .v-modal-header {
+        padding: 15px;
+        border-bottom: 1px solid #1a1a1a;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .v-close-btn {
+        background: none;
+        border: none;
+        color: #d4af37;
+        font-size: 28px;
+        line-height: 1;
+        cursor: pointer;
+    }
     
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    /* DOSYA INPUTLARINI GİZLİ TUTUYORUZ */
     #avatarInput, #photoUploadInput, #plusPhotoInput { display: none; }
 </style>
 
@@ -175,7 +218,6 @@
             <ul class="ig-stats">
                 <li><b>{{ photos|length }}</b> gönderi</li>
                 
-                {# 👑 ADMIN (BEC) İÇİN TAKİPÇİ LİSTESİ TIKLANAMAZ #}
                 {% if server_profile.username.lower() == 'bec' %}
                     <li><b id="followerCount">2M</b> takipçi</li>
                 {% else %}
@@ -234,7 +276,6 @@
                 <div style="font-size: 50px; margin-bottom: 15px;">📸</div>
                 <h3 class="verzia-gold-text">Henüz hiç gönderi yok</h3>
                 
-                {# ✨ AKILLI KONTROL DOKUNUŞU ✨ #}
                 {% if can_edit %}
                     <p style="opacity: 0.7; margin-bottom: 20px;">Sen de hemen şimdi ilk fotoğrafını paylaş!</p>
                     <button class="verzia-gold-btn" onclick="document.getElementById('photoUploadInput').click()">Hemen Paylaş</button>
@@ -450,7 +491,7 @@
         });
     }
 
-    // 4. Takipçi/Takip Edilen Listesini Gösterme
+    // ✨ 4. MİNİMAL TAKİPÇİ LİSTESİ SİHRİ ✨
     function showUserList(type) {
         const username = "{{ server_profile.username }}";
         const title = type === 'followers' ? 'Takipçiler' : 'Takip Edilenler';
@@ -468,10 +509,11 @@
                 body.innerHTML = '<div class="p-4 text-center opacity-50">Henüz kimse yok.</div>';
                 return;
             }
+            // ✨ Tam istediğin minimal yuvarlak avatarlı yapı ✨
             body.innerHTML = data.map(user => `
                 <a href="/profile?username=${user.username}" class="user-list-item">
-                    <img src="${user.avatar}" class="user-list-avatar">
-                    <span style="font-weight: 500;">${user.username}</span>
+                    <img src="${user.avatar}" class="user-list-avatar" onerror="this.src='https://picsum.photos/seed/default/100/100'">
+                    <span class="user-list-username">${user.username}</span>
                 </a>
             `).join('');
         });
