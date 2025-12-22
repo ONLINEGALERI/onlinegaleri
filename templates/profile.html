@@ -2,6 +2,7 @@
 
 {% block content %}
 <style>
+    /* ANA KONTEYNER VE HEADER */
     .ig-container { width: 100%; max-width: 935px; margin: 0 auto; padding: 30px 20px; color: var(--ig-text); }
     .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; }
     .ig-avatar-area { flex: 1; display: flex; justify-content: center; position: relative; }
@@ -11,6 +12,11 @@
     .ig-user-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .profile-name { font-size: 28px; font-weight: 300; margin: 0; color: var(--ig-text); text-transform: uppercase; }
 
+    /* VERZIA GOLD DETAYLAR */
+    .verzia-gold-text {
+        background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;
+    }
     .gold-verify {
         font-size: 20px; background: linear-gradient(135deg, #a67c00 0%, #ffbf00 50%, #b8860b 100%);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.3));
@@ -18,6 +24,13 @@
     body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37 0%, #fff9e3 50%, #c5a028 100%); -webkit-background-clip: text; }
 
     .btn-ig-edit { background: var(--ig-bg) !important; border: 1px solid var(--ig-border) !important; border-radius: 4px !important; color: var(--ig-text) !important; font-weight: 600; font-size: 14px; padding: 5px 9px; cursor: pointer; }
+    .verzia-gold-btn {
+        background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728) !important;
+        color: #000 !important; font-weight: bold; border: none !important; padding: 8px 20px; border-radius: 5px; cursor: pointer; transition: transform 0.2s;
+    }
+    .verzia-gold-btn:hover { transform: scale(1.05); }
+
+    /* İSTATİSTİKLER */
     .ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
     .ig-stats li { font-size: 16px; color: var(--ig-text); }
     .ig-stats b { font-weight: 600; }
@@ -25,10 +38,22 @@
     .bio-link { color: #00376b; text-decoration: none; font-weight: 600; }
     body:not(.light-mode) .bio-link { color: #e0f1ff; }
 
-    .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 20px; }
-    .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); }
-    .grid-item img { width: 100%; height: 100%; object-fit: cover; }
-    #fileInput { display: none; }
+    /* GALERİ VE POSTLAR */
+    .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
+    .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
+    .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+    .grid-item:hover img { filter: brightness(0.8); }
+    
+    .no-posts {
+        grid-column: 1 / -1; text-align: center; padding: 80px 20px;
+        border: 1px dashed #d4af37; border-radius: 12px; background: rgba(212, 175, 55, 0.03);
+    }
+    .delete-btn {
+        position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6);
+        color: white; border: none; border-radius: 50%; cursor: pointer; width: 26px; height: 26px; 
+        display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 10;
+    }
+    #fileInput, #photoInput, #plusPhotoInput { display: none; }
 </style>
 
 <div class="ig-container">
@@ -46,7 +71,7 @@
                 {% if can_edit %}<button class="btn-ig-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">Profili Düzenle</button>{% endif %}
             </div>
             <ul class="ig-stats">
-                <li><b>{{ server_profile.posts }}</b> gönderi</li>
+                <li><b>{{ photos|length }}</b> gönderi</li>
                 <li><b>{{ server_profile.followers }}</b> takipçi</li>
                 <li><b>{{ server_profile.following }}</b> takip</li>
             </ul>
@@ -61,7 +86,47 @@
             </div>
         </div>
     </header>
-    <div class="ig-photo-grid" id="masonry"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+        <h5 class="verzia-gold-text mb-0" style="letter-spacing: 1px;">GÖNDERİLER</h5>
+        {% if can_edit and photos %}
+            <button class="verzia-gold-btn btn-sm" onclick="document.getElementById('plusPhotoInput').click()">
+                <i class="fa-solid fa-plus"></i> Yeni Ekle
+            </button>
+            <form id="plusUploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                <input type="file" name="photo" id="plusPhotoInput" onchange="this.form.submit()">
+                <input type="hidden" name="title" value="Profil Gönderisi">
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="ig-photo-grid">
+        {% if photos %}
+            {% for photo in photos %}
+            <div class="grid-item">
+                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" alt="{{ photo.title }}">
+                {% if can_edit %}
+                <form action="{{ url_for('delete_photo_profile', photo_id=photo.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="delete-btn" onclick="return confirm('Silmek istediğine emin misin?')">&times;</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-posts">
+                <div style="font-size: 50px; margin-bottom: 15px;">📸</div>
+                <h3 class="verzia-gold-text">Henüz hiç gönderi yok</h3>
+                <p style="opacity: 0.7; margin-bottom: 20px;">Sen de hemen şimdi ilk fotoğrafını paylaş!</p>
+                {% if can_edit %}
+                    <button class="verzia-gold-btn" onclick="document.getElementById('photoInput').click()">Hemen Paylaş</button>
+                    <form id="directUploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                        <input type="file" name="photo" id="photoInput" onchange="this.form.submit()">
+                        <input type="hidden" name="title" value="İlk Profil Gönderisi">
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 <div class="modal fade" id="editProfileModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
@@ -75,13 +140,7 @@
 </div></div></div>
 
 <script>
-    const grid = document.getElementById('masonry');
-    for(let i=1; i<=6; i++) {
-        const item = document.createElement('div'); item.className = 'grid-item';
-        item.innerHTML = `<img src="https://picsum.photos/seed/${i+100}/600/600">`;
-        grid.appendChild(item);
-    }
-
+    // Avatar Önizleme ve Kaydetme
     function previewImage(event) {
         const reader = new FileReader();
         reader.onload = function() {
@@ -95,6 +154,7 @@
         reader.readAsDataURL(event.target.files[0]);
     }
 
+    // Biyografi Kaydetme
     function saveProfileData() {
         const bio = document.getElementById('editBio').value;
         fetch('/profile/save', {

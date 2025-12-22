@@ -76,35 +76,41 @@ def register():
         return redirect(url_for('index'))
     return render_template('register.html')
 
-# --------------------- PROFILE ---------------------
+# --------------------- PROFILE (DİNAMİK GÜNCELLEME) ---------------------
 @app.route('/profile')
 def profile():
     username = request.args.get('username')
+    
+    # Hangi kullanıcıya bakıyoruz?
     if username:
-        server_profile = User.query.filter_by(username=username).first()
+        user_to_show = User.query.filter_by(username=username).first()
     elif current_user.is_authenticated:
-        server_profile = current_user
+        user_to_show = current_user
         username = current_user.username
     else:
         return redirect(url_for('login'))
 
-    if not server_profile:
+    if not user_to_show:
         abort(404)
 
-    is_vip = (server_profile.username.lower() == 'bec')
+    # INSTAGRAM MANTIĞI: Sadece bu kullanıcıya ait fotoğrafları çek
+    user_photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
+
+    is_vip = (user_to_show.username.lower() == 'bec')
     
     sp = {
-        'username': server_profile.username,
-        'avatar': server_profile.avatar if server_profile.avatar else 'https://picsum.photos/seed/default/400/400',
-        'bio': server_profile.bio if server_profile.bio else 'Henüz bir biyografi eklenmedi.',
-        'followers': '2M' if is_vip else (server_profile.followers or 0),
-        'following': '3' if is_vip else (server_profile.following or 0),
-        'posts': '6' if is_vip else (server_profile.posts or 0),
+        'username': user_to_show.username,
+        'avatar': user_to_show.avatar if user_to_show.avatar else 'https://picsum.photos/seed/default/400/400',
+        'bio': user_to_show.bio if user_to_show.bio else 'Henüz bir biyografi eklenmedi.',
+        'followers': '2M' if is_vip else (user_to_show.followers or 0),
+        'following': '3' if is_vip else (user_to_show.following or 0),
+        'posts': len(user_photos), # Gerçek gönderi sayısı
         'is_vip': is_vip
     }
 
-    can_edit = current_user.is_authenticated and current_user.id == server_profile.id
-    return render_template('profile.html', server_profile=sp, can_edit=can_edit)
+    can_edit = current_user.is_authenticated and current_user.id == user_to_show.id
+    # photos=user_photos eklendi
+    return render_template('profile.html', server_profile=sp, can_edit=can_edit, photos=user_photos)
 
 @app.route('/profile/save', methods=['POST'])
 @login_required
@@ -117,16 +123,26 @@ def save_profile():
         return jsonify({'status': 'ok'})
     return jsonify({'status': 'error'}), 400
 
+# PROFİL ÜZERİNDEN FOTOĞRAF SİLME
+@app.route('/delete_photo_profile/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo_profile(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    # Sadece kendi fotoğrafını silebilir (veya bec siler)
+    if photo.owner_id != current_user.id and current_user.username.lower() != 'bec':
+        abort(403)
+    db.session.delete(photo)
+    db.session.commit()
+    return redirect(url_for('profile', username=current_user.username))
+
 # --------------------- ADMIN ---------------------
 @app.route('/admin')
 @login_required
 def admin():
-    # Sadece bec admin paneline girebilir
     if current_user.username.lower() != 'bec':
         abort(403)
     return render_template('admin.html', users=User.query.all(), photos=Photo.query.all())
 
-# KULLANICI SİLME (Hata Çözümü)
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
@@ -139,7 +155,6 @@ def delete_user(user_id):
         flash(f"{user.username} silindi.", "success")
     return redirect(url_for('admin'))
 
-# FOTOĞRAF SİLME (Hata Çözümü)
 @app.route('/delete_photo/<int:photo_id>', methods=['POST'])
 @login_required
 def delete_photo(photo_id):
@@ -172,7 +187,8 @@ def upload():
             photo = Photo(title=request.form.get('title'), filename=filename, owner_id=current_user.id)
             db.session.add(photo)
             db.session.commit()
-            return redirect(url_for('gallery'))
+            # Profil sayfasından yüklendiyse profile dönmesi için
+            return redirect(url_for('profile', username=current_user.username))
     return render_template('upload.html')
 
 @app.route('/uploads/<filename>')
