@@ -7,7 +7,7 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 from flask_login import login_user, logout_user, current_user, login_required
-from models.user import User, Comment, Like  # Yeni modeller eklendi
+from models.user import User, Comment, Like 
 from models.siteinfo import SiteInfo
 from models.photo import Photo
 
@@ -20,13 +20,13 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Upload folders
+# Klasör Yapılandırması
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 THUMB_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbs')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
 os.makedirs(THUMB_FOLDER, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -38,7 +38,8 @@ def allowed_file(filename):
 # --------------------- INDEX ---------------------
 @app.route('/')
 def index():
-    return render_template('index.html')
+    all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
+    return render_template('index.html', photos=all_photos)
 
 # --------------------- AUTH ---------------------
 @app.route('/login', methods=['GET', 'POST'])
@@ -80,6 +81,7 @@ def register():
 @app.route('/profile')
 def profile():
     username = request.args.get('username')
+    user_to_show = None
     
     if username:
         user_to_show = User.query.filter_by(username=username).first()
@@ -95,7 +97,6 @@ def profile():
     user_photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
     is_vip = (user_to_show.username.lower() == 'bec')
     
-    # Takip kontrolü
     is_following = False
     if current_user.is_authenticated and current_user.id != user_to_show.id:
         is_following = current_user.is_following(user_to_show)
@@ -124,8 +125,17 @@ def save_profile():
         return jsonify({'status': 'ok'})
     return jsonify({'status': 'error'}), 400
 
-# --------------------- SOCIAL ACTIONS ---------------------
+# --------------------- SEARCH (HATAYI ÇÖZEN KISIM) ---------------------
+@app.route('/search')
+@login_required
+def search():
+    query = request.args.get('q', '')
+    results = []
+    if query:
+        results = User.query.filter(User.username.icontains(query)).all()
+    return render_template('search.html', results=results, query=query)
 
+# --------------------- SOSYAL AKSİYONLAR ---------------------
 @app.route('/follow/<username>', methods=['POST'])
 @login_required
 def follow(username):
@@ -146,8 +156,35 @@ def unfollow(username):
     db.session.commit()
     return jsonify({'status': 'success', 'followers': user.followers_list.count()})
 
-# --------------------- OTHER ---------------------
+# --------------------- FOTOĞRAF YÜKLEME ---------------------
+@app.route('/upload', methods=['POST'])
+@login_required
+def upload():
+    file = request.files.get('photo')
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filename = f"{current_user.id}_{filename}"
+        path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(path)
+        
+        try:
+            img = Image.open(path)
+            img.thumbnail((400, 400))
+            img.save(os.path.join(THUMB_FOLDER, filename))
+        except:
+            pass
+            
+        new_photo = Photo(
+            title=request.form.get('title', 'Verzia Post'),
+            filename=filename,
+            owner_id=current_user.id
+        )
+        db.session.add(new_photo)
+        db.session.commit()
+        
+    return redirect(url_for('profile', username=current_user.username))
 
+# --------------------- SİLME VE SERVİS ---------------------
 @app.route('/delete_photo_profile/<int:photo_id>', methods=['POST'])
 @login_required
 def delete_photo_profile(photo_id):
@@ -158,63 +195,6 @@ def delete_photo_profile(photo_id):
     db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
 
-@app.route('/search')
-@login_required
-def search():
-    query = request.args.get('q', '')
-    results = []
-    if query:
-        results = User.query.filter(User.username.icontains(query)).all()
-    return render_template('search.html', results=results, query=query)
-
-@app.route('/admin')
-@login_required
-def admin():
-    if current_user.username.lower() != 'bec':
-        abort(403)
-    return render_template('admin.html', users=User.query.all(), photos=Photo.query.all())
-
-@app.route('/delete_user/<int:user_id>', methods=['POST'])
-@login_required
-def delete_user(user_id):
-    if current_user.username.lower() != 'bec':
-        abort(403)
-    user = User.query.get_or_404(user_id)
-    if user.id != current_user.id:
-        db.session.delete(user)
-        db.session.commit()
-        flash(f"{user.username} silindi.", "success")
-    return redirect(url_for('admin'))
-
-@app.route('/delete_photo/<int:photo_id>', methods=['POST'])
-@login_required
-def delete_photo(photo_id):
-    if current_user.username.lower() != 'bec':
-        abort(403)
-    photo = Photo.query.get_or_404(photo_id)
-    db.session.delete(photo)
-    db.session.commit()
-    flash("Fotoğraf silindi.", "success")
-    return redirect(url_for('admin'))
-
-@app.route('/upload', methods=['GET', 'POST'])
-@login_required
-def upload():
-    if request.method == 'POST':
-        file = request.files.get('photo')
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            path = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(path)
-            img = Image.open(path)
-            img.thumbnail((300, 300))
-            img.save(os.path.join(THUMB_FOLDER, filename))
-            photo = Photo(title=request.form.get('title'), filename=filename, owner_id=current_user.id)
-            db.session.add(photo)
-            db.session.commit()
-            return redirect(url_for('profile', username=current_user.username))
-    return render_template('upload.html')
-
 @app.route('/uploads/<filename>')
 def uploaded_file(filename): return send_from_directory(UPLOAD_FOLDER, filename)
 
@@ -222,5 +202,6 @@ def uploaded_file(filename): return send_from_directory(UPLOAD_FOLDER, filename)
 def thumb_file(filename): return send_from_directory(THUMB_FOLDER, filename)
 
 if __name__ == "__main__":
-    with app.app_context(): db.create_all()
+    with app.app_context(): 
+        db.create_all()
     app.run(debug=True, port=5001)

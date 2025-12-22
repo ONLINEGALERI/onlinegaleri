@@ -6,8 +6,12 @@
     .ig-container { width: 100%; max-width: 935px; margin: 0 auto; padding: 30px 20px; color: var(--ig-text); }
     .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; }
     .ig-avatar-area { flex: 1; display: flex; justify-content: center; position: relative; }
-    .avatar-wrapper { position: relative; cursor: pointer; }
+    
+    /* PROFİL FOTOĞRAFI ETKİSİ */
+    .avatar-wrapper { position: relative; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .avatar-wrapper:hover { transform: scale(1.05); }
     .profile-avatar { width: 150px !important; height: 150px !important; border-radius: 50% !important; object-fit: cover; border: 1px solid var(--ig-border); padding: 5px; background-color: var(--ig-bg); }
+    
     .ig-info-area { flex: 2; padding-left: 30px; }
     .ig-user-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .profile-name { font-size: 28px; font-weight: 300; margin: 0; color: var(--ig-text); text-transform: uppercase; }
@@ -25,7 +29,6 @@
 
     .btn-ig-edit { background: var(--ig-bg) !important; border: 1px solid var(--ig-border) !important; border-radius: 4px !important; color: var(--ig-text) !important; font-weight: 600; font-size: 14px; padding: 5px 9px; cursor: pointer; }
     
-    /* GOLD TAKİP ET BUTONU */
     .verzia-gold-btn {
         background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728) !important;
         color: #000 !important; font-weight: bold; border: none !important; padding: 8px 20px; border-radius: 5px; cursor: pointer; transition: transform 0.2s;
@@ -44,15 +47,12 @@
     .ig-stats li { font-size: 16px; color: var(--ig-text); }
     .ig-stats b { font-weight: 600; }
     .ig-bio { font-size: 16px; line-height: 1.5; color: var(--ig-text); }
-    .bio-link { color: #00376b; text-decoration: none; font-weight: 600; }
-    body:not(.light-mode) .bio-link { color: #e0f1ff; }
 
     /* GALERİ VE POSTLAR */
     .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
     .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
     .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
     
-    /* POST ÜZERİ ETKİLEŞİM */
     .grid-item-overlay {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center;
@@ -70,15 +70,16 @@
         color: white; border: none; border-radius: 50%; cursor: pointer; width: 26px; height: 26px; 
         display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 10;
     }
-    #fileInput, #photoInput, #plusPhotoInput { display: none; }
+    /* DOSYA INPUTLARINI GİZLİ TUTUYORUZ */
+    #avatarInput, #photoUploadInput, #plusPhotoInput { display: none; }
 </style>
 
 <div class="ig-container">
     <header class="ig-header">
         <div class="ig-avatar-area">
-            <div class="avatar-wrapper" {% if can_edit %}onclick="document.getElementById('fileInput').click()"{% endif %}>
+            <div class="avatar-wrapper" {% if can_edit %}onclick="document.getElementById('avatarInput').click()"{% endif %}>
                 <img class="profile-avatar" id="avatarPreview" src="{{ server_profile.avatar }}" alt="avatar">
-                {% if can_edit %}<input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">{% endif %}
+                {% if can_edit %}<input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="previewImage(event)">{% endif %}
             </div>
         </div>
         <div class="ig-info-area">
@@ -98,16 +99,15 @@
             </div>
             <ul class="ig-stats">
                 <li><b>{{ photos|length }}</b> gönderi</li>
-                <li id="followerCount"><b>{{ server_profile.followers }}</b> takipçi</li>
+                <li id="followerCount"><b>{% if server_profile.is_vip %}2M{% else %}{{ server_profile.followers }}{% endif %}</b> takipçi</li>
                 <li><b>{{ server_profile.following }}</b> takip</li>
             </ul>
             <div class="ig-bio">
                 <div id="profileBio">
                     {% if server_profile.is_vip %}
                         <a href="#" class="bio-link">VERZİA OFFİCİAL</a>
-                    {% else %}
-                        <span>{{ server_profile.bio }}</span>
                     {% endif %}
+                    <p class="mt-1">{{ server_profile.bio }}</p>
                 </div>
             </div>
         </div>
@@ -148,9 +148,9 @@
                 <h3 class="verzia-gold-text">Henüz hiç gönderi yok</h3>
                 <p style="opacity: 0.7; margin-bottom: 20px;">Sen de hemen şimdi ilk fotoğrafını paylaş!</p>
                 {% if can_edit %}
-                    <button class="verzia-gold-btn" onclick="document.getElementById('photoInput').click()">Hemen Paylaş</button>
+                    <button class="verzia-gold-btn" onclick="document.getElementById('photoUploadInput').click()">Hemen Paylaş</button>
                     <form id="directUploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
-                        <input type="file" name="photo" id="photoInput" onchange="this.form.submit()">
+                        <input type="file" name="photo" id="photoUploadInput" onchange="this.form.submit()">
                         <input type="hidden" name="title" value="İlk Profil Gönderisi">
                     </form>
                 {% endif %}
@@ -170,7 +170,7 @@
 </div></div></div>
 
 <script>
-    // Avatar Önizleme ve Kaydetme (Orijinal Mantık)
+    // 1. Profil Fotoğrafı Yükleme Mantığı
     function previewImage(event) {
         const reader = new FileReader();
         reader.onload = function() {
@@ -184,7 +184,7 @@
         reader.readAsDataURL(event.target.files[0]);
     }
 
-    // Biyografi Kaydetme (Orijinal Mantık)
+    // 2. Biyografi Kaydetme Mantığı
     function saveProfileData() {
         const bio = document.getElementById('editBio').value;
         fetch('/profile/save', {
@@ -193,7 +193,7 @@
         }).then(() => location.reload());
     }
 
-    // TAKİP ETME FONKSİYONU
+    // 3. Takip Etme Mantığı (VIP Koruma Dahil)
     function toggleFollow(username, btn) {
         const isFollowing = btn.classList.contains('btn-unfollow');
         const url = isFollowing ? `/unfollow/${username}` : `/follow/${username}`;
@@ -205,7 +205,6 @@
                 btn.textContent = isFollowing ? 'Takip Et' : 'Takibi Bırak';
                 btn.className = isFollowing ? 'verzia-gold-btn' : 'btn-unfollow';
                 
-                // VIP (BEC) ise 2M'i bozma, değilse güncelle
                 const isVip = {{ 'true' if server_profile.is_vip else 'false' }};
                 if (!isVip) {
                     document.getElementById('followerCount').innerHTML = `<b>${data.followers}</b> takipçi`;
