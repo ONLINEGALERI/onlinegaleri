@@ -12,12 +12,17 @@
     /* GENEL SIFIRLAMA */
     body { margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
 
-    /* PROFİL SAYFASI RENK DEĞİŞKENLERİ */
+    /* VERZIA ULTRA-PREMIUM GOLD DEĞİŞKENLERİ */
     :root {
-        --ig-bg: #000000; /* Varsayılan Dark */
+        --ig-bg: #000000;
         --ig-sidebar-bg: #000000;
         --ig-border: #262626;
         --ig-text: #f5f5f5;
+        
+        /* DARK MODE: 24K Deep Gold (Daha zengin, kontrastlı ve mücevherimsi) */
+        --v-gold-gradient: linear-gradient(145deg, #8a6e2f 0%, #d4af37 25%, #f9e29c 50%, #d4af37 75%, #a67c00 100%);
+        --v-icon-color: #d4af37;
+        --v-glow: rgba(212, 175, 55, 0.4);
     }
 
     body.light-mode {
@@ -25,18 +30,59 @@
         --ig-sidebar-bg: #ffffff;
         --ig-border: #dbdbdb;
         --ig-text: #262626;
+        
+        /* LIGHT MODE: Champagne Gold (Beyaz üzerinde sırıtmayan, lüks ve ipeksi gold) */
+        --v-gold-gradient: linear-gradient(145deg, #b8860b 0%, #e1b34c 25%, #fff9e3 50%, #e1b34c 75%, #b8860b 100%);
+        --v-icon-color: #b8860b;
+        --v-glow: rgba(184, 134, 11, 0.2);
     }
 
-    /* SADECE PROFİL SAYFASINDA ÇALIŞACAK KODLAR */
+    /* PROFİL SAYFASI ÖZEL YAPI */
     {% if request.endpoint == 'profile' %}
     body { background-color: var(--ig-bg) !important; color: var(--ig-text) !important; }
     
     .ig-sidebar {
         position: fixed; left: 0; top: 0; bottom: 0; width: 72px;
         border-right: 1px solid var(--ig-border); background: var(--ig-sidebar-bg);
-        display: flex; flex-direction: column; align-items: center; padding: 20px 0; z-index: 9999;
+        display: flex; flex-direction: column; align-items: center; padding: 25px 0; z-index: 9999;
     }
-    .sidebar-item { margin-bottom: 30px; color: var(--ig-text); text-decoration: none; font-size: 24px; display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; }
+    
+    /* İkonlar İçin Gold Dokunuş */
+    .sidebar-item { 
+        margin-bottom: 35px; 
+        color: var(--v-icon-color) !important; 
+        text-decoration: none; 
+        font-size: 26px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        width: 100%; 
+        height: 50px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .sidebar-item:hover {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px var(--v-glow));
+    }
+
+    /* İMZAMIZ: VERZIA V LOGO BUTONU */
+    .v-logo-btn {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 32px;
+        background: var(--v-gold-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));
+        transition: 0.5s ease-in-out;
+    }
+    
+    .v-logo-btn:hover {
+        transform: rotateY(360deg) scale(1.3);
+        filter: drop-shadow(0 0 15px var(--v-glow));
+    }
     
     .main-content-wrapper { 
         margin-left: 72px !important; 
@@ -54,7 +100,6 @@
     </style>
     
     <script>
-        // Sayfa yüklendiğinde temayı hatırla
         (function() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
@@ -72,9 +117,16 @@
 <div class="ig-sidebar">
     <a href="{{ url_for('index') }}" class="sidebar-item" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
     <a href="#" class="sidebar-item" title="Ara"><i class="fa-solid fa-magnifying-glass"></i></a>
-    <a href="{{ url_for('upload') }}" class="sidebar-item" title="Yükle"><i class="fa-regular fa-square-plus"></i></a>
+    
+    <a href="{{ url_for('upload') }}" class="sidebar-item" title="Verzia Yükle">
+        <span class="v-logo-btn">V</span>
+    </a>
+
     <a href="{{ url_for('profile') }}" class="sidebar-item" title="Profil"><i class="fa-solid fa-circle-user"></i></a>
-    <div class="mt-auto"><a href="{{ url_for('logout') }}" class="sidebar-item" title="Çıkış Yap"><i class="fa-solid fa-right-from-bracket"></i></a></div>
+    
+    <div class="mt-auto">
+        <a href="{{ url_for('logout') }}" class="sidebar-item" title="Çıkış Yap"><i class="fa-solid fa-right-from-bracket"></i></a>
+    </div>
 </div>
 {% endif %}
 
