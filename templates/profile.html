@@ -67,7 +67,7 @@
         display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 10;
     }
 
-    /* BOŞ GÖNDERİ ALANI (ORTALANDI ✨) */
+    /* BOŞ GÖNDERİ ALANI */
     .no-posts {
         grid-column: 1 / -1; 
         text-align: center; 
@@ -81,11 +81,11 @@
         justify-content: center;
     }
 
-    /* ✨ OKUNAKLI VE BİRAZ DAHA BÜYÜK TAKİPÇİ LİSTESİ ✨ */
+    /* TAKİPÇİ LİSTESİ */
     .user-list-item {
         display: flex;
         align-items: center;
-        padding: 15px 20px; /* Daha geniş alan ✨ */
+        padding: 15px 20px;
         text-decoration: none !important;
         transition: background 0.3s;
         border-bottom: 1px solid var(--ig-border);
@@ -93,23 +93,23 @@
     .user-list-item:hover { background: rgba(212, 175, 55, 0.1); }
     
     .user-list-avatar {
-        width: 52px; /* Hafif büyütüldü ✨ */
+        width: 52px;
         height: 52px;
         border-radius: 50%;
         object-fit: cover;
-        margin-right: 18px; /* Boşluk artırıldı */
+        margin-right: 18px;
         border: 2px solid var(--v-icon-color);
         padding: 2px;
     }
     .user-list-username {
         color: var(--ig-text);
-        font-weight: 700; /* Daha okunaklı bold ✨ */
-        font-size: 16px; /* Yazı boyutu büyütüldü */
+        font-weight: 700;
+        font-size: 16px;
     }
     .v-modal-content {
         background: var(--ig-bg) !important;
         border: 1px solid var(--v-icon-color) !important;
-        border-radius: 15px !important; /* Daha yumuşak köşeler */
+        border-radius: 15px !important;
         overflow: hidden;
     }
     .v-modal-header {
@@ -128,7 +128,7 @@
         cursor: pointer;
     }
 
-    /* GELİŞMİŞ LIGHTBOX TASARIMI */
+    /* LIGHTBOX */
     .v-lightbox {
         display: none; position: fixed; z-index: 10001; top: 0; left: 0; width: 100%; height: 100%;
         background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center;
@@ -142,7 +142,6 @@
     .lightbox-img-side { flex: 2; background: #050505; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
     .lightbox-img-side img { max-width: 100%; max-height: 100%; object-fit: contain; }
     
-    /* ÇİFT TIKLAMA GOLD KALP ANİMASYONU */
     .heart-boom {
         position: absolute; color: #d4af37; font-size: 100px; opacity: 0;
         pointer-events: none; transform: scale(0);
@@ -230,9 +229,6 @@
             </ul>
             <div class="ig-bio">
                 <div id="profileBio">
-                    {% if server_profile.is_vip %}
-                        <a href="#" class="bio-link">VERZİA OFFİCİAL</a>
-                    {% endif %}
                     <p class="mt-1">{{ server_profile.bio }}</p>
                 </div>
             </div>
@@ -501,7 +497,6 @@
                 body.innerHTML = '<div class="p-4 text-center opacity-50">Henüz kimse yok.</div>';
                 return;
             }
-            // ✨ DAHA OKUNAKLI VE BÜYÜK LİSTE SİHRİ ✨
             body.innerHTML = data.map(user => `
                 <a href="/profile?username=${user.username}" class="user-list-item">
                     <img src="${user.avatar}" class="user-list-avatar" onerror="this.src='https://picsum.photos/seed/default/100/100'">
