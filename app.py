@@ -42,9 +42,11 @@ def load_user(user_id):
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# ---------------- INIT DB ----------------
-with app.app_context():
-    db.create_all()
+
+# ❌❌❌ RENDER HATASI BURADAYDI – SİLİNDİ ❌❌❌
+# with app.app_context():
+#     db.create_all()
+
 
 # ---------------- ROUTES ----------------
 
@@ -78,6 +80,7 @@ def login():
 
     return render_template("login_clean.html")
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
@@ -108,13 +111,14 @@ def register():
 
     return render_template("register.html")
 
+
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("index"))
 
-# ---------- PROFILE (KRİTİK DÜZELTME) ----------
+# ---------- PROFILE ----------
 
 @app.route("/profile/<username>")
 @login_required
@@ -173,6 +177,11 @@ def uploaded_file(filename):
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
+    # ✅ SADECE LOCAL’DE TABLO OLUŞTURUR
+    with app.app_context():
+        db.create_all()
+
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
