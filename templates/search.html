@@ -35,7 +35,15 @@
                                      alt="{{ user.username }}" class="rounded-circle search-avatar">
                             </div>
                             <div class="ms-3 flex-grow-1">
-                                <h6 class="mb-0 user-name-text">{{ user.username }}</h6>
+                                <div class="d-flex align-items-center">
+                                    <h6 class="mb-0 user-name-text">{{ user.username }}</h6>
+                                    
+                                    {% if user.username.lower() in ['beril', 'bec'] or user.is_vip %}
+                                        <div class="v-gold-tick" title="Verified Founder">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
                                 <small class="text-muted">{{ user.bio[:50] if user.bio else 'Verzia Üyesi' }}</small>
                             </div>
                             <div class="me-2">
@@ -63,6 +71,25 @@
 <style>
     .search-page-container { max-width: 700px; padding-bottom: 100px; }
 
+    /* ✨ VERZIA GOLD TİK STİLİ ✨ */
+    .v-gold-tick {
+        margin-left: 8px;
+        font-size: 16px;
+        background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 0 5px var(--v-glow));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: goldGlow 2s infinite alternate;
+    }
+
+    @keyframes goldGlow {
+        from { filter: drop-shadow(0 0 2px var(--v-glow)); }
+        to { filter: drop-shadow(0 0 10px #d4af37); }
+    }
+
     /* GOLD BAŞLIK */
     .verzia-gold-title {
         background: var(--v-gold-gradient);
@@ -73,7 +100,6 @@
         font-size: 2.5rem;
     }
 
-    /* ARAMA KUTUSU TASARIMI */
     .search-box-wrapper { max-width: 500px; }
     
     .search-input-group {
@@ -83,11 +109,6 @@
         overflow: hidden;
         padding: 5px 15px;
         transition: 0.3s;
-    }
-    
-    body.light-mode .search-input-group {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
     }
 
     .search-input-group:focus-within {
@@ -105,7 +126,6 @@
 
     .search-icon-gold { color: var(--v-icon-color); font-size: 1.2rem; }
 
-    /* ✨ ZARİF VE KÜÇÜK GOLD BUTON ✨ */
     .v-minimal-gold-btn {
         background: var(--v-gold-gradient);
         color: #000 !important;
@@ -122,27 +142,12 @@
         filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));
     }
 
-    .v-minimal-gold-btn:hover {
-        transform: scale(1.05);
-        filter: drop-shadow(0 0 10px var(--v-glow));
-        letter-spacing: 2px;
-    }
-
-    /* SONUÇ KARTLARI */
-    .search-result-link { text-decoration: none; }
-    
     .user-search-card {
         background: rgba(255, 255, 255, 0.02);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 15px;
         padding: 15px;
         transition: 0.3s;
-    }
-
-    body.light-mode .user-search-card {
-        background: #fff;
-        border: 1px solid #eee;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
 
     .user-search-card:hover {
@@ -161,7 +166,5 @@
 
     .user-name-text { color: var(--ig-text); font-weight: bold; }
     .gold-arrow { color: var(--v-icon-color); opacity: 0.5; }
-    
-    .user-search-card:hover .gold-arrow { opacity: 1; transform: translateX(5px); transition: 0.3s; }
 </style>
 {% endblock %}
