@@ -45,7 +45,6 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
-    # ✨ KİLİT KALDIRILDI: Artık herkes ana sayfayı görebilir!
     try:
         all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
     except:
@@ -54,7 +53,6 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Zaten giriş yapmışsa kendi profiline gitsin
     if current_user.is_authenticated:
         return redirect(url_for('profile', username=current_user.username))
 
@@ -99,7 +97,6 @@ def profile():
     username = request.args.get('username')
     user_to_show = User.query.filter_by(username=username).first() if username else current_user
     
-    # Profil gizli kalsın, sadece üyelere özel olsun
     if not user_to_show or (not username and not current_user.is_authenticated):
         return redirect(url_for('login'))
 
@@ -133,6 +130,43 @@ def upload():
         db.session.add(new_photo)
         db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
+
+# ✨ SİLME FONKSİYONU: Profile.html'deki silme butonu için gerekli
+@app.route('/delete_photo/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo_profile(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if photo.owner_id == current_user.id:
+        db.session.delete(photo)
+        db.session.commit()
+    return redirect(url_for('profile', username=current_user.username))
+
+# ✨ TAKİP FONKSİYONLARI: JS fetch istekleri için gerekli
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    current_user.follow(user)
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+@app.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    current_user.unfollow(user)
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+@app.route('/get_followers/<username>')
+def get_followers(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return jsonify([{"username": f.username, "avatar": f.avatar} for f in user.followers_list.all()])
+
+@app.route('/get_following/<username>')
+def get_following(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return jsonify([{"username": f.username, "avatar": f.avatar} for f in user.followed.all()])
 
 @app.route('/search')
 def search():
