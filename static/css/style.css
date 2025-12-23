@@ -387,132 +387,76 @@ body.light-mode .footer-text {
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
 /* ===================== */
-/* 📱 MOBİL DÜZENLEME */
+/* 📱 MOBİL ÖZEL TASARIM - GÜNCEL */
 @media (max-width: 768px) {
-    .logo { font-size: 3.5rem; }
-    .auth-buttons {
-        position: static;
-        margin-top: 20px;
-        flex-direction: column;
-        align-items: center;
-    }
-    .auth-buttons a { width: 200px; text-align: center; }
-    .about-btn, .contact-btn {
-        position: static;
-        margin: 8px auto;
-        display: block;
-        width: 200px;
-        text-align: center;
-    }
-    .contact-btn { left: auto; }
-    .search-box { position: static; margin-top: 15px; text-align: center; }
-    .search-box input { width: 90%; }
-}
-
-/* ADMIN PANELİ DARK/LIGHT UYUMLU RENKLER */
-/* Dark Mode */
-body:not(.light-mode) .btn-success { background-color: #fff; color: #000; border-color: #ccc; }
-body:not(.light-mode) .btn-primary { background-color: #fff; color: #000; border-color: #ccc; }
-body:not(.light-mode) .btn-danger { background-color: #fff; color: #000; border-color: #ccc; }
-
-/* Light Mode */
-body.light-mode .btn-success { background-color: #000; color: #fff; border-color: #333; }
-body.light-mode .btn-primary { background-color: #000; color: #fff; border-color: #333; }
-body.light-mode .btn-danger { background-color: #000; color: #fff; border-color: #333; }
-
-/* Tablo arka plan ve yazı renkleri */
-body:not(.light-mode) table { background-color: #1f1f1f; color: #eee; }
-body:not(.light-mode) thead { background-color: #2c2c2c; color: #fff; }
-body.light-mode table { background-color: #fff; color: #111; }
-body.light-mode thead { background-color: #f0f0f0; color: #000; }
-
-/* =============================== */
-/* LOGIN UX İYİLEŞTİRMELERİ */
-/* =============================== */
-.card { background-color: #111; color: #fff; border: 1px solid #222; }
-body.light-mode .card { background-color: #fff; color: #000; border: 1px solid #ddd; }
-
-/* ===============================
-   ADMIN PANEL DARK / LIGHT UYUM
-   =============================== */
-.admin-page { min-height: 100vh; padding: 30px; }
-body:not(.light-mode) .admin-page { background-color: #121212; }
-body.light-mode .admin-page { background-color: #ffffff; }
-
-/* Diğer Admin stilleri mevcut yapıda korunmuştur */
-/* ===================== */
-/* 📱 MOBİL ÖZEL TASARIM - VERZIA */
-@media (max-width: 768px) {
-    /* 1. Giriş Yap ve Kayıt Ol: Sağ üstte, alt alta, daha küçük */
+    /* 1. Sağ Üst: Giriş ve Kayıt */
     .auth-buttons {
         position: absolute !important;
-        top: 20px !important;
-        right: 15px !important;
+        top: 25px !important;
+        right: 20px !important;
         display: flex !important;
         flex-direction: column !important;
         gap: 8px !important;
         align-items: flex-end !important;
-        margin-top: 0 !important;
+        margin: 0 !important;
     }
     .auth-buttons a {
         width: auto !important;
         min-width: 90px !important;
-        padding: 5px 12px !important;
+        padding: 6px 14px !important;
         font-size: 0.75rem !important;
         border-radius: 15px !important;
     }
 
-    /* 2. Hakkında ve İletişim: Solda, alt alta, daha küçük */
+    /* 2. Sol Üst: Hakkında ve İletişim (Giriş/Kayıt ile aynı hizada) */
     .about-btn, .contact-btn {
         position: absolute !important;
+        top: 25px !important; /* Giriş yap ile aynı hiza */
         left: 20px !important;
         width: auto !important;
-        min-width: 85px !important;
-        padding: 5px 12px !important;
+        min-width: 90px !important;
+        padding: 6px 14px !important;
         font-size: 0.75rem !important;
         border-radius: 15px !important;
         margin: 0 !important;
-        display: block !important;
-    }
-    .about-btn {
-        top: 45% !important; /* Ekranın ortasına yakın sol taraf */
     }
     .contact-btn {
-        top: calc(45% + 40px) !important; /* Hakkında'nın hemen altı */
-        left: 20px !important;
+        top: calc(25px + 40px) !important; /* Kayıt ol ile aynı hiza (25px + gap) */
     }
 
-    /* 3. Dark/Light Butonu: Verzia yazısının (Logonun) altında */
+    /* 3. Verzia Yazısı: Daha büyük ve merkezde */
+    .signature-container {
+        transform: scale(1.1) !important; /* Yazıyı büyüttük */
+        margin-top: -40px !important;
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    .signature-svg {
+        width: 90% !important; /* Ekranın geneline yayılması için */
+    }
+
+    /* 4. Dark/Light: Logonun tam altında */
     .mode-btn {
         position: absolute !important;
-        top: 58% !important; /* Logonun hemen altı */
+        top: 62% !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
         margin: 0 !important;
-        padding: 5px 15px !important;
+        padding: 6px 16px !important;
         font-size: 0.75rem !important;
-        width: auto !important;
-        white-space: nowrap;
+        border-radius: 15px !important;
     }
 
-    /* 4. Logo Boyutu ve Yerleşimi */
-    .signature-container {
-        transform: scale(0.7); /* Logoyu mobilde biraz küçülttük */
-        margin-top: -20px;
-    }
-
-    /* 5. Alt kısımdaki Keşfet ve VPRO */
-    .scroll-down {
-        bottom: 80px !important; /* Mobilde VPRO butonuna çarpmasın diye yükselttik */
-    }
+    /* 5. Alt kısımlar */
     .vpro-btn-gold {
-        padding: 8px 20px !important;
-        font-size: 0.8rem !important;
+        bottom: 30px !important;
+        left: 20px !important;
+        padding: 10px 22px !important;
     }
-    
-    /* Overlay İçerik Genişliği */
-    .overlay-content {
-        width: 85% !important;
-        padding: 20px !important;
+    .footer-text {
+        bottom: 30px !important;
+        right: 20px !important;
     }
+    .scroll-down { display: none !important; } /* Karışıklığı önlemek için mobilde kapalı */
 }
