@@ -15,7 +15,7 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 
-# Modeller - Eksiksiz Liste
+# Modeller
 from models.user import User, Comment, Like, Notification
 from models.photo import Photo
 
@@ -24,37 +24,36 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = os.environ.get("SECRET_KEY", "verzia-secret-key-123")
 
-# ---------------- DATABASE (RENDER INTERNAL UYUMLU) ----------------
+# ---------------- DATABASE (RENDER INTERNAL) ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fallback.db"
 else:
-    # Render Postgres/Psycopg v3 uyumu için URL düzenleme
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
-    
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True, # Bağlantıyı her sorguda kontrol et (Kopmaları önler)
-    "pool_recycle": 60,    # Bağlantıyı 60 saniyede bir tazele
+    "pool_pre_ping": True,  # Bağlantı koptuğunda otomatik anlar
+    "pool_recycle": 300,    # Bağlantıyı 5 dakikada bir yeniler
+    "pool_size": 10,
+    "max_overflow": 20
 }
 
-# Uzantıları Başlat
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Tabloları Güvenli Şekilde Oluştur
+# Tabloları Güvenli Başlat
 with app.app_context():
     try:
         db.create_all()
     except Exception as e:
-        print(f"DB Error: {e}")
+        print(f"Veritabanı Tablo Hatası: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -67,7 +66,6 @@ def load_user(user_id):
 
 @app.route("/")
 def index():
-    # Zaten giriş yapılmışsa doğrudan profile fırlat
     if current_user.is_authenticated:
         try:
             return redirect(url_for("profile", username=current_user.username))
@@ -81,7 +79,7 @@ def index():
     except:
         return render_template("index.html", photos=[])
 
-# 🔥 GİRİŞ YAP (INTERNAL SERVER ERROR ÇÖZÜMÜ)
+# 🔥 GİRİŞ YAP (INTERNAL SERVER ERROR ÖNLEYİCİ)
 @app.route("/login", methods=["POST"])
 def login():
     try:
@@ -89,27 +87,23 @@ def login():
         password = request.form.get("password")
 
         if not username_or_email or not password:
-            return jsonify({"status": "error", "message": "Eksik bilgi!"}), 400
+            return jsonify({"status": "error", "message": "Bilgiler eksik!"}), 400
 
-        # Kullanıcıyı bul (username veya email ile)
         user = User.query.filter(
             (User.username == username_or_email) | (User.email == username_or_email)
         ).first()
 
-        # Şifre kontrolü - User modelindeki check_password metodunu güvenli çağır
         if user and user.check_password(password):
             login_user(user, remember=True)
             return jsonify({
                 "status": "success", 
                 "redirect": url_for("profile", username=user.username)
             })
-        
-        return jsonify({"status": "error", "message": "Kullanıcı adı veya şifre hatalı!"}), 401
-    
+
+        return jsonify({"status": "error", "message": "Hatalı kullanıcı adı veya şifre!"}), 401
     except Exception as e:
-        # Hata anında log bas ve çökme yerine JSON döndür
-        print(f"Login Hatası: {str(e)}")
-        return jsonify({"status": "error", "message": "Sunucu hatası oluştu."}), 500
+        print(f"Login Hatası: {e}")
+        return jsonify({"status": "error", "message": "Giriş işlemi sırasında bir hata oluştu."}), 500
 
 # ÜYE OL
 @app.route("/register", methods=["POST"])
@@ -163,7 +157,6 @@ def upload():
     file = request.files.get("photo")
     if file:
         filename = f"{current_user.id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{secure_filename(file.filename)}"
-        # Uploads klasörünü garanti et
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
         file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
         
