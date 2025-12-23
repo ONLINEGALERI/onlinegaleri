@@ -1,119 +1,52 @@
 {% extends "base.html" %}
-{% block title %}Verzia{% endblock %}
-
 {% block content %}
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-
 <div class="hero">
     <div class="signature-container" style="pointer-events: none;">
         <svg viewBox="0 0 600 200" class="signature-svg">
             <defs>
                 <linearGradient id="goldDark" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#bf953f" />
-                    <stop offset="25%" style="stop-color:#fcf6ba" />
-                    <stop offset="50%" style="stop-color:#b38728" />
-                    <stop offset="75%" style="stop-color:#fbf5b7" />
-                    <stop offset="100%" style="stop-color:#aa771c" />
+                    <stop offset="0%" style="stop-color:#bf953f" /><stop offset="50%" style="stop-color:#b38728" /><stop offset="100%" style="stop-color:#aa771c" />
                 </linearGradient>
             </defs>
-            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" class="signature-text">Verzia</text>
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" style="font-family:'Pinyon Script'; font-size:160px; fill:url(#goldDark); filter:drop-shadow(0 0 20px rgba(191,149,63,0.5));">Verzia</text>
         </svg>
     </div>
-
-    <div class="top-nav">
-        <div class="left-group">
-            <button class="minimal-btn" onclick="openAbout()">Hakkında</button>
-            <button class="minimal-btn" onclick="openContact()">İletişim</button>
-        </div>
-        <div class="right-group">
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('profile', username=current_user.username) }}" class="user-link">@{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="minimal-btn" style="text-decoration: none;">Çıkış Yap</a>
-            {% else %}
-                <button class="minimal-btn" onclick="openLogin()">Giriş Yap</button>
-                <button class="minimal-btn" onclick="openRegister()">Kayıt Ol</button>
-            {% endif %}
-        </div>
+    <div class="top-nav" style="position:absolute; top:40px; width:100%; display:flex; justify-content:space-between; padding:0 50px;">
+        <div><button class="m-btn" onclick="alert('Yakında!')">Hakkında</button></div>
+        <div><button class="m-btn" onclick="document.getElementById('l-modal').style.display='flex'">Giriş Yap</button></div>
     </div>
-
-    <div class="bottom-nav">
-        <button class="gold-action-btn" onclick="openPremium()">VPRO</button>
-        <button class="gold-action-btn" onclick="toggleMode()">DARK / LIGHT</button>
-        <a href="{{ url_for('profile', username='bec') }}" class="footer-text gold-gradient-text">@bec</a>
+    <div class="bottom-nav" style="position:absolute; bottom:50px; width:100%; text-align:center;">
+        <button class="g-btn">VPRO</button>
     </div>
 </div>
 
-<div class="overlay" id="login-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2 class="gold-gradient-text">GİRİŞ YAP</h2>
-        <div id="login-error-msg" style="color: #ff4d4d; display: none; margin-bottom: 15px; font-weight: bold; font-size: 0.8rem;"></div>
-        <form id="ajax-login-form">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
-            <input type="password" name="password" placeholder="Şifre" class="pay-input" required>
-            <button type="submit" class="buy-btn-gold">GİRİŞ</button>
+<div id="l-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:#000; padding:50px; border:1px solid #d4af37; text-align:center;">
+        <h2 style="color:#d4af37; margin-bottom:20px;">GİRİŞ YAP</h2>
+        <form id="l-form">
+            <input type="text" name="username" placeholder="Kullanıcı Adı" style="display:block; width:100%; margin-bottom:10px; padding:10px; background:#111; border:1px solid #333; color:#fff;">
+            <input type="password" name="password" placeholder="Şifre" style="display:block; width:100%; margin-bottom:10px; padding:10px; background:#111; border:1px solid #333; color:#fff;">
+            <button type="submit" style="width:100%; padding:10px; background:#d4af37; border:none; color:#000; font-weight:bold;">GİRİŞ</button>
         </form>
-    </div>
-</div>
-
-<div class="overlay" id="register-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2 class="gold-gradient-text">KAYIT OL</h2>
-        <form action="{{ url_for('register') }}" method="POST">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
-            <input type="email" name="email" placeholder="E-posta" class="pay-input" required>
-            <input type="password" name="password" placeholder="Şifre" class="pay-input" required>
-            <button type="submit" class="buy-btn-gold">KAYIT OL</button>
-        </form>
+        <button onclick="document.getElementById('l-modal').style.display='none'" style="background:none; border:none; color:#d4af37; margin-top:15px; cursor:pointer;">Kapat</button>
     </div>
 </div>
 
 <style>
-/* ESKİ CSS DÜZENİ */
-html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; }
-.hero { position: relative; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; }
-.signature-container { position: absolute; width: 100%; max-width: 800px; z-index: 1; pointer-events: none; }
-.signature-text { font-family: 'Pinyon Script', cursive; font-size: 160px; fill: url(#goldDark); filter: drop-shadow(0 0 15px rgba(191, 149, 63, 0.4)); }
-.top-nav, .bottom-nav { position: absolute; width: 100%; display: flex; justify-content: space-between; padding: 0 50px; z-index: 100; box-sizing: border-box; }
-.top-nav { top: 40px; } .bottom-nav { bottom: 50px; align-items: center; }
-.minimal-btn { background: none; border: 1px solid rgba(212, 175, 55, 0.7); color: #fff; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-size: 0.8rem; }
-.gold-action-btn { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border: none; padding: 12px 28px; border-radius: 4px; font-weight: 800; cursor: pointer; color: #000; font-size: 0.75rem; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
-.gold-gradient-text { background: linear-gradient(to right, #bf953f, #fcf6ba, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); display: none; align-items: center; justify-content: center; z-index: 10000; }
-.overlay.active { display: flex; }
-.overlay-content { background: #000; padding: 60px 40px; border: 1px solid #d4af37; text-align: center; position: relative; width: 90%; max-width: 400px; border-radius: 8px; }
-.close-btn { position: absolute; top: 20px; left: 20px; background: none; border: none; color: #d4af37; font-size: 35px; cursor: pointer; }
-.pay-input { width: 100%; padding: 15px; margin: 12px 0; background: #0a0a0a; border: 1px solid #222; color: #fff; }
-.buy-btn-gold { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 15px; cursor: pointer; font-weight: 800; width: 100%; }
+    .hero { height:100vh; display:flex; justify-content:center; align-items:center; background:#000; position:relative; }
+    .m-btn { background:none; border:1px solid #d4af37; color:#fff; padding:8px 20px; border-radius:20px; cursor:pointer; }
+    .g-btn { background:linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border:none; padding:12px 30px; font-weight:bold; border-radius:5px; cursor:pointer; }
 </style>
 
 <script>
-function openLogin() { closeOverlay(); document.getElementById('login-overlay').classList.add('active'); }
-function openRegister() { closeOverlay(); document.getElementById('register-overlay').classList.add('active'); }
-function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
-
-// ÇALIŞAN GİRİŞ FONKSİYONU
-document.getElementById('ajax-login-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    fetch('/login', {
-        method: 'POST',
-        body: new FormData(this),
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    })
-    .then(r => r.json())
-    .then(data => {
-        if(data.status === 'success') { window.location.replace(data.redirect); }
-        else { 
-            const err = document.getElementById('login-error-msg');
-            err.innerText = data.message;
-            err.style.display = 'block';
-        }
+    document.getElementById('l-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch('/login', { method:'POST', body:new FormData(this) })
+        .then(r => r.json()).then(d => { if(d.status==='success') window.location.replace(d.redirect); else alert(d.message); });
     });
-});
 </script>
 {% endblock %}
-
 
 
 
