@@ -32,9 +32,7 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# 🔥 SHELL YOK → TABLOLAR OTOMATİK OLUŞUR
-with app.app_context():
-    db.create_all()
+# ❌ db.create_all() YOK — Render + PostgreSQL’da kullanılmaz
 
 # ---------------- UPLOAD ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -60,7 +58,6 @@ def index():
     return render_template("index.html", photos=photos)
 
 # ---------- LOGIN (AJAX) ----------
-
 @app.route("/login", methods=["POST"])
 def login():
     if current_user.is_authenticated:
@@ -90,7 +87,6 @@ def login():
     }), 401
 
 # ---------- REGISTER ----------
-
 @app.route("/register", methods=["POST"])
 def register():
     if current_user.is_authenticated:
@@ -120,7 +116,6 @@ def register():
     return redirect(url_for("profile", username=user.username))
 
 # ---------- LOGOUT ----------
-
 @app.route("/logout")
 @login_required
 def logout():
@@ -128,7 +123,6 @@ def logout():
     return redirect(url_for("index"))
 
 # ---------- PROFILE ----------
-
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
@@ -158,7 +152,6 @@ def profile(username):
     )
 
 # ---------- UPLOAD ----------
-
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
@@ -185,7 +178,6 @@ def upload():
     return redirect(url_for("profile", username=current_user.username))
 
 # ---------- FILE SERVE ----------
-
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
@@ -194,6 +186,7 @@ def uploaded_file(filename):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
