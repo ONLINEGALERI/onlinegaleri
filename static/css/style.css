@@ -465,3 +465,58 @@ body.light-mode .footer-text {
         width: 100% !important;
     }
 }
+/* ===================== */
+/* 📱 PROFIL TAŞMA VE SOLA ALMA DÜZENLEMESİ */
+@media screen and (max-width: 768px) {
+
+    /* 1. TAŞMAYI ÖNLEME VE SOLA HİZALAMA */
+    .profile-header, [class*="profile-header"] {
+        margin-left: 0 !important;
+        padding-left: 15px !important; /* Sola yaklaştırdık */
+        padding-right: 15px !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important; /* İçeriği sola yaslar */
+        text-align: left !important;
+    }
+
+    /* 2. BİLGİ KISMINI SOLA ÇEK */
+    .profile-info {
+        align-items: flex-start !important; /* Yazıları sola yaslar */
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+
+    /* 3. İSTATİSTİKLERİN (TAKİPÇİ VS) TAŞMASINI ENGELLE */
+    .profile-stats {
+        display: flex !important;
+        justify-content: flex-start !important; /* Sola yasla */
+        gap: 15px !important; /* Sığması için arayı daralttık */
+        width: 100% !important;
+        margin-left: 0 !important;
+        flex-wrap: wrap !important; /* Sığmazsa alta geçer, ekranı itmez */
+    }
+
+    /* 4. PROFİLİ DÜZENLE BUTONU */
+    .btn-outline-light, [class*="edit-btn"] {
+        position: relative !important;
+        left: 0 !important; /* Sağa sabitlenmişse sola çeker */
+        margin: 10px 0 !important; /* Sola yaslı bırakır */
+        padding: 5px 15px !important;
+        font-size: 0.8rem !important;
+        width: auto !important;
+    }
+
+    /* 5. AVATAR (SOLDA KALSIN) */
+    .profile-avatar {
+        margin-left: 0 !important;
+        margin-right: auto !important;
+    }
+    
+    /* Global taşma engelleyici */
+    .main-content-wrapper {
+        margin-left: 0 !important;
+        overflow-hidden: hidden !important;
+    }
+}
