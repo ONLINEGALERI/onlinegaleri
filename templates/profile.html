@@ -63,13 +63,24 @@
     
     .delete-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; cursor: pointer; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 10; }
 
-    /* KULLANICI LİSTESİ TASARIMI */
+    /* LİSTE TASARIMI */
     .user-list-item { display: flex; align-items: center; padding: 12px 15px; text-decoration: none; border-bottom: 1px solid #1a1a1a; transition: 0.3s; }
     .user-list-item:hover { background: rgba(212, 175, 55, 0.05); }
     .user-list-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; border: 1px solid #333; object-fit: cover; }
     .user-list-username { color: var(--ig-text); font-weight: 600; }
 
-    /* MOBİL DÜZENLEMELER */
+    /* LIGHTBOX */
+    .v-lightbox { display: none; position: fixed; z-index: 10001; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center; }
+    .v-lightbox.active { display: flex !important; }
+    .lightbox-main-wrapper { display: flex; width: 90%; max-width: 1100px; height: 85vh; background: #000; border: 1px solid #d4af37; border-radius: 8px; overflow: hidden; position: relative; }
+    .lightbox-img-side { flex: 2; background: #050505; display: flex; align-items: center; justify-content: center; }
+    .lightbox-img-side img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .lightbox-info-side { flex: 1; background: #000; display: flex; flex-direction: column; border-left: 1px solid #262626; }
+    .info-header { padding: 15px; border-bottom: 1px solid #1a1a1a; font-weight: bold; color: #d4af37; text-align: center; }
+    .comment-area { flex-grow: 1; overflow-y: auto; padding: 15px; }
+    .interaction-bar { padding: 15px; border-top: 1px solid #1a1a1a; }
+    .v-lightbox-close { position: absolute; top: 20px; right: 30px; color: #d4af37; font-size: 40px; cursor: pointer; z-index: 10002; }
+
     @media screen and (max-width: 768px) {
         .ig-header { flex-direction: column !important; align-items: center !important; text-align: center !important; }
         .ig-info-area { padding-left: 0 !important; width: 100% !important; align-items: center !important; }
@@ -126,10 +137,31 @@
             </div>
             {% endfor %}
         {% else %}
-            <div class="no-posts" style="grid-column: 1/-1; text-align:center; padding:50px;">
+            <div class="no-posts" style="grid-column: 1/-1; text-align:center; padding:50px; border: 1px dashed #d4af37; border-radius: 12px;">
                 <h3 class="verzia-gold-text">Henüz hiç gönderi yok</h3>
+                {% if can_edit %}
+                    <button class="verzia-gold-btn mt-3" onclick="document.getElementById('photoUploadInput').click()">Hemen Paylaş</button>
+                    <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                        <input type="file" name="photo" id="photoUploadInput" onchange="this.form.submit()">
+                    </form>
+                {% endif %}
             </div>
         {% endif %}
+    </div>
+</div>
+
+<div id="photoLightbox" class="v-lightbox" onclick="closeLightbox()">
+    <span class="v-lightbox-close" onclick="closeLightbox()">&times;</span>
+    <div class="lightbox-main-wrapper" onclick="event.stopPropagation()">
+        <div class="lightbox-img-side"><img id="lightboxImg" src=""></div>
+        <div class="lightbox-info-side">
+            <div class="info-header">VERZİA POST</div>
+            <div class="comment-area" id="lightboxComments"></div>
+            <div class="interaction-bar">
+                <i id="lightboxHeart" class="fa-solid fa-heart" style="cursor:pointer; color:white;"></i>
+                <span id="lightboxLikeCount">0</span> beğeni
+            </div>
+        </div>
     </div>
 </div>
 
@@ -145,8 +177,46 @@
     </div>
 </div>
 
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#000; border:1px solid #d4af37;">
+            <div class="modal-header">
+                <h5 class="modal-title verzia-gold-text">Profili Düzenle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="mb-3">
+                        <label class="form-label text-white">Biyografi</label>
+                        <textarea id="editBio" class="form-control bg-dark text-white border-secondary">{{ server_profile.bio }}</textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-success" onclick="saveProfileData()">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    // ✨ KRİTİK GİZLİLİK VE LİSTELEME FONKSİYONU ✨
+    let activePhotoId = null;
+
+    // ✨ LIGHTBOX FONKSİYONU - EKLENDİ ✨
+    function openLightbox(src, photoId, likeCount) {
+        activePhotoId = photoId;
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightboxLikeCount').innerText = likeCount;
+        document.getElementById('photoLightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        document.getElementById('photoLightbox').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        activePhotoId = null;
+    }
+
     function showUserList(type) {
         const username = "{{ server_profile.username }}";
         const title = type === 'followers' ? 'TAKİPÇİLER' : 'TAKİP EDİLENLER';
@@ -163,38 +233,20 @@
         fetch(targetUrl)
         .then(res => res.json())
         .then(data => {
-            body.innerHTML = ''; // Temizle
-
-            // 1. Durum: BEC hesabının TAKİPÇİLERİ (Gizli)
+            body.innerHTML = '';
             if (username.toLowerCase() === 'bec' && type === 'followers') {
-                body.innerHTML = `
-                    <div class="p-5 text-center">
-                        <i class="fa-solid fa-lock" style="font-size:30px; color:#bf953f; margin-bottom:15px; display:block;"></i>
-                        <span style="opacity:0.8; font-weight:500;">Bu asil hesabın takipçi listesi gizlidir.</span>
-                    </div>`;
+                body.innerHTML = `<div class="p-5 text-center"><i class="fa-solid fa-lock" style="font-size:30px; color:#bf953f; margin-bottom:15px; display:block;"></i><span style="opacity:0.8;">Bu asil hesabın takipçi listesi gizlidir.</span></div>`;
                 return;
             }
-
-            // 2. Durum: Liste boşsa
             if (!data || data.length === 0) {
                 body.innerHTML = '<div class="p-4 text-center opacity-50">Henüz kimse yok.</div>';
                 return;
             }
-
-            // 3. Durum: Veri varsa listele (Garantili for döngüsü)
             let html = '';
             for (let i = 0; i < data.length; i++) {
-                html += `
-                    <a href="/profile?username=${data[i].username}" class="user-list-item">
-                        <img src="${data[i].avatar}" class="user-list-avatar" onerror="this.src='https://picsum.photos/seed/default/100/100'">
-                        <span class="user-list-username">@${data[i].username}</span>
-                    </a>`;
+                html += `<a href="/profile?username=${data[i].username}" class="user-list-item"><img src="${data[i].avatar}" class="user-list-avatar" onerror="this.src='https://picsum.photos/seed/default/100/100'"><span class="user-list-username">@${data[i].username}</span></a>`;
             }
             body.innerHTML = html;
-        })
-        .catch(err => {
-            console.error("Hata:", err);
-            body.innerHTML = '<div class="p-4 text-center text-danger">Bağlantı hatası oluştu.</div>';
         });
     }
 
@@ -202,6 +254,11 @@
         const isFollowing = btn.classList.contains('btn-unfollow');
         fetch(isFollowing ? `/unfollow/${username}` : `/follow/${username}`, { method: 'POST' })
         .then(res => res.json()).then(data => { if(data.status === 'success') location.reload(); });
+    }
+
+    function saveProfileData() {
+        const bio = document.getElementById('editBio').value;
+        fetch('/profile/save', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({bio: bio}) }).then(() => location.reload());
     }
 
     function previewImage(event) {
