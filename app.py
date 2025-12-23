@@ -28,7 +28,6 @@ migrate.init_app(app, db)
 login_manager.init_app(app)
 
 # 🚀 3. RENDER İÇİN KRİTİK: Tabloları uygulama başlar başlamaz oluştur
-# Loglardaki "no such table: photo" hatasını bu kısım çözer.
 with app.app_context():
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     db.create_all()
@@ -45,7 +44,8 @@ def allowed_file(filename):
 # --------------------- ROTALAR ---------------------
 @app.route('/')
 def index():
-    # Index sayfasında tablo hatası almamak için güvenli çekim
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
     try:
         all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
     except:
@@ -54,35 +54,53 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # ✨ Zaten giriş yapmışsa direkt profiline gönder
+    if current_user.is_authenticated:
+        return redirect(url_for('profile', username=current_user.username))
+
     if request.method == 'POST':
         u = request.form.get('username')
         p = request.form.get('password')
         user = User.query.filter((User.username == u) | (User.email == u)).first()
+        
         if user and check_password_hash(user.password, p):
             login_user(user)
-            return jsonify({'status': 'success', 'redirect': url_for('index')})
-        return jsonify({'status': 'error', 'message': 'Hatalı giriş!'}), 401
+            # JSON çıktısı yerine doğrudan yönlendirme yapıyoruz
+            return redirect(url_for('profile', username=user.username))
+        
+        flash('Kullanıcı adı veya şifre hatalı.', 'error')
+        return redirect(url_for('login'))
+    
     return render_template('login_clean.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # ✨ Zaten giriş yapmışsa direkt profiline gönder
+    if current_user.is_authenticated:
+        return redirect(url_for('profile', username=current_user.username))
+
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        
         if User.query.filter((User.username == username) | (User.email == email)).first():
-            return jsonify({'status': 'error', 'message': 'Kullanıcı mevcut!'}), 400
+            flash('Kullanıcı zaten mevcut!', 'error')
+            return redirect(url_for('register'))
+            
         new_user = User(username=username, email=email, password=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)
-        return jsonify({'status': 'success', 'redirect': url_for('index')})
+        return redirect(url_for('profile', username=new_user.username))
+        
     return render_template('register.html')
 
 @app.route('/profile')
 def profile():
     username = request.args.get('username')
     user_to_show = User.query.filter_by(username=username).first() if username else current_user
+    
     if not user_to_show or (not username and not current_user.is_authenticated):
         return redirect(url_for('login'))
 
@@ -131,7 +149,7 @@ def unread_notif_count():
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
