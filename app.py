@@ -27,34 +27,45 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL environment variable is not set")
 
-# 🔥 psycopg v3 ve PostgreSQL uyumu
+# 🔥 1. Adım: Dialect Düzeltme (psycopg v3 zorlaması)
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
-# Render SSL zorunluluğu için URL parametresi
+# 🔥 2. Adım: URL Parametresiyle SSL Zorlama
 if "sslmode" not in DATABASE_URL:
-    if "?" in DATABASE_URL:
-        DATABASE_URL += "&sslmode=require"
-    else:
-        DATABASE_URL += "?sslmode=require"
+    separator = "&" if "?" in DATABASE_URL else "?"
+    DATABASE_URL += f"{separator}sslmode=require"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# 🔥 KRİTİK AYAR: SSL ve Bağlantı Kopmalarını Engelleyen Motor Ayarları
+# 🔥 3. Adım: KRİTİK SSL VE POOL AYARLARI
+# Bu kısım Render'ın bağlantıyı aniden koparmasını engeller.
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "connect_args": {
         "sslmode": "require",
     },
-    "pool_pre_ping": True,  # Bağlantı koptuysa otomatik yeniden bağlanır
-    "pool_recycle": 300,    # 5 dakikada bir bağlantıyı tazeler
+    "pool_pre_ping": True,   # Her sorgudan önce bağlantıyı test eder
+    "pool_recycle": 280,     # Render 300 saniyede bir kesebilir, biz 280'de yeniliyoruz
+    "pool_size": 10,         # Aynı anda açık kalacak bağlantı sayısı
+    "max_overflow": 20,      # Yoğunlukta ek açılacak bağlantı sayısı
 }
 
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
+
+# 🔥 4. Adım: TABLOLARI OTOMATİK OLUŞTURMA
+# Eğer veritabanında tabloların yoksa uygulama 500 hatası verir.
+# Bu blok tablolar yoksa ilk çalışmada oluşturur.
+with app.app_context():
+    try:
+        db.create_all()
+        print("Veritabanı tabloları başarıyla kontrol edildi/oluşturuldu.")
+    except Exception as e:
+        print(f"Tablo oluşturma sırasında hata: {e}")
 
 # ---------------- UPLOAD ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -75,8 +86,11 @@ def allowed_file(filename):
 # ---------------- ROUTES ----------------
 @app.route("/")
 def index():
-    photos = Photo.query.order_by(Photo.id.desc()).all()
-    return render_template("index.html", photos=photos)
+    try:
+        photos = Photo.query.order_by(Photo.id.desc()).all()
+        return render_template("index.html", photos=photos)
+    except Exception as e:
+        return f"Veritabanı hatası: {str(e)}", 500
 
 # ---------- LOGIN (AJAX) ----------
 @app.route("/login", methods=["POST"])
