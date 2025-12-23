@@ -25,7 +25,7 @@ body.light-mode {
     text-align: center;
     position: relative;
     z-index: 1;
-    background: transparent !important; /* Index.html'deki gradienti bozmasın */
+    background: transparent !important;
 }
 
 /* ANA LOGO */
@@ -52,7 +52,7 @@ body.light-mode {
 .auth-buttons a {
     text-decoration: none;
     color: inherit;
-    border: 1px solid rgba(212, 175, 55, 0.5); /* Gold dokunuş */
+    border: 1px solid rgba(212, 175, 55, 0.5);
     padding: 8px 18px;
     border-radius: 2px;
     font-size: 0.85rem;
@@ -88,15 +88,7 @@ body.light-mode .auth-buttons a {
 
 .about-btn { left: 30px; }
 .contact-btn { left: 140px; }
-.mode-btn { left: 265px; top: 20px; margin-top: 0; } /* Üst sıraya hizalandı */
-
-body.light-mode .about-btn,
-body.light-mode .contact-btn,
-body.light-mode .mode-btn {
-    border-color: #ccc;
-    background: #eee;
-    color: #000;
-}
+.mode-btn { left: 265px; top: 20px; margin-top: 0; }
 
 /* KEŞFET YAZISI */
 .scroll-down {
@@ -151,61 +143,54 @@ body.light-mode .mode-btn {
     z-index: 1000;
 }
 
-/* 📱📱 FULL MOBİL UYUMLULUK (768px ve altı) 📱📱 */
+/* 📱📱 MİLİMETRİK MOBİL PREMİUM DÜZENLEME 📱📱 */
 @media (max-width: 768px) {
-    /* 1. Logo küçültme ve merkeze alma */
-    .logo { font-size: 3rem; }
-    
-    /* 2. Üst butonları dikey değil, şık bir grid yapısına sokuyoruz */
+    /* Logo Boyutu Rötuşu */
+    .signature-text { font-size: 65px !important; stroke-width: 1.2 !important; }
+    .signature-container { padding-top: 25vh !important; }
+
+    /* SAĞ ÜST: Giriş ve Kayıt (Web gibi köşe, milimetrik minik) */
     .auth-buttons {
-        top: 15px;
-        right: 0;
-        width: 100%;
-        justify-content: center;
-        gap: 10px;
-        padding: 0 10px;
-    }
-    
-    .auth-buttons a {
-        padding: 6px 12px;
-        font-size: 0.75rem;
-    }
-
-    /* Sol üstteki 3 butonu (Hakkında, İletişim, Mode) yan yana merkeze alıyoruz */
-    .about-btn, .contact-btn, .mode-btn {
-        top: 60px; /* Giriş butonlarının altına iner */
-        font-size: 0.7rem;
-        padding: 6px 10px;
-        width: auto;
-        position: absolute;
-    }
-
-    .about-btn { left: 5% !important; }
-    .mode-btn { left: 50% !important; transform: translateX(-50%); }
-    .contact-btn { left: auto !important; right: 5% !important; }
-
-    /* 3. VPRO ve Alt Yazılar */
-    .vpro-btn-gold {
-        bottom: 15px !important;
-        left: 15px !important;
-        padding: 10px 15px !important;
-        font-size: 0.7rem !important;
-    }
-
-    .footer-text {
-        bottom: 18px !important;
+        top: 15px !important;
         right: 15px !important;
-        font-size: 0.6rem !important;
+        left: auto !important;
+        width: auto !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+    }
+    .auth-buttons a {
+        font-size: 10px !important;
+        padding: 5px 10px !important;
+        letter-spacing: 0.5px !important;
     }
 
-    /* 4. Overlay Formları */
-    .overlay-content {
-        padding: 50px 20px 30px 20px;
+    /* SOL ÜST: Hakkında, İletişim, Mode (Web gibi köşe, yan yana) */
+    .about-btn, .contact-btn, .mode-btn {
+        top: 15px !important;
+        font-size: 9px !important;
+        padding: 5px 8px !important;
+        letter-spacing: 0.5px !important;
+    }
+    .about-btn { left: 15px !important; }
+    .contact-btn { left: 78px !important; } 
+    .mode-btn { left: 145px !important; top: 15px !important; }
+
+    /* ALT BÖLGE: VPRO ve @bec (Sabit Köşeler) */
+    .vpro-btn-gold {
+        bottom: 20px !important;
+        left: 15px !important;
+        padding: 8px 15px !important;
+        font-size: 10px !important;
+    }
+    .footer-text {
+        bottom: 22px !important;
+        right: 15px !important;
+        font-size: 10px !important;
     }
 
     .scroll-down {
-        bottom: 80px;
-        font-size: 0.65rem;
+        bottom: 70px !important;
+        font-size: 10px !important;
     }
 }
 
