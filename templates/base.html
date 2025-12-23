@@ -80,11 +80,23 @@
 
     .main-content-wrapper { min-height: 100vh; background: var(--ig-bg); }
 
-    {% if request.endpoint in ['profile', 'search'] %}
-    .main-content-wrapper { margin-left: 72px !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
-    {% else %}
-    .main-content-wrapper { margin-left: 0 !important; width: 100%; }
-    {% endif %}
+    /* 📱 MASAÜSTÜ AYARI */
+    @media (min-width: 769px) {
+        {% if request.endpoint in ['profile', 'search'] %}
+        .main-content-wrapper { margin-left: 72px !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
+        {% else %}
+        .main-content-wrapper { margin-left: 0 !important; width: 100%; }
+        {% endif %}
+    }
+
+    /* 📱 MOBİL AYARI - SOLDAKİ 72PX BOŞLUĞU SİLEN KISIM */
+    @media (max-width: 768px) {
+        .main-content-wrapper { 
+            margin-left: 0 !important; 
+            width: 100% !important; 
+            overflow-x: hidden !important;
+        }
+    }
 
     input.pay-input, input.form-control { background-color: var(--input-bg) !important; color: var(--ig-text) !important; border: 1px solid var(--ig-border) !important; }
 
@@ -192,7 +204,6 @@
         });
     }
 
-    // ✨ BİLDİRİMİ SİLEN ASİL FONKSİYON ✨
     function deleteNotif(id) {
         fetch(`/notifications/delete/${id}`, { method: 'POST' })
         .then(res => res.json())
