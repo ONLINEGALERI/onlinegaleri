@@ -32,7 +32,6 @@
 <a href="{{ url_for('profile') }}" class="user-link">@{{ current_user.username }}</a>
 <a href="{{ url_for('logout') }}">Çıkış Yap</a>
 {% if current_user.username == "bec" %}
-<a href="{{ url_for('admin') }}" class="admin-btn">Admin Paneli</a>
 {% endif %}
 {% else %}
 <a href="javascript:void(0)" onclick="openLogin()" style="cursor: pointer !important;">Giriş Yap</a>
