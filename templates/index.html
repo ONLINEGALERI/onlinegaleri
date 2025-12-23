@@ -2,8 +2,6 @@
 {% block title %}Verzia{% endblock %}
 
 {% block content %}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 
 <div class="hero">
@@ -45,167 +43,41 @@
     </div>
 </div>
 
-<div class="overlay" id="premium-overlay">
-    <div class="overlay-content premium-card">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <div id="premium-step-1">
-            <h2 class="gold-gradient-text">VPRO EXPERIENCE</h2>
-            <p style="color:#fff; margin: 15px 0; font-size: 0.85rem; opacity: 0.8;">Ayrıcalıklı bir galeri için planını seç.</p>
-            <div class="subscription-plans">
-                <div class="plan-card" onclick="selectPlan(this)">
-                    <span class="plan-name">HAFTALIK</span><span class="plan-price">50₺</span>
-                </div>
-                <div class="plan-card active" onclick="selectPlan(this)" style="position: relative;">
-                    <div class="popular-badge">EN POPÜLER</div>
-                    <span class="plan-name">AYLIK</span><span class="plan-price">150₺</span>
-                </div>
-                <div class="plan-card" onclick="selectPlan(this)">
-                    <span class="plan-name">YILLIK</span><span class="plan-price">1000₺</span>
-                </div>
-            </div>
-            <button class="buy-btn-gold" onclick="showPayment()">ÜYELİĞİ BAŞLAT</button>
-        </div>
-        <div id="premium-step-2" style="display: none;">
-            <h2 class="gold-gradient-text">ÖDEME</h2>
-            <p style="color:#fff; margin-bottom: 20px; font-size: 0.85rem;">Kart bilgilerinizi giriniz.</p>
-            <div class="payment-area">
-                <input type="text" placeholder="Kart Numarası" class="pay-input">
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" placeholder="AA/YY" class="pay-input"><input type="text" placeholder="CVC" class="pay-input">
-                </div>
-                <button class="buy-btn-gold" onclick="alert('İşleminiz onaylanıyor...')">ÖDEMEYİ TAMAMLA</button>
-            </div>
-            <button class="back-btn" onclick="showPlans()">← Geri Dön</button>
-        </div>
-    </div>
-</div>
-
-<div class="overlay" id="login-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2 class="gold-gradient-text">GİRİŞ YAP</h2>
-        <div id="login-error-msg" style="color: #ff4d4d; display: none; margin-bottom: 15px; font-weight: bold; font-size: 0.8rem;"></div>
-        <form id="ajax-login-form">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
-            <input type="password" name="password" placeholder="Şifre" class="pay-input" required>
-            <button type="submit" class="buy-btn-gold">GİRİŞ</button>
-        </form>
-    </div>
-</div>
-
-<div class="overlay" id="register-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2 class="gold-gradient-text">KAYIT OL</h2>
-        <form action="{{ url_for('register') }}" method="POST">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
-            <input type="email" name="email" placeholder="E-posta" class="pay-input" required>
-            <input type="password" name="password" placeholder="Şifre" class="pay-input" required>
-            <button type="submit" class="buy-btn-gold">KAYIT OL</button>
-        </form>
-    </div>
-</div>
-
-<div class="overlay" id="about-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2 class="gold-gradient-text">HAKKINDA</h2>
-        <p style="color:#fff; margin-top:25px; line-height:1.8; font-size: 0.9rem;">Verzia, dijital sanatın ve lüksün en rafine halidir.</p>
-    </div>
-</div>
-
-<div class="overlay" id="contact-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2 class="gold-gradient-text">İLETİŞİM</h2>
-        <p style="color:#fff; margin-top:25px; font-size: 1rem;">Destek için:<br><strong>verziateam@outlook.com</strong></p>
-    </div>
-</div>
-
 <style>
-/* ... (Senin paylaştığın tüm CSS kısımları burada kalacak) ... */
-html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; transition: background 0.4s ease; }
+/* ... Senin o efsane CSS kodların buraya gelecek ... */
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; }
 .hero { position: relative; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; }
-.signature-container { position: absolute; width: 100%; max-width: 800px; z-index: 1; pointer-events: none; }
-.signature-text { font-family: 'Pinyon Script', cursive; font-size: 160px; fill: url(#goldDark); filter: drop-shadow(0 0 15px rgba(191, 149, 63, 0.4)); }
+.signature-text { font-family: 'Pinyon Script', cursive; font-size: 160px; fill: url(#goldDark); }
 .top-nav, .bottom-nav { position: absolute; width: 100%; display: flex; justify-content: space-between; padding: 0 50px; z-index: 100; box-sizing: border-box; }
-.top-nav { top: 40px; }
-.bottom-nav { bottom: 50px; align-items: center; }
-.left-group, .right-group { display: flex; gap: 20px; align-items: center; }
-.minimal-btn { background: none; border: 1px solid rgba(212, 175, 55, 0.7); color: #fff; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; transition: 0.3s; font-family: 'Montserrat', sans-serif; }
-.minimal-btn:hover { background: rgba(212, 175, 55, 0.15); border-color: #d4af37; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
-.user-link { color: #d4af37; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
-.gold-action-btn { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border: none; padding: 12px 28px; border-radius: 4px; font-weight: 800; cursor: pointer; color: #000; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); transition: 0.3s; }
-.gold-action-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.top-nav { top: 40px; } .bottom-nav { bottom: 50px; align-items: center; }
+.minimal-btn { background: none; border: 1px solid rgba(212, 175, 55, 0.7); color: #fff; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-size: 0.8rem; }
+.gold-action-btn { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border: none; padding: 12px 28px; border-radius: 4px; font-weight: 800; cursor: pointer; color: #000; font-size: 0.75rem; }
 .gold-gradient-text { background: linear-gradient(to right, #bf953f, #fcf6ba, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.footer-text { text-decoration: none; font-weight: bold; letter-spacing: 3px; font-size: 0.85rem; }
 .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); display: none; align-items: center; justify-content: center; z-index: 10000; }
 .overlay.active { display: flex; }
 .overlay-content { background: #000; padding: 60px 40px; border: 1px solid #d4af37; text-align: center; position: relative; width: 90%; max-width: 400px; border-radius: 8px; }
 .close-btn { position: absolute; top: 20px; left: 20px; background: none; border: none; color: #d4af37; font-size: 35px; cursor: pointer; }
-.subscription-plans { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
-.plan-card { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border: 1px solid rgba(212, 175, 55, 0.3); cursor: pointer; position: relative; }
-.plan-card.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.1); }
-.plan-name { color: #fff; font-weight: 700; font-size: 0.8rem; }
-.plan-price { color: #d4af37; font-weight: 800; }
-.popular-badge { position: absolute; top: -8px; right: 10px; background: #d4af37; color: #000; font-size: 0.6rem; padding: 2px 6px; font-weight: 900; }
 .pay-input { width: 100%; padding: 15px; margin: 12px 0; background: #0a0a0a; border: 1px solid #222; color: #fff; }
-.buy-btn-gold { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 15px; cursor: pointer; font-weight: 800; width: 100%; letter-spacing: 2px; }
-.back-btn { background:none; border:none; color:#d4af37; margin-top:15px; cursor:pointer; font-size:0.8rem; }
-body.light-mode { background-color: #fff !important; }
-body.light-mode .minimal-btn { color: #000; border-color: #8a6d3b; }
+.buy-btn-gold { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 15px; cursor: pointer; font-weight: 800; width: 100%; }
 </style>
 
 <script>
 function openLogin() { closeOverlay(); document.getElementById('login-overlay').classList.add('active'); }
 function openRegister() { closeOverlay(); document.getElementById('register-overlay').classList.add('active'); }
-function openAbout() { closeOverlay(); document.getElementById('about-overlay').classList.add('active'); }
-function openContact() { closeOverlay(); document.getElementById('contact-overlay').classList.add('active'); }
-function openPremium() { closeOverlay(); document.getElementById('premium-overlay').classList.add('active'); }
 function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
 function toggleMode() { document.body.classList.toggle('light-mode'); }
 
-function selectPlan(el) { document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
-function showPayment() { document.getElementById('premium-step-1').style.display = 'none'; document.getElementById('premium-step-2').style.display = 'block'; }
-function showPlans() { document.getElementById('premium-step-2').style.display = 'none'; document.getElementById('premium-step-1').style.display = 'block'; }
-
-// Giriş Formu İçin İyileştirilmiş Mantık
 document.getElementById('ajax-login-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const formData = new FormData(this);
-    const errorDiv = document.getElementById('login-error-msg');
-    
-    errorDiv.style.display = 'none';
-
     fetch('/login', {
         method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+        body: new FormData(this),
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
     })
-    .then(response => {
-        // Yanıtın JSON olup olmadığını kontrol et
-        return response.json().catch(() => {
-            // Eğer JSON değilse (Internal Error sayfası dönmüşse)
-            throw new Error("Sunucu hatası oluştu. Lütfen bilgilerinizi kontrol edin.");
-        }).then(data => {
-            if (!response.ok) throw new Error(data.message || "Giriş başarısız!");
-            return data;
-        });
-    })
+    .then(r => r.json())
     .then(data => {
-        if (data.status === 'success' && data.redirect) {
-            // BAŞARI: Direkt profiline fırlat
-            window.location.href = data.redirect;
-        } else {
-            throw new Error("Beklenmedik bir hata oluştu.");
-        }
-    })
-    .catch(error => {
-        errorDiv.innerText = error.message;
-        errorDiv.style.display = 'block';
-        console.error('Login Error:', error);
+        if(data.status === 'success') { window.location.href = data.redirect; }
+        else { alert(data.message); }
     });
 });
 </script>

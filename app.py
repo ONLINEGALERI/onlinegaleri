@@ -11,15 +11,12 @@ from models.photo import Photo
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.secret_key = os.environ.get("SECRET_KEY", "verzia-final-2025")
+app.secret_key = os.environ.get("SECRET_KEY", "verzia-final-v3")
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fallback.db"
-else:
-    if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
-    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or "sqlite:///fallback.db"
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True, "pool_recycle": 60}
