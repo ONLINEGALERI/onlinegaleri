@@ -28,7 +28,7 @@
     </div>
 
     {% if current_user.is_authenticated and current_user.username.lower() == "bec" %}
-    <div class="admin-panel-wrapper">
+    <div style="position: absolute; top: 65%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; text-align: center; width: 100%;">
         <a href="{{ url_for('admin_panel') }}" class="admin-panel-btn-minimal">YÖNETİCİ PANELİ</a>
     </div>
     {% endif %}
@@ -99,24 +99,14 @@
 .hero, section, .signature-container { background-color: transparent !important; }
 body { width: 100%; min-height: 100vh; overflow-x: hidden; transition: background-color 0.1s linear !important; }
 
-/* ✨ YÖNETİCİ PANELİ BUTON STİLİ ✨ */
-.admin-panel-wrapper {
-    position: absolute; 
-    top: 65%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-    z-index: 10000; 
-    text-align: center; 
-    width: 100%;
-}
-
+/* ✨ YÖNETİCİ PANELİ BUTON STİLİ (KÜÇÜK, SİYAH YAZILI, NİZAMİ) ✨ */
 .admin-panel-btn-minimal {
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c) !important;
-    color: #000000 !important;
+    color: #000000 !important; /* Yazı Rengi Siyah */
     font-weight: 800 !important;
     border: none !important;
-    padding: 4px 14px !important;
-    font-size: 0.65rem !important;
+    padding: 4px 14px !important; /* Küçük boyut */
+    font-size: 0.65rem !important; /* Minimal font */
     border-radius: 20px !important;
     text-transform: uppercase;
     text-decoration: none !important;
@@ -148,30 +138,6 @@ body { width: 100%; min-height: 100vh; overflow-x: hidden; transition: backgroun
 @keyframes appear {
     0% { opacity: 0; transform: scale(0.98); }
     100% { opacity: 1; transform: scale(1); }
-}
-
-/* ✨ BUTON KONUMLANDIRMA (GENEL) ✨ */
-.mode-btn {
-    position: absolute !important;
-    top: 58% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    padding: 8px 16px !important;
-    font-size: 0.75rem !important;
-    border-radius: 20px !important;
-}
-
-/* 📱 MOBİL İNCE AYAR (HAFFİF AŞAĞI KAYDIRILMIŞ) 📱 */
-@media (max-width: 768px) {
-    .signature-container {
-        margin-bottom: 35px !important; /* Bir tık daha boşluk ekledim */
-    }
-    .mode-btn {
-        top: 59% !important; /* %57'den %59'a çektim, çok hafif indi */
-    }
-    .admin-panel-wrapper {
-        top: 64% !important; /* %62'den %64'e çektim, çok hafif indi */
-    }
 }
 
 /* ✨ MODA GÖRE RENKLER ✨ */
