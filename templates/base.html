@@ -6,196 +6,38 @@
     <title>{% block title %}Verzia{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-    /* ✨ TASARIMIN (AYNEN KORUNDU) ✨ */
-    :root {
-        --ig-bg: #000000;
-        --ig-sidebar-bg: #000000;
-        --ig-border: #262626;
-        --ig-text: #f5f5f5;
-        --v-gold-gradient: linear-gradient(145deg, #8a6e2f 0%, #d4af37 25%, #f9e29c 50%, #d4af37 75%, #a67c00 100%);
-        --v-icon-color: #d4af37;
-        --v-glow: rgba(212, 175, 55, 0.4);
-        --input-bg: #1a1a1a;
-    }
-
-    body.light-mode {
-        --ig-bg: #fafafa;
-        --ig-sidebar-bg: #ffffff;
-        --ig-border: #dbdbdb;
-        --ig-text: #262626;
-        --v-gold-gradient: linear-gradient(145deg, #b8860b 0%, #e1b34c 25%, #fff9e3 50%, #e1b34c 75%, #b8860b 100%);
-        --v-icon-color: #b8860b;
-        --v-glow: rgba(184, 134, 11, 0.2);
-        --input-bg: #ffffff;
-    }
-
-    body, .main-content-wrapper, .ig-sidebar, .card, input, .overlay-content, .v-modal-content {
-        transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease !important;
-        background-color: var(--ig-bg);
-        color: var(--ig-text);
-    }
-
-    body { margin: 0; padding: 0; overflow-x: hidden; }
-
-    /* SIDEBAR YAPISI */
-    .ig-sidebar {
-        position: fixed; left: 0; top: 0; bottom: 0; width: 72px;
-        border-right: 1px solid var(--ig-border); background: var(--ig-sidebar-bg);
-        display: flex; flex-direction: column; align-items: center; padding: 25px 0; z-index: 9999;
-    }
-    
-    .sidebar-item { 
-        margin-bottom: 30px; color: var(--v-icon-color) !important; text-decoration: none; 
-        font-size: 24px; display: flex; align-items: center; justify-content: center; 
-        width: 100%; height: 50px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
-    }
-    .sidebar-item:hover { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--v-glow)); }
-
-    .notif-badge {
-        position: absolute; top: 8px; right: 18px; width: 10px; height: 10px;
-        background: #ff4d4d; border-radius: 50%; border: 2px solid var(--ig-sidebar-bg);
-        display: none;
-    }
-
-    .shake-notif { animation: shakeMe 0.5s infinite; }
-    @keyframes shakeMe {
-        0% { transform: rotate(0); }
-        25% { transform: rotate(10deg); }
-        50% { transform: rotate(-10deg); }
-        75% { transform: rotate(10deg); }
-        100% { transform: rotate(0); }
-    }
-
-    .v-logo-btn {
-        font-family: 'Playfair Display', serif; font-weight: 900; font-size: 32px;
-        background: var(--v-gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        display: inline-block; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); transition: 0.5s ease-in-out;
-    }
-    .v-logo-btn:hover { transform: rotateY(360deg) scale(1.3); filter: drop-shadow(0 0 15px var(--v-glow)); }
-
-    .main-content-wrapper { min-height: 100vh; background: var(--ig-bg); }
-
-    /* RESPONSIVE AYARLAR */
-    @media (min-width: 769px) {
-        {% if request.endpoint in ['profile', 'search'] %}
-        .main-content-wrapper { margin-left: 72px !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
-        {% else %}
-        .main-content-wrapper { margin-left: 0 !important; width: 100%; }
-        {% endif %}
-    }
-
-    @media (max-width: 768px) {
-        .main-content-wrapper { margin-left: 0 !important; width: 100vw !important; overflow-x: hidden !important; }
-        .ig-sidebar { width: 100% !important; height: 60px !important; position: fixed !important; top: auto !important; bottom: 0 !important; flex-direction: row !important; border-right: none !important; border-top: 1px solid var(--ig-border) !important; padding: 0 !important; }
-        .sidebar-item { margin-bottom: 0 !important; height: 100% !important; width: auto !important; }
-    }
+        :root {
+            --ig-bg: #000; --ig-sidebar-bg: #000; --ig-border: #262626; --ig-text: #f5f5f5;
+            --v-gold-gradient: linear-gradient(145deg, #8a6e2f 0%, #d4af37 25%, #f9e29c 50%, #d4af37 75%, #a67c00 100%);
+            --v-icon-color: #d4af37;
+        }
+        body { background: var(--ig-bg); color: var(--ig-text); margin: 0; font-family: sans-serif; }
+        .ig-sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0; width: 72px;
+            border-right: 1px solid var(--ig-border); display: flex; flex-direction: column; align-items: center; padding: 25px 0;
+        }
+        .sidebar-item { margin-bottom: 30px; color: var(--v-icon-color); font-size: 24px; text-decoration: none; transition: 0.3s; }
+        .sidebar-item:hover { transform: scale(1.1); }
+        .main-content-wrapper { margin-left: 72px; min-height: 100vh; }
+        @media (max-width: 768px) {
+            .ig-sidebar { width: 100%; height: 60px; top: auto; bottom: 0; flex-direction: row; justify-content: space-around; border-right: none; border-top: 1px solid var(--ig-border); padding: 0; }
+            .main-content-wrapper { margin-left: 0; padding-bottom: 60px; }
+            .sidebar-item { margin-bottom: 0; }
+        }
     </style>
 </head>
-<body class="{% if request.endpoint in ['profile', 'search'] %}profile-page-body{% endif %}">
-
-<script>
-    if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); }
-</script>
-
-{% if current_user.is_authenticated and request.endpoint in ['profile', 'search'] %}
-<div class="ig-sidebar">
-    <a href="{{ url_for('index') }}" class="sidebar-item" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
-    <a href="#" class="sidebar-item" title="Kullanıcı Ara"><i class="fa-solid fa-magnifying-glass"></i></a>
-    
-    <a href="javascript:void(0)" class="sidebar-item" id="notif-btn" title="Bildirimler" onclick="showNotifModal()">
-        <i class="fa-solid fa-bell" id="notif-icon"></i>
-        <span class="notif-badge" id="notif-count-dot"></span>
-    </a>
-
-    <a href="{{ url_for('profile', username=current_user.username) }}" class="sidebar-item" title="Profilim"><i class="fa-solid fa-circle-user"></i></a>
-    
-    <a href="{{ url_for('profile', username='bec') }}" class="sidebar-item" title="Verzia Official"><span class="v-logo-btn">V</span></a>
-    
-    <div class="mt-auto">
-        <a href="{{ url_for('logout') }}" class="sidebar-item" title="Çıkış Yap"><i class="fa-solid fa-right-from-bracket"></i></a>
+<body>
+    {% if current_user.is_authenticated and request.endpoint in ['profile', 'search'] %}
+    <div class="ig-sidebar">
+        <a href="{{ url_for('index') }}" class="sidebar-item"><i class="fa-solid fa-house"></i></a>
+        <a href="{{ url_for('profile', username=current_user.username) }}" class="sidebar-item"><i class="fa-solid fa-circle-user"></i></a>
+        <a href="{{ url_for('logout') }}" class="sidebar-item"><i class="fa-solid fa-right-from-bracket"></i></a>
     </div>
-</div>
-{% endif %}
-
-<div class="main-content-wrapper">
-    {% block content %}{% endblock %}
-</div>
-
-<div class="modal fade" id="notifModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content v-modal-content" style="border: 1px solid var(--v-icon-color); background: var(--ig-bg);">
-            <div class="modal-header border-bottom border-secondary">
-                <h6 class="modal-title fw-bold" style="color: var(--v-icon-color);">BİLDİRİMLER</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0" id="notif-list-area" style="max-height: 400px; overflow-y: auto;"></div>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    // Giriş yapmamış kullanıcıda asla çalışmaz
-    function checkNotifications() {
-        {% if current_user.is_authenticated %}
-        const notifBtn = document.getElementById('notif-btn');
-        if (!notifBtn) return;
-
-        fetch('/notifications/unread-count')
-        .then(res => res.json())
-        .then(data => {
-            const dot = document.getElementById('notif-count-dot');
-            const icon = document.getElementById('notif-icon');
-            if (dot && data.count > 0) {
-                dot.style.display = 'block';
-                icon.classList.add('shake-notif');
-            } else if (dot) {
-                dot.style.display = 'none';
-                icon.classList.remove('shake-notif');
-            }
-        }).catch(e => console.log("Bildirim servis meşgul."));
-        {% endif %}
-    }
-
-    // Modal Fonksiyonu (Giriş kontrolü eklendi)
-    function showNotifModal() {
-        {% if current_user.is_authenticated %}
-        const listArea = document.getElementById('notif-list-area');
-        listArea.innerHTML = '<div class="p-4 text-center opacity-50">Yükleniyor...</div>';
-        
-        const myModal = new bootstrap.Modal(document.getElementById('notifModal'));
-        myModal.show();
-
-        fetch('/notifications')
-        .then(res => res.json())
-        .then(data => {
-            if (data.length === 0) {
-                listArea.innerHTML = '<div class="p-4 text-center opacity-50">Henüz bildirim yok.</div>';
-            } else {
-                listArea.innerHTML = data.map(n => `
-                    <div class="p-3 border-bottom border-dark d-flex align-items-center justify-content-between" style="font-size: 14px;">
-                        <div>
-                            <strong style="color: var(--v-icon-color);">@${n.sender}</strong> ${n.message}
-                            <div class="opacity-50 small">${n.time}</div>
-                        </div>
-                    </div>`).join('');
-                
-                fetch('/notifications/mark-as-read', {method: 'POST'});
-                document.getElementById('notif-count-dot').style.display = 'none';
-                document.getElementById('notif-icon').classList.remove('shake-notif');
-            }
-        });
-        {% endif %}
-    }
-
-    {% if current_user.is_authenticated %}
-    setInterval(checkNotifications, 20000);
-    checkNotifications();
     {% endif %}
-</script>
+    <div class="main-content-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

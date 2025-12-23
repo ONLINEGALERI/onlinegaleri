@@ -1,155 +1,25 @@
 {% extends "base.html" %}
-
 {% block content %}
-<style>
-    /* TASARIMIN (AYNEN KORUNDU) */
-    .ig-container { width: 100%; max-width: 935px; margin: 0 auto; padding: 30px 20px; color: var(--ig-text); }
-    .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; }
-    .ig-avatar-area { flex: 1; display: flex; justify-content: center; position: relative; }
-    .avatar-wrapper { position: relative; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .avatar-wrapper:hover { transform: scale(1.05); }
-    .profile-avatar { width: 150px !important; height: 150px !important; border-radius: 50% !important; object-fit: cover; border: 1px solid var(--ig-border); padding: 5px; background-color: var(--ig-bg); }
-    .ig-info-area { flex: 2; padding-left: 30px; }
-    .ig-user-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .profile-name { font-size: 28px; font-weight: 300; margin: 0; color: var(--ig-text); text-transform: uppercase; }
-    .verzia-gold-text { background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
-    .gold-verify { font-size: 20px; background: linear-gradient(135deg, #d4af37 0%, #fff9e3 50%, #c5a028 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .btn-ig-edit { background: var(--ig-bg) !important; border: 1px solid var(--ig-border) !important; border-radius: 4px !important; color: var(--ig-text) !important; font-weight: 600; font-size: 14px; padding: 5px 9px; cursor: pointer; }
-    .verzia-gold-btn { background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728) !important; color: #000 !important; font-weight: bold; border: none !important; padding: 8px 20px; border-radius: 5px; cursor: pointer; }
-    .btn-unfollow { background: #333 !important; color: #fff !important; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; }
-    .ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
-    .ig-stats b { font-weight: 600; }
-    .ig-bio { font-size: 16px; line-height: 1.5; color: var(--ig-text); }
-    .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
-    .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
-    .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; cursor: pointer; }
-    .delete-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; }
-    .v-modal-content { background: #000 !important; border: 1px solid #d4af37 !important; border-radius: 12px; }
-
-    @media (max-width: 768px) {
-        .ig-header { flex-direction: column !important; }
-        .ig-info-area { padding-left: 0 !important; text-align: center; }
-        .ig-stats { gap: 15px !important; justify-content: center; }
-        .ig-photo-grid { gap: 3px !important; }
-    }
-</style>
-
-<div class="ig-container">
-    <header class="ig-header">
-        <div class="ig-avatar-area">
-            <div class="avatar-wrapper" {% if can_edit %}onclick="document.getElementById('avatarInput').click()"{% endif %}>
-                <img class="profile-avatar" id="avatarPreview" src="{{ server_profile.avatar }}" onerror="this.src='https://picsum.photos/400'">
-                {% if can_edit %}
-                    <form id="avatarForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
-                        <input type="file" id="avatarInput" name="photo" accept="image/*" onchange="this.form.submit()">
-                    </form>
-                {% endif %}
-            </div>
-        </div>
-        <div class="ig-info-area">
-            <div class="ig-user-row">
-                <h2 class="profile-name">{{ server_profile.username }}</h2>
-                {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check gold-verify"></i>{% endif %}
-                
-                {% if can_edit %}
-                    <button class="btn-ig-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">Profili Düzenle</button>
-                    {% if server_profile.username.lower() == "bec" %}
-                        <a href="/admin" class="btn-ig-edit" style="text-decoration:none">YÖNETİCİ</a>
-                    {% endif %}
-                    <button class="verzia-gold-btn ms-2" onclick="document.getElementById('photoInput').click()">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <form id="uploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
-                        <input type="file" id="photoInput" name="photo" accept="image/*" onchange="this.form.submit()">
-                    </form>
-                {% else %}
-                    <button class="{% if is_following %}btn-unfollow{% else %}verzia-gold-btn{% endif %}" onclick="toggleFollow('{{ server_profile.username }}', this)">
-                        {{ 'Takibi Bırak' if is_following else 'Takip Et' }}
-                    </button>
-                {% endif %}
-            </div>
-            <ul class="ig-stats">
-                <li><b>{{ photos|length }}</b> gönderi</li>
-                <li onclick="showUserList('followers')" style="cursor:pointer">
-                    <b id="followerCount">{{ server_profile.followers|default(0) }}</b> takipçi
-                </li>
-                <li onclick="showUserList('following')" style="cursor:pointer">
-                    <b>{{ server_profile.following|default(0) }}</b> takip
-                </li>
-            </ul>
-            <div class="ig-bio"><p class="mt-1">{{ server_profile.bio|default('Verzia Experience') }}</p></div>
+<div style="max-width: 935px; margin: 0 auto; padding: 40px 20px;">
+    <header style="display: flex; align-items: center; margin-bottom: 40px;">
+        <img src="{{ server_profile.avatar }}" style="width: 150px; height: 150px; border-radius: 50%; border: 2px solid #d4af37; padding: 5px;">
+        <div style="margin-left: 50px;">
+            <h2 style="font-size: 28px; margin: 0;">{{ server_profile.username }} {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check" style="color:#d4af37;"></i>{% endif %}</h2>
+            <p style="margin-top: 10px; opacity: 0.8;">{{ server_profile.bio }}</p>
+            {% if can_edit %}
+            <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="photo" onchange="this.form.submit()" style="display:none;" id="p-upload">
+                <button type="button" onclick="document.getElementById('p-upload').click()" style="background:#d4af37; border:none; color:#000; padding:5px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">Fotoğraf Yükle</button>
+            </form>
+            {% endif %}
         </div>
     </header>
-
-    <div class="ig-photo-grid">
-        {% if photos %}
-            {% for photo in photos %}
-            <div class="grid-item">
-                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" onclick="window.open(this.src)">
-                {% if can_edit %}
-                <form action="{{ url_for('logout') }}" method="POST" style="display:inline;"> <button type="submit" class="delete-btn" onclick="return confirm('Silinsin mi?')">&times;</button>
-                </form>
-                {% endif %}
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="no-posts" style="grid-column: 1/-1; text-align:center; padding:50px; border: 1px dashed #d4af37; border-radius: 12px;">
-                <h3 class="verzia-gold-text">Henüz gönderi yok</h3>
-                {% if can_edit %}
-                    <p class="opacity-50">Sanat eserlerini yüklemeye başla.</p>
-                {% endif %}
-            </div>
-        {% endif %}
-    </div>
-</div>
-
-<div class="modal fade" id="userListModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 400px;">
-        <div class="modal-content v-modal-content">
-            <div class="modal-header border-bottom border-dark">
-                <h6 class="modal-title verzia-gold-text fw-bold" id="modalTitle">Kullanıcılar</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0" id="userListBody" style="max-height: 400px; overflow-y: auto;"></div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        {% for photo in photos %}
+        <div style="aspect-ratio: 1/1; overflow: hidden; background: #111;">
+            <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" style="width:100%; height:100%; object-fit:cover;">
         </div>
+        {% endfor %}
     </div>
 </div>
-
-<script>
-    function showUserList(type) {
-        const username = "{{ server_profile.username }}";
-        const title = type === 'followers' ? 'TAKİPÇİLER' : 'TAKİP EDİLENLER';
-        document.getElementById('modalTitle').innerText = title;
-        const body = document.getElementById('userListBody');
-        body.innerHTML = '<div class="p-4 text-center verzia-gold-text">Yükleniyor...</div>';
-        
-        const listModal = new bootstrap.Modal(document.getElementById('userListModal'));
-        listModal.show();
-
-        fetch(type === 'followers' ? `/get_followers/${username}` : `/get_following/${username}`)
-        .then(res => res.json())
-        .then(data => {
-            body.innerHTML = '';
-            if (username.toLowerCase() === 'bec' && type === 'followers') {
-                body.innerHTML = '<div class="p-5 text-center"><i class="fa-solid fa-lock" style="font-size:30px; color:#bf953f; display:block;"></i><span>Liste Gizli</span></div>';
-                return;
-            }
-            if (!data || data.length === 0) {
-                body.innerHTML = '<div class="p-4 text-center opacity-50">Henüz kimse yok.</div>';
-                return;
-            }
-            body.innerHTML = data.map(u => `
-                <a href="/profile/${u.username}" class="user-list-item d-flex align-items-center p-3 text-decoration-none border-bottom border-dark">
-                    <img src="${u.avatar || 'https://picsum.photos/100'}" style="width:40px;height:40px;border-radius:50%;margin-right:15px;">
-                    <span style="color:white;">@${u.username}</span>
-                </a>
-            `).join('');
-        });
-    }
-
-    function toggleFollow(username, btn) {
-        fetch(`/follow/${username}`, { method: 'POST' })
-        .then(res => res.json()).then(data => { if(data.status === 'success') location.reload(); });
-    }
-</script>
 {% endblock %}
