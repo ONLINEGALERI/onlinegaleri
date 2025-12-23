@@ -16,9 +16,8 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = "gizli-key"
 
-# 1. Veritabanı ve Klasör Yolları
+# 1. Klasör Yolları (Veritabanı artık Config'den otomatik geliyor, elle yazma!)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -131,7 +130,6 @@ def upload():
         db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
 
-# ✨ SİLME FONKSİYONU: Profile.html'deki silme butonu için gerekli
 @app.route('/delete_photo/<int:photo_id>', methods=['POST'])
 @login_required
 def delete_photo_profile(photo_id):
@@ -141,7 +139,6 @@ def delete_photo_profile(photo_id):
         db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
 
-# ✨ TAKİP FONKSİYONLARI: JS fetch istekleri için gerekli
 @app.route('/follow/<username>', methods=['POST'])
 @login_required
 def follow(username):
