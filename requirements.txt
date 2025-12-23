@@ -5,4 +5,5 @@ flask_migrate
 flask_login
 werkzeug
 pillow
+psycopg2-binary
 
