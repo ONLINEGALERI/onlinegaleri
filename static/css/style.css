@@ -1,10 +1,12 @@
 /* GENEL */
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Montserrat', sans-serif;
     background-color: #000;
     color: #fff;
     transition: background 0.3s, color 0.3s;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 /* Light mode */
@@ -22,14 +24,8 @@ body.light-mode {
     align-items: center;
     text-align: center;
     position: relative;
-    z-index: 1; /* Diğer butonların altında kalması için sabitlendi */
-    animation: fadeIn 1.2s ease-out forwards;
-    background: #000;
-}
-
-body.light-mode .hero {
-    background: #f0f0f0;
-    color: #000;
+    z-index: 1;
+    background: transparent !important; /* Index.html'deki gradienti bozmasın */
 }
 
 /* ANA LOGO */
@@ -39,7 +35,7 @@ body.light-mode .hero {
     font-weight: 400;
     letter-spacing: 0.05em;
     margin-bottom: 20px;
-    pointer-events: none; /* Logo boşluğunun tıklamayı engellemesini önler */
+    pointer-events: none;
 }
 
 /* AUTH BUTTONS – SAĞ ÜST (WEB) */
@@ -49,206 +45,85 @@ body.light-mode .hero {
     right: 30px;
     display: flex;
     gap: 15px;
-    z-index: 9999 !important; /* En üst katmana çıkarıldı */
+    z-index: 9999 !important;
     pointer-events: auto !important;
 }
 
-/* Genel buton stili */
 .auth-buttons a {
     text-decoration: none;
-    color: #fff;
-    border: 1px solid #fff;
+    color: inherit;
+    border: 1px solid rgba(212, 175, 55, 0.5); /* Gold dokunuş */
     padding: 8px 18px;
-    border-radius: 25px;
-    font-size: 0.9rem;
+    border-radius: 2px;
+    font-size: 0.85rem;
     transition: all 0.3s ease;
-    background: #555; /* gri buton */
+    background: rgba(255, 255, 255, 0.05);
     cursor: pointer !important;
+    letter-spacing: 1px;
 }
 
 body.light-mode .auth-buttons a {
-    color: #000;
     border-color: #ccc;
-    background: #ddd; /* light mod gri ton */
-}
-
-.auth-buttons a:hover {
-    background: #777;
-    color: #fff;
-}
-
-body.light-mode .auth-buttons a:hover {
-    background: #bbb;
-}
-
-/* Admin Panel linki – Dark/Light mod uyumlu ve öncelikli */
-.auth-buttons a[href$="admin"] {
-    background-color: #222 !important;
-    color: #fff !important;
-    border: 1px solid #fff !important;
-    padding: 8px 18px !important;
-    border-radius: 25px !important;
-    font-size: 0.9rem !important;
-    text-decoration: none !important;
-    transition: all 0.3s ease !important;
-}
-
-body.light-mode .auth-buttons a[href$="admin"] {
-    background-color: #ddd !important;
-    color: #000 !important;
-    border: 1px solid #ccc !important;
-}
-
-body.light-mode .auth-buttons a[href$="admin"]:hover {
-    background-color: #bbb !important;
-}
-
-body:not(.light-mode) .auth-buttons a[href$="admin"]:hover {
-    background-color: #555 !important;
+    background: #eee;
+    color: #000;
 }
 
 /* HAKKINDA & İLETİŞİM – SOL ÜST (WEB) */
 .about-btn,
-.contact-btn {
+.contact-btn,
+.mode-btn {
     position: absolute;
     top: 20px;
-    left: 30px;
-    padding: 6px 16px;
-    border: 1px solid #fff;
-    border-radius: 25px;
-    background: #555; /* gri ton */
-    color: #fff;
+    padding: 8px 16px;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.05);
+    color: inherit;
     cursor: pointer !important;
     transition: all 0.3s ease;
-    z-index: 9999 !important; /* En üst katmana çıkarıldı */
+    z-index: 9999 !important;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
 }
 
+.about-btn { left: 30px; }
 .contact-btn { left: 140px; }
+.mode-btn { left: 265px; top: 20px; margin-top: 0; } /* Üst sıraya hizalandı */
 
 body.light-mode .about-btn,
-body.light-mode .contact-btn {
-    border-color: #ccc;
-    background: #ddd; /* light mod gri ton */
-    color: #000;
-}
-
-.about-btn:hover,
-.contact-btn:hover {
-    background: #777;
-}
-
-body.light-mode .about-btn:hover,
-body.light-mode .contact-btn:hover {
-    background: #bbb;
-}
-
-/* MODE */
-.mode-btn {
-    margin-top: 15px;
-    padding: 6px 16px;
-    border: 1px solid #fff;
-    border-radius: 25px;
-    background: #555;
-    color: #fff;
-    cursor: pointer !important;
-    z-index: 9999 !important;
-}
-
+body.light-mode .contact-btn,
 body.light-mode .mode-btn {
     border-color: #ccc;
-    background: #ddd;
+    background: #eee;
     color: #000;
-}
-
-.mode-btn:hover {
-    background: #777;
-}
-
-body.light-mode .mode-btn:hover {
-    background: #bbb;
 }
 
 /* KEŞFET YAZISI */
 .scroll-down {
     position: absolute;
-    bottom: 30px;
-    font-size: 0.8rem;
-    opacity: 0.5;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    opacity: 0.6;
     cursor: pointer !important;
     z-index: 9999 !important;
-    animation: bounce 1.5s infinite ease-in-out;
+    animation: bounce 2s infinite ease-in-out;
 }
 
-/* ========== KEŞİF SAYFASI ========== */
-.explore {
-    min-height: 100vh;
-    background: #000;
-    color: #fff;
-    padding-top: 90px;
-}
-
-body.light-mode .explore {
-    background: #f9f9f9;
-    color: #000;
-}
-
-/* EXPLORE HEADER */
-.explore-header {
-    position: sticky;
-    top: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-}
-
-/* SAĞ ÜST – ARAMA */
-.search-box {
-    position: absolute;
-    right: 30px;
-}
-
-.search-box input {
-    background: transparent;
-    border: 1px solid #fff;
-    border-radius: 20px;
-    padding: 6px 14px;
-    color: #fff;
-    font-size: 0.85rem;
-    outline: none;
-    width: 160px;
-    transition: all 0.3s ease;
-}
-
-body.light-mode .search-box input {
-    border-color: #ccc;
-    color: #000;
-}
-
-.search-box input:focus {
-    width: 220px;
-    background: rgba(255,255,255,0.05);
-}
-
-/* MINI LOGO */
-.mini-logo {
-    font-family: "Arsenica", serif;
-    font-size: 1.6rem;
-    letter-spacing: 0.2em;
-    opacity: 0.6;
-}
-
-/* OVERLAY */
+/* OVERLAY GENEL */
 .overlay {
     position: fixed;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000; /* Butonların hemen üstünde */
+    z-index: 10000;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.4s ease;
+    background: rgba(0,0,0,0.9);
 }
 
 .overlay.active {
@@ -256,187 +131,83 @@ body.light-mode .search-box input {
     pointer-events: all;
 }
 
-/* CLOSE BUTTON – ÜST SOLA TAŞI */
-.overlay .close-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    font-size: 1.5rem;
-    background: transparent;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    z-index: 10;
-    padding: 5px;
-}
-
-/* OVERLAY FORM STİLLERİ (LOGIN & REGISTER & ABOUT & CONTACT) */
 .overlay-content {
-    padding: 30px;
-    border-radius: 15px;
-    width: 380px;
-    max-width: 90%;
+    padding: 40px;
+    border-radius: 4px;
+    width: 400px;
+    max-width: 92%;
     text-align: center;
-    transition: background 0.3s, color 0.3s;
-    background: #111;
-    color: #fff;
-}
-
-/* Overlay arka plan dark/light mod uyumu */
-.overlay#about-overlay,
-.overlay#contact-overlay {
-    background: rgba(0,0,0,0.95);
-}
-
-body.light-mode .overlay#about-overlay,
-body.light-mode .overlay#contact-overlay {
-    background: #fff;
-    color: #000;
-}
-
-.overlay#login-overlay,
-.overlay#register-overlay {
-    background: rgba(0,0,0,0.95);
-}
-
-body.light-mode .overlay#login-overlay,
-body.light-mode .overlay#register-overlay {
-    background: #fff;
-    color: #000;
-}
-
-body.light-mode .overlay-content {
-    background: #f5f5f5;
-    color: #000;
-}
-
-.overlay-content form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.overlay-content input {
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    background: transparent;
-    color: #fff;
-    outline: none;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-}
-
-body.light-mode .overlay-content input {
-    border-color: #999;
-    color: #000;
-    background: #fff;
-}
-
-.overlay-content input:focus {
-    border-color: #999;
-    box-shadow: 0 0 8px rgba(153,153,153,0.5);
-    background: rgba(255,255,255,0.05);
-}
-
-.overlay-content .form-btn {
-    padding: 10px 16px;
-    border-radius: 25px;
-    border: none;
-    background: #555;
-    color: #fff;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-body.light-mode .overlay-content .form-btn {
-    background: #ccc;
-    color: #000;
-}
-
-.overlay-content .form-btn:hover {
-    background: #777;
-}
-
-body.light-mode .overlay-content .form-btn:hover {
-    background: #bbb;
+    position: relative;
+    border: 1px solid #d4af37;
 }
 
 /* FOOTER TEXT */
 .footer-text {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
-    font-size: 12px;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.3);
-    pointer-events: none;
+    bottom: 20px;
+    right: 20px;
+    font-size: 11px;
+    letter-spacing: 2px;
     z-index: 1000;
-    font-family: Arial, sans-serif;
-    transition: color 0.3s ease;
 }
 
-body.light-mode .footer-text {
-    color: rgba(0, 0, 0, 0.3);
+/* 📱📱 FULL MOBİL UYUMLULUK (768px ve altı) 📱📱 */
+@media (max-width: 768px) {
+    /* 1. Logo küçültme ve merkeze alma */
+    .logo { font-size: 3rem; }
+    
+    /* 2. Üst butonları dikey değil, şık bir grid yapısına sokuyoruz */
+    .auth-buttons {
+        top: 15px;
+        right: 0;
+        width: 100%;
+        justify-content: center;
+        gap: 10px;
+        padding: 0 10px;
+    }
+    
+    .auth-buttons a {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    /* Sol üstteki 3 butonu (Hakkında, İletişim, Mode) yan yana merkeze alıyoruz */
+    .about-btn, .contact-btn, .mode-btn {
+        top: 60px; /* Giriş butonlarının altına iner */
+        font-size: 0.7rem;
+        padding: 6px 10px;
+        width: auto;
+        position: absolute;
+    }
+
+    .about-btn { left: 5% !important; }
+    .mode-btn { left: 50% !important; transform: translateX(-50%); }
+    .contact-btn { left: auto !important; right: 5% !important; }
+
+    /* 3. VPRO ve Alt Yazılar */
+    .vpro-btn-gold {
+        bottom: 15px !important;
+        left: 15px !important;
+        padding: 10px 15px !important;
+        font-size: 0.7rem !important;
+    }
+
+    .footer-text {
+        bottom: 18px !important;
+        right: 15px !important;
+        font-size: 0.6rem !important;
+    }
+
+    /* 4. Overlay Formları */
+    .overlay-content {
+        padding: 50px 20px 30px 20px;
+    }
+
+    .scroll-down {
+        bottom: 80px;
+        font-size: 0.65rem;
+    }
 }
 
 /* ANİMASYONLAR */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-
-/* ===================== */
-/* 📱 MOBİL DÜZENLEME */
-@media (max-width: 768px) {
-    .logo { font-size: 3.5rem; }
-    .auth-buttons {
-        position: static;
-        margin-top: 20px;
-        flex-direction: column;
-        align-items: center;
-    }
-    .auth-buttons a { width: 200px; text-align: center; }
-    .about-btn, .contact-btn {
-        position: static;
-        margin: 8px auto;
-        display: block;
-        width: 200px;
-        text-align: center;
-    }
-    .contact-btn { left: auto; }
-    .search-box { position: static; margin-top: 15px; text-align: center; }
-    .search-box input { width: 90%; }
-}
-
-/* ADMIN PANELİ DARK/LIGHT UYUMLU RENKLER */
-/* Dark Mode */
-body:not(.light-mode) .btn-success { background-color: #fff; color: #000; border-color: #ccc; }
-body:not(.light-mode) .btn-primary { background-color: #fff; color: #000; border-color: #ccc; }
-body:not(.light-mode) .btn-danger { background-color: #fff; color: #000; border-color: #ccc; }
-
-/* Light Mode */
-body.light-mode .btn-success { background-color: #000; color: #fff; border-color: #333; }
-body.light-mode .btn-primary { background-color: #000; color: #fff; border-color: #333; }
-body.light-mode .btn-danger { background-color: #000; color: #fff; border-color: #333; }
-
-/* Tablo arka plan ve yazı renkleri */
-body:not(.light-mode) table { background-color: #1f1f1f; color: #eee; }
-body:not(.light-mode) thead { background-color: #2c2c2c; color: #fff; }
-body.light-mode table { background-color: #fff; color: #111; }
-body.light-mode thead { background-color: #f0f0f0; color: #000; }
-
-/* =============================== */
-/* LOGIN UX İYİLEŞTİRMELERİ */
-/* =============================== */
-.card { background-color: #111; color: #fff; border: 1px solid #222; }
-body.light-mode .card { background-color: #fff; color: #000; border: 1px solid #ddd; }
-
-/* ===============================
-   ADMIN PANEL DARK / LIGHT UYUM
-   =============================== */
-.admin-page { min-height: 100vh; padding: 30px; }
-body:not(.light-mode) .admin-page { background-color: #121212; }
-body.light-mode .admin-page { background-color: #ffffff; }
-
-/* Diğer Admin stilleri mevcut yapıda korunmuştur */
+@keyframes bounce { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -10px); } }
