@@ -21,14 +21,18 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
-# ---------------- DATABASE (RENDER UYUMLU – TEMİZ) ----------------
+# ---------------- DATABASE (RENDER + PSYCOPG v3 UYUMLU) ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL environment variable is not set")
 
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# 🔥 KRİTİK: psycopg v3 driver
+DATABASE_URL = DATABASE_URL.replace(
+    "postgres://", "postgresql+psycopg://", 1
+).replace(
+    "postgresql://", "postgresql+psycopg://", 1
+)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -37,7 +41,7 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# ❌ db.create_all() YOK (migration kullanılacak)
+# ❌ db.create_all() YOK (migration ile)
 
 # ---------------- UPLOAD ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -186,10 +190,11 @@ def upload():
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
-# ---------------- RUN ----------------
+# ---------------- RUN (LOCAL ONLY) ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
