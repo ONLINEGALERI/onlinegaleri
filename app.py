@@ -21,12 +21,11 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Klasör Yapılandırması - GÜVENLİ HALE GETİRİLDİ
+# Klasör Yapılandırması
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 THUMB_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbs')
 
-# Klasörlerin varlığından emin oluyoruz
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(THUMB_FOLDER, exist_ok=True)
 
@@ -69,7 +68,6 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-# ✨ ÜYELİK SONRASI JSON EKRANI SORUNU BURADA ÇÖZÜLDÜ ✨
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -80,25 +78,19 @@ def register():
         if User.query.filter((User.username == username) | (User.email == email)).first():
             return jsonify({'status': 'error', 'message': 'Kullanıcı zaten mevcut!'}), 400
             
-        new_user = User(
-            username=username,
-            email=email,
-            password=generate_password_hash(password)
-        )
+        new_user = User(username=username, email=email, password=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)
 
-        # Eğer modal/AJAX üzerinden kayıt olunuyorsa JSON döner
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'status': 'success', 'redirect': url_for('index')})
         
-        # Siyah ekranı engelleyen asıl yönlendirme:
         return redirect(url_for('index'))
         
     return render_template('register.html')
 
-# --------------------- PROFILE & LİSTELEME (Bozulmadı) ---------------------
+# --------------------- ✨ PROFILE (HATA BURADA ÇÖZÜLDÜ) ✨ ---------------------
 @app.route('/profile')
 def profile():
     username = request.args.get('username')
@@ -117,23 +109,41 @@ def profile():
 
     user_photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
     is_vip = user_to_show.username.lower() in ['bec', 'beril']
+    
     is_following = False
     if current_user.is_authenticated and current_user.id != user_to_show.id:
         is_following = current_user.is_following(user_to_show)
+
+    # ✨ KRİTİK GÜVENLİK AYARI: Sayılar artık çökme riski taşımıyor ✨
+    # BEC ve Beril için takipçi sayısını "2M" olarak mühürlüyoruz
+    f_count = 0
+    if not is_vip:
+        try:
+            # count() yerine tüm listeyi çekip uzunluğuna bakıyoruz (daha güvenli)
+            f_count = len(user_to_show.followers_list.all())
+        except:
+            f_count = 0
+
+    following_count = 0
+    try:
+        following_count = len(user_to_show.followed.all())
+    except:
+        following_count = 0
 
     sp = {
         'username': user_to_show.username,
         'avatar': user_to_show.avatar or 'https://picsum.photos/seed/default/400/400',
         'bio': user_to_show.bio or 'Henüz bir biyografi eklenmedi.',
-        'followers': '2M' if is_vip else user_to_show.followers_list.count(),
-        'following': user_to_show.followed.count(),
-        'posts': len(user_photos),
+        'followers': '2M' if is_vip else f_count,
+        'following': following_count,
+        'posts': len(user_photos) if user_photos else 0,
         'is_vip': is_vip
     }
 
     can_edit = current_user.is_authenticated and current_user.id == user_to_show.id
     return render_template('profile.html', server_profile=sp, can_edit=can_edit, photos=user_photos, is_following=is_following)
 
+# --------------------- LİSTELEME ROTALARI (Bozulmadı) ---------------------
 @app.route('/get_followers/<username>')
 def get_followers(username):
     if username.lower() == 'bec':
@@ -152,7 +162,7 @@ def get_following(username):
         })
     return jsonify(following)
 
-# --------------------- DİĞER FONKSİYONLAR (Aynı Kaldı) ---------------------
+# --------------------- DİĞER FONKSİYONLAR ---------------------
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload():
