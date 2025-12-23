@@ -33,10 +33,13 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# 🚀 3. RENDER İÇİN: Tabloları oluştur
+# 🚀 3. RENDER İÇİN: Tabloları oluştur (Sistem Hatasını Çözer!)
 with app.app_context():
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    db.create_all()
+    try:
+        db.create_all() # PostgreSQL içine tabloları zorla kurar
+    except Exception as e:
+        print(f"Veritabanı kurulum hatası: {e}")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -51,7 +54,6 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
-    # Artık herkes ana sayfayı görebilir!
     try:
         all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
     except:
@@ -66,8 +68,10 @@ def login():
     if request.method == 'POST':
         u = request.form.get('username')
         p = request.form.get('password')
+        # Önce kullanıcıyı ara
         user = User.query.filter((User.username == u) | (User.email == u)).first()
         
+        # Şifreyi doğrula
         if user and check_password_hash(user.password, p):
             login_user(user)
             return redirect(url_for('profile', username=user.username))
@@ -91,6 +95,7 @@ def register():
             flash('Kullanıcı zaten mevcut!', 'error')
             return redirect(url_for('register'))
             
+        # Şifreyi hashleyerek kaydet
         new_user = User(username=username, email=email, password=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
