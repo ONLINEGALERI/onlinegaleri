@@ -440,3 +440,79 @@ body:not(.light-mode) .admin-page { background-color: #121212; }
 body.light-mode .admin-page { background-color: #ffffff; }
 
 /* Diğer Admin stilleri mevcut yapıda korunmuştur */
+/* ===================== */
+/* 📱 MOBİL ÖZEL TASARIM - VERZIA */
+@media (max-width: 768px) {
+    /* 1. Giriş Yap ve Kayıt Ol: Sağ üstte, alt alta, daha küçük */
+    .auth-buttons {
+        position: absolute !important;
+        top: 20px !important;
+        right: 15px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: flex-end !important;
+        margin-top: 0 !important;
+    }
+    .auth-buttons a {
+        width: auto !important;
+        min-width: 90px !important;
+        padding: 5px 12px !important;
+        font-size: 0.75rem !important;
+        border-radius: 15px !important;
+    }
+
+    /* 2. Hakkında ve İletişim: Solda, alt alta, daha küçük */
+    .about-btn, .contact-btn {
+        position: absolute !important;
+        left: 20px !important;
+        width: auto !important;
+        min-width: 85px !important;
+        padding: 5px 12px !important;
+        font-size: 0.75rem !important;
+        border-radius: 15px !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+    .about-btn {
+        top: 45% !important; /* Ekranın ortasına yakın sol taraf */
+    }
+    .contact-btn {
+        top: calc(45% + 40px) !important; /* Hakkında'nın hemen altı */
+        left: 20px !important;
+    }
+
+    /* 3. Dark/Light Butonu: Verzia yazısının (Logonun) altında */
+    .mode-btn {
+        position: absolute !important;
+        top: 58% !important; /* Logonun hemen altı */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        margin: 0 !important;
+        padding: 5px 15px !important;
+        font-size: 0.75rem !important;
+        width: auto !important;
+        white-space: nowrap;
+    }
+
+    /* 4. Logo Boyutu ve Yerleşimi */
+    .signature-container {
+        transform: scale(0.7); /* Logoyu mobilde biraz küçülttük */
+        margin-top: -20px;
+    }
+
+    /* 5. Alt kısımdaki Keşfet ve VPRO */
+    .scroll-down {
+        bottom: 80px !important; /* Mobilde VPRO butonuna çarpmasın diye yükselttik */
+    }
+    .vpro-btn-gold {
+        padding: 8px 20px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    /* Overlay İçerik Genişliği */
+    .overlay-content {
+        width: 85% !important;
+        padding: 20px !important;
+    }
+}
