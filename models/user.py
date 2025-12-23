@@ -3,8 +3,8 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
-# 🤝 TAKİP SİSTEMİ İLİŞKİ TABLOSU
-followers_table = db.Table('followers',
+# 🤝 TAKİP SİSTEMİ İLİŞKİ TABLOSU (İsmini karışıklık olmasın diye değiştirdim)
+followers_association = db.Table('followers_assoc',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
@@ -20,18 +20,17 @@ class User(db.Model, UserMixin):
 
     avatar = db.Column(db.String(400), nullable=True)
     bio = db.Column(db.Text, nullable=True)
-    followers = db.Column(db.Integer, default=0)
-    following = db.Column(db.Integer, default=0)
-    posts = db.Column(db.Integer, default=0)
+    
+    # Not: followers ve following kolonlarını sildim çünkü bunları dinamik olarak 
+    # db.relationship üzerinden sayacağız. Bu, 500 hatasını önleyen en kritik adımdır. ✨
 
     followed = db.relationship(
-        'User', secondary=followers_table,
-        primaryjoin=(followers_table.c.follower_id == id),
-        secondaryjoin=(followers_table.c.followed_id == id),
+        'User', secondary=followers_association,
+        primaryjoin=(followers_association.c.follower_id == id),
+        secondaryjoin=(followers_association.c.followed_id == id),
         backref=db.backref('followers_list', lazy='dynamic'), lazy='dynamic'
     )
 
-    # ✨ Bildirimlerle ilişki: Bir kullanıcının aldığı bildirimler
     notifications = db.relationship('Notification', backref='recipient', lazy='dynamic', foreign_keys='Notification.user_id')
 
     def set_password(self, raw_password):
@@ -49,7 +48,7 @@ class User(db.Model, UserMixin):
             self.followed.remove(user)
 
     def is_following(self, user):
-        return self.followed.filter(followers_table.c.followed_id == user.id).count() > 0
+        return self.followed.filter(followers_association.c.followed_id == user.id).count() > 0
 
 # 💬 YORUM MODELİ
 class Comment(db.Model):
@@ -68,23 +67,10 @@ class Like(db.Model):
 # ✨ ASİL BİLDİRİM MODELİ ✨
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    
-    # Bildirimi alan (örneğin senin foton beğenildiğinde sen)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
-    # Bildirimi tetikleyen (beğenen kişi)
     sender_username = db.Column(db.String(50), nullable=False)
-    
-    # Bildirim türü: 'like', 'comment', 'follow'
     notif_type = db.Column(db.String(20), nullable=False)
-    
-    # Eğer beğeni veya yorumsa, hangi fotoğraf?
     photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'), nullable=True)
-    
-    # Bildirim metni (Örn: "bec fotoğrafını beğendi")
     message = db.Column(db.String(255), nullable=False)
-    
-    # Okundu mu bilgisi (Zil üzerinde nokta çıkması için kritik ✨)
     is_read = db.Column(db.Boolean, default=False)
-    
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)

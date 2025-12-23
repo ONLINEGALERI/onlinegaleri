@@ -82,15 +82,10 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)
-
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'status': 'success', 'redirect': url_for('index')})
-        
-        return redirect(url_for('index'))
-        
+        return jsonify({'status': 'success', 'redirect': url_for('index')})
     return render_template('register.html')
 
-# --------------------- ✨ PROFILE (HATA BURADA ÇÖZÜLDÜ) ✨ ---------------------
+# --------------------- ✨ PROFILE ---------------------
 @app.route('/profile')
 def profile():
     username = request.args.get('username')
@@ -100,7 +95,6 @@ def profile():
         user_to_show = User.query.filter_by(username=username).first()
     elif current_user.is_authenticated:
         user_to_show = current_user
-        username = current_user.username
     else:
         return redirect(url_for('login'))
 
@@ -112,22 +106,16 @@ def profile():
     
     is_following = False
     if current_user.is_authenticated and current_user.id != user_to_show.id:
-        is_following = current_user.is_following(user_to_show)
-
-    # ✨ KRİTİK GÜVENLİK AYARI: Sayılar artık çökme riski taşımıyor ✨
-    # BEC ve Beril için takipçi sayısını "2M" olarak mühürlüyoruz
-    f_count = 0
-    if not is_vip:
         try:
-            # count() yerine tüm listeyi çekip uzunluğuna bakıyoruz (daha güvenli)
-            f_count = len(user_to_show.followers_list.all())
+            is_following = current_user.is_following(user_to_show)
         except:
-            f_count = 0
+            is_following = False
 
-    following_count = 0
     try:
-        following_count = len(user_to_show.followed.all())
+        f_count = user_to_show.followers_list.count()
+        following_count = user_to_show.followed.count()
     except:
+        f_count = 0
         following_count = 0
 
     sp = {
@@ -143,24 +131,40 @@ def profile():
     can_edit = current_user.is_authenticated and current_user.id == user_to_show.id
     return render_template('profile.html', server_profile=sp, can_edit=can_edit, photos=user_photos, is_following=is_following)
 
-# --------------------- LİSTELEME ROTALARI (Bozulmadı) ---------------------
-@app.route('/get_followers/<username>')
-def get_followers(username):
-    if username.lower() == 'bec':
-        return jsonify([])
-    user = User.query.filter_by(username=username).first_or_404()
-    return jsonify([{"username": f.username, "avatar": f.avatar or 'https://picsum.photos/seed/default/100/100'} for f in user.followers_list.all()])
+# 🔍 ARAMA ROTASI
+@app.route('/search')
+def search():
+    q = request.args.get('query', '')
+    users = User.query.filter(User.username.ilike(f'%{q}%')).all() if q else []
+    return render_template('search.html', users=users, query=q)
 
-@app.route('/get_following/<username>')
-def get_following(username):
+# ❤️ TAKİP SİSTEMİ
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
     user = User.query.filter_by(username=username).first_or_404()
-    following = []
-    for f in user.followed.all():
-        following.append({
-            "username": f.username, 
-            "avatar": f.avatar or 'https://picsum.photos/seed/default/100/100'
-        })
-    return jsonify(following)
+    current_user.follow(user)
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+@app.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    current_user.unfollow(user)
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+# --------------------- ✨ FOTOĞRAF SİLME (HATAYI ÇÖZEN KISIM) ✨ ---------------------
+@app.route('/delete_photo/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo_profile(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if photo.owner_id != current_user.id:
+        abort(403)
+    db.session.delete(photo)
+    db.session.commit()
+    return redirect(url_for('profile', username=current_user.username))
 
 # --------------------- DİĞER FONKSİYONLAR ---------------------
 @app.route('/upload', methods=['POST'])
@@ -169,39 +173,26 @@ def upload():
     file = request.files.get('photo')
     if file and allowed_file(file.filename):
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        original_filename = secure_filename(file.filename)
-        filename = f"{current_user.id}_{timestamp}_{original_filename}"
+        filename = f"{current_user.id}_{timestamp}_{secure_filename(file.filename)}"
         path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(path)
-        try:
-            img = Image.open(path)
-            if img.mode in ("RGBA", "P"): img = img.convert("RGB")
-            img.thumbnail((400, 400))
-            img.save(os.path.join(THUMB_FOLDER, filename))
-        except: pass
+        
         new_photo = Photo(title=request.form.get('title', 'Verzia Post'), filename=filename, owner_id=current_user.id)
         db.session.add(new_photo)
         db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
 
-@app.route('/admin')
-@login_required
-def admin_panel():
-    if current_user.username.lower() != 'bec': abort(403)
-    users = User.query.all()
-    photos = Photo.query.all()
-    return render_template('admin.html', users=users, photos=photos)
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-@app.route('/delete_photo_admin/<int:photo_id>', methods=['POST'])
+@app.route('/notifications/unread-count')
 @login_required
-def delete_photo_admin_route(photo_id):
-    if current_user.username.lower() != 'bec': abort(403)
-    photo = Photo.query.get_or_404(photo_id)
-    db.session.delete(photo)
-    db.session.commit()
-    return redirect(url_for('admin_panel'))
+def unread_notif_count():
+    return jsonify({'count': 0})
 
 if __name__ == "__main__":
-    with app.app_context(): db.create_all()
+    with app.app_context():
+        db.create_all()
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)

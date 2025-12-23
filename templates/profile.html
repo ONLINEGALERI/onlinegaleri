@@ -104,7 +104,7 @@
         {% if photos %}
             {% for photo in photos %}
             <div class="grid-item">
-                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" onclick="openLightbox(this.src, '{{ photo.id }}', '{{ photo.likes.count() if photo.likes else 0 }}')">
+                <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" ...>
                 {% if can_edit %}
                 <form action="{{ url_for('delete_photo_profile', photo_id=photo.id) }}" method="POST" style="display:inline;">
                     <button type="submit" class="delete-btn" onclick="return confirm('Silinsin mi?')">&times;</button>
