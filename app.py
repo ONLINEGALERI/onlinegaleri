@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, abort, jsonify
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
@@ -34,7 +34,6 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
-# ---------------- LOGIN MANAGER ----------------
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -42,75 +41,60 @@ def load_user(user_id):
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-# ❌❌❌ RENDER HATASI BURADAYDI – SİLİNDİ ❌❌❌
-# with app.app_context():
-#     db.create_all()
-
-
 # ---------------- ROUTES ----------------
 
 @app.route("/")
 def index():
-    photos = Photo.query.order_by(Photo.created_at.desc()).all()
+    # ❗ created_at yerine id (DB garantili)
+    photos = Photo.query.order_by(Photo.id.desc()).all()
     return render_template("index.html", photos=photos)
 
-# ---------- AUTH ----------
+# ---------- LOGIN (AJAX UYUMLU) ----------
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("profile", username=current_user.username))
+        return jsonify({"status": "success", "redirect": url_for("profile", username=current_user.username)})
 
-    if request.method == "POST":
-        username_or_email = request.form.get("username")
-        password = request.form.get("password")
+    username_or_email = request.form.get("username")
+    password = request.form.get("password")
 
-        user = User.query.filter(
-            (User.username == username_or_email) |
-            (User.email == username_or_email)
-        ).first()
+    user = User.query.filter(
+        (User.username == username_or_email) |
+        (User.email == username_or_email)
+    ).first()
 
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for("profile", username=user.username))
+    if user and check_password_hash(user.password, password):
+        login_user(user)
+        return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
 
-        flash("Kullanıcı adı veya şifre hatalı", "error")
-        return redirect(url_for("login"))
+    return jsonify({"status": "error", "message": "Kullanıcı adı veya şifre hatalı"}), 401
 
-    return render_template("login_clean.html")
+# ---------- REGISTER ----------
 
-
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/register", methods=["POST"])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("profile", username=current_user.username))
 
-    if request.method == "POST":
-        username = request.form.get("username")
-        email = request.form.get("email")
-        password = request.form.get("password")
+    username = request.form.get("username")
+    email = request.form.get("email")
+    password = request.form.get("password")
 
-        if User.query.filter(
-            (User.username == username) |
-            (User.email == email)
-        ).first():
-            flash("Kullanıcı zaten mevcut", "error")
-            return redirect(url_for("register"))
+    if User.query.filter((User.username == username) | (User.email == email)).first():
+        flash("Kullanıcı zaten mevcut", "error")
+        return redirect(url_for("index"))
 
-        user = User(
-            username=username,
-            email=email,
-            password=generate_password_hash(password)
-        )
-        db.session.add(user)
-        db.session.commit()
+    user = User(
+        username=username,
+        email=email,
+        password=generate_password_hash(password)
+    )
+    db.session.add(user)
+    db.session.commit()
 
-        login_user(user)
-        return redirect(url_for("profile", username=user.username))
-
-    return render_template("register.html")
-
+    login_user(user)
+    return redirect(url_for("profile", username=user.username))
 
 @app.route("/logout")
 @login_required
@@ -118,25 +102,28 @@ def logout():
     logout_user()
     return redirect(url_for("index"))
 
-# ---------- PROFILE ----------
+# ---------- PROFILE (GÜVENLİ) ----------
 
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
     user_to_show = User.query.filter_by(username=username).first_or_404()
 
-    photos = Photo.query.filter_by(
-        owner_id=user_to_show.id
-    ).order_by(Photo.id.desc()).all()
-
+    photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
     is_vip = user_to_show.username.lower() in ["bec", "beril"]
 
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
         "bio": user_to_show.bio or "Henüz bir biyografi yok.",
-        "followers": "2M" if is_vip else user_to_show.followers_list.count(),
-        "following": user_to_show.followed.count(),
+        "followers": "2M" if is_vip else (
+            user_to_show.followers_list.count()
+            if hasattr(user_to_show, "followers_list") else 0
+        ),
+        "following": (
+            user_to_show.followed.count()
+            if hasattr(user_to_show, "followed") else 0
+        ),
         "posts": len(photos),
         "is_vip": is_vip
     }
@@ -159,17 +146,11 @@ def upload():
         filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{secure_filename(file.filename)}"
         file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-        photo = Photo(
-            title="Verzia Post",
-            filename=filename,
-            owner_id=current_user.id
-        )
+        photo = Photo(title="Verzia Post", filename=filename, owner_id=current_user.id)
         db.session.add(photo)
         db.session.commit()
 
     return redirect(url_for("profile", username=current_user.username))
-
-# ---------- FILE SERVE ----------
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
@@ -177,11 +158,8 @@ def uploaded_file(filename):
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    # ✅ SADECE LOCAL’DE TABLO OLUŞTURUR
-    with app.app_context():
-        db.create_all()
-
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
