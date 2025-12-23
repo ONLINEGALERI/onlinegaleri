@@ -3,6 +3,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from PIL import Image
 import os
+from datetime import datetime
 
 from config import Config
 from extensions import db, migrate, login_manager
@@ -25,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 THUMB_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbs')
 
-# Klasörlerin varlığından emin oluyoruz (Hata 500 önleyici)
+# Klasörlerin varlığından emin oluyoruz
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(THUMB_FOLDER, exist_ok=True)
 
@@ -138,6 +139,36 @@ def profile():
         is_following=is_following
     )
 
+# --------------------- ✨ TAKİPÇİ LİSTELEME GİZLİLİK VE FIX ✨ ---------------------
+@app.route('/get_followers/<username>')
+def get_followers(username):
+    # Eğer bakılan profil BEC ise takipçi listesini gizle (Boş liste döndür)
+    if username.lower() == 'bec':
+        return jsonify([])
+    
+    user = User.query.filter_by(username=username).first_or_404()
+    # Listeyi açıkça döngüyle oluşturuyoruz
+    followers = []
+    for f in user.followers_list.all():
+        followers.append({
+            "username": f.username, 
+            "avatar": f.avatar or 'https://picsum.photos/seed/default/100/100'
+        })
+    return jsonify(followers)
+
+@app.route('/get_following/<username>')
+def get_following(username):
+    # BEC dahil tüm üyelerin takip ettiği kişiler listelenebilir
+    user = User.query.filter_by(username=username).first_or_404()
+    # .all() ekleyerek veritabanından tüm listeyi çekiyoruz
+    following = []
+    for f in user.followed.all():
+        following.append({
+            "username": f.username, 
+            "avatar": f.avatar or 'https://picsum.photos/seed/default/100/100'
+        })
+    return jsonify(following)
+
 # --------------------- SEARCH ---------------------
 @app.route('/search')
 @login_required
@@ -232,42 +263,6 @@ def like_photo(photo_id):
         'like_count': Like.query.filter_by(photo_id=photo_id).count()
     })
 
-@app.route('/comment/<int:photo_id>', methods=['POST'])
-@login_required
-def add_comment(photo_id):
-    data = request.get_json()
-    comment_body = data.get('content')
-
-    if not comment_body:
-        return jsonify({'status': 'error'}), 400
-
-    photo = Photo.query.get_or_404(photo_id)
-    new_comment = Comment(
-        body=comment_body,
-        user_id=current_user.id,
-        photo_id=photo_id
-    )
-    db.session.add(new_comment)
-
-    if photo.owner_id != current_user.id:
-        preview = comment_body[:20] + '...' if len(comment_body) > 20 else comment_body
-        notif = Notification(
-            user_id=photo.owner_id,
-            sender_username=current_user.username,
-            notif_type='comment',
-            photo_id=photo.id,
-            message=f"fotoğrafına yorum yaptı: {preview}"
-        )
-        db.session.add(notif)
-
-    db.session.commit()
-    return jsonify({
-        'status': 'success',
-        'comment_id': new_comment.id,
-        'username': current_user.username,
-        'content': comment_body
-    })
-
 @app.route('/follow/<username>', methods=['POST'])
 @login_required
 def follow(username):
@@ -286,35 +281,25 @@ def follow(username):
     db.session.commit()
     return jsonify({'status': 'success'})
 
-# FOTOĞRAF YÜKLEME - HATA FİXLENDİ (UPLOAD GÜNCELLENDİ)
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload():
     file = request.files.get('photo')
     if file and allowed_file(file.filename):
-        # Dosya ismini daha güvenli hale getirelim
-        from datetime import datetime
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
         original_filename = secure_filename(file.filename)
         filename = f"{current_user.id}_{timestamp}_{original_filename}"
-        
         path = os.path.join(UPLOAD_FOLDER, filename)
-        
-        # Klasörün varlığını burada da teyit ediyoruz
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-        os.makedirs(THUMB_FOLDER, exist_ok=True)
         
         file.save(path)
 
         try:
             img = Image.open(path)
-            # RGB formatına çevirelim (Bazı JPEG'lerde 500 hatası verebilir)
             if img.mode in ("RGBA", "P"):
                 img = img.convert("RGB")
             img.thumbnail((400, 400))
             img.save(os.path.join(THUMB_FOLDER, filename))
-        except Exception as e:
-            print(f"Thumbnail Error: {e}")
+        except:
             pass
 
         new_photo = Photo(
@@ -330,35 +315,6 @@ def upload():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
-
-@app.route('/profile/save', methods=['POST'])
-@login_required
-def save_profile():
-    data = request.get_json()
-    if data:
-        if 'bio' in data:
-            current_user.bio = data.get('bio')
-        if 'avatar' in data:
-            current_user.avatar = data.get('avatar')
-        db.session.commit()
-        return jsonify({'status': 'ok'})
-    return jsonify({'status': 'error'}), 400
-
-@app.route('/get_comments/<int:photo_id>')
-def get_comments(photo_id):
-    comments = Comment.query.filter_by(
-        photo_id=photo_id
-    ).order_by(Comment.timestamp.asc()).all()
-
-    return jsonify([{
-        'id': c.id,
-        'username': User.query.get(c.user_id).username,
-        'content': c.body,
-        'can_delete': (
-            current_user.is_authenticated and
-            (c.user_id == current_user.id or current_user.username.lower() == 'bec')
-        )
-    } for c in comments])
 
 # --------------------- ADMIN PANEL ---------------------
 @app.route('/admin')
@@ -381,7 +337,6 @@ def delete_user(user_id):
         db.session.commit()
     return redirect(url_for('admin_panel'))
 
-# Admin fotoğraf silme ismini çakışma olmaması için netleştirdim
 @app.route('/delete_photo_admin/<int:photo_id>', methods=['POST'])
 @login_required
 def delete_photo_admin_route(photo_id):
@@ -392,7 +347,6 @@ def delete_photo_admin_route(photo_id):
     db.session.commit()
     return redirect(url_for('admin_panel'))
 
-# Profil üzerinden silme için (Eğer HTML'de delete_photo_profile kullanıyorsan)
 @app.route('/delete_photo_profile/<int:photo_id>', methods=['POST'])
 @login_required
 def delete_photo_profile(photo_id):
@@ -403,7 +357,6 @@ def delete_photo_profile(photo_id):
     db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
 
-# --------------------- RENDER UYUMLU ÇALIŞTIRMA ---------------------
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
