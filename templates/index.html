@@ -39,8 +39,8 @@
     </div>
 
     <div class="bottom-nav">
-        <button class="vpro-btn-gold" onclick="openPremium()">VPRO</button>
-        <button class="mode-btn-gold" onclick="toggleMode()">DARK / LIGHT</button>
+        <button class="gold-action-btn" onclick="openPremium()">VPRO</button>
+        <button class="gold-action-btn" onclick="toggleMode()">DARK / LIGHT</button>
         <a href="{{ url_for('profile', username='bec') }}" class="footer-text gold-gradient-text">@bec</a>
     </div>
 </div>
@@ -75,9 +75,9 @@
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
         <h2 class="gold-gradient-text">VPRO EXPERIENCE</h2>
-        <p style="color:#fff; margin: 20px 0;">Sınırsız deneyim ve ayrıcalıklı özellikler.</p>
-        <div style="border: 1px solid #d4af37; padding: 20px; margin-bottom: 20px;">
-            <p style="color:#d4af37; font-weight:bold;">AYLIK: 150₺</p>
+        <p style="color:#fff; margin: 25px 0; font-size: 0.9rem;">Sınırsız deneyim ve ayrıcalıklı özellikler için planınızı seçin.</p>
+        <div style="border: 1px solid #d4af37; padding: 20px; margin-bottom: 25px;">
+            <p style="color:#d4af37; font-weight:bold; letter-spacing: 1px;">AYLIK: 150₺</p>
         </div>
         <button class="buy-btn-gold" onclick="alert('Ödeme sistemine yönlendiriliyorsunuz...')">HEMEN BAŞLAT</button>
     </div>
@@ -87,7 +87,7 @@
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
         <h2 class="gold-gradient-text">HAKKINDA</h2>
-        <p style="color:#fff; margin-top:20px; line-height:1.6;">Verzia, sanatın dijital imzasıdır.</p>
+        <p style="color:#fff; margin-top:25px; line-height:1.8; font-size: 0.9rem;">Verzia, dijital sanatın en saf ve lüks halini temsil eden bir sergi platformudur.</p>
     </div>
 </div>
 
@@ -95,56 +95,63 @@
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
         <h2 class="gold-gradient-text">İLETİŞİM</h2>
-        <p style="color:#fff; margin-top:20px;">verziateam@outlook.com</p>
+        <p style="color:#fff; margin-top:25px; font-size: 1rem;">Destek ve iş birlikleri için:<br><strong>verziateam@outlook.com</strong></p>
     </div>
 </div>
 
 <style>
-html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; transition: background 0.3s ease; }
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; transition: background 0.4s ease; }
+.hero { position: relative; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #000; }
 
-.hero { position: relative; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; }
-
-/* Logo */
+/* Logo: Tam merkez ve nizamî */
+.signature-container { position: absolute; width: 100%; max-width: 800px; z-index: 1; pointer-events: none; }
 .signature-text { font-family: 'Pinyon Script', cursive; font-size: 160px; fill: url(#goldDark); filter: drop-shadow(0 0 15px rgba(191, 149, 63, 0.4)); }
 
-/* Navigasyon */
+/* Navigasyon Grupları: Köşelere mıhlandı */
 .top-nav, .bottom-nav { position: absolute; width: 100%; display: flex; justify-content: space-between; padding: 0 50px; z-index: 100; box-sizing: border-box; }
 .top-nav { top: 40px; }
 .bottom-nav { bottom: 50px; align-items: center; }
+.left-group, .right-group { display: flex; gap: 20px; align-items: center; }
 
-/* Gold Butonlar (VPRO ve MODE AYNI OLDU) */
-.vpro-btn-gold, .mode-btn-gold { 
+/* Buton Stilleri */
+.minimal-btn { background: none; border: 1px solid rgba(212, 175, 55, 0.6); color: #fff; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-size: 0.8rem; letter-spacing: 1px; transition: 0.3s; }
+.minimal-btn:hover { background: rgba(212, 175, 55, 0.15); border-color: #d4af37; }
+
+.auth-link { color: #fff; text-decoration: none; font-size: 0.9rem; letter-spacing: 1px; transition: 0.3s; border-bottom: 1px solid transparent; }
+.auth-link:hover { color: #d4af37; border-bottom-color: #d4af37; }
+.user-link { color: #d4af37; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+
+/* Gold Butonlar: VPRO ve MODE Artık İkiz Gibi */
+.gold-action-btn { 
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); 
     border: none; 
-    padding: 12px 30px; 
-    border-radius: 5px; 
+    padding: 12px 28px; 
+    border-radius: 4px; 
     font-weight: 800; 
     cursor: pointer; 
     color: #000; 
+    font-size: 0.75rem;
     letter-spacing: 1.5px; 
     text-transform: uppercase;
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
     transition: 0.3s;
 }
-.vpro-btn-gold:hover, .mode-btn-gold:hover { transform: scale(1.05); filter: brightness(1.1); }
+.gold-action-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-/* Diğerleri */
-.minimal-btn { background: none; border: 1px solid rgba(212, 175, 55, 0.6); color: #fff; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-size: 0.85rem; letter-spacing: 1px; }
-.auth-link { color: #fff; text-decoration: none; font-size: 0.9rem; letter-spacing: 1px; }
-.user-link { color: #d4af37; text-decoration: none; font-weight: bold; }
-.footer-text { text-decoration: none; font-weight: bold; letter-spacing: 3px; font-size: 0.9rem; }
+.footer-text { text-decoration: none; font-weight: bold; letter-spacing: 3px; font-size: 0.85rem; }
 .gold-gradient-text { background: linear-gradient(to right, #bf953f, #fcf6ba, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
 /* Overlays */
-.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); display: none; align-items: center; justify-content: center; z-index: 10000; }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); display: none; align-items: center; justify-content: center; z-index: 10000; }
 .overlay.active { display: flex; }
-.overlay-content { background: #000; padding: 50px 40px; border: 1px solid #d4af37; text-align: center; position: relative; width: 90%; max-width: 400px; border-radius: 10px; }
+.overlay-content { background: #000; padding: 60px 40px; border: 1px solid #d4af37; text-align: center; position: relative; width: 90%; max-width: 400px; border-radius: 8px; }
 .close-btn { position: absolute; top: 20px; left: 20px; background: none; border: none; color: #d4af37; font-size: 35px; cursor: pointer; }
-.pay-input { width: 100%; padding: 15px; margin: 12px 0; background: #0a0a0a; border: 1px solid #222; color: #fff; }
-.buy-btn-gold { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 15px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 15px; }
+.pay-input { width: 100%; padding: 15px; margin: 12px 0; background: #0a0a0a; border: 1px solid #222; color: #fff; font-family: inherit; }
+.buy-btn-gold { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 15px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 15px; letter-spacing: 2px; }
 
 /* Light Mode */
 body.light-mode { background-color: #fff !important; }
+body.light-mode .hero { background-color: #fff !important; }
 body.light-mode .minimal-btn, body.light-mode .auth-link { color: #000; border-color: #8a6d3b; }
 </style>
 
