@@ -16,25 +16,22 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = "gizli-key"
 
-# Veritabanı yapılandırmasını garantiye alalım
-# Render'da SQLite dosyasının doğru yere yazılması için:
+# 1. Veritabanı ve Klasör Yollarını Sabitleyelim
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Initialize extensions
+# 2. Uzantıları Başlat
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Klasör Yapılandırması
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
-THUMB_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbs')
-
-# Render'da klasörlerin oluştuğundan emin ol
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(THUMB_FOLDER, exist_ok=True)
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# 🚀 3. RENDER İÇİN KRİTİK: Tabloları uygulama başlar başlamaz oluştur
+# Loglardaki "no such table: photo" hatasını bu kısım çözer.
+with app.app_context():
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    db.create_all()
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -45,10 +42,14 @@ def load_user(user_id):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# --------------------- ROTALAR (DEĞİŞMEDİ) ---------------------
+# --------------------- ROTALAR ---------------------
 @app.route('/')
 def index():
-    all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
+    # Index sayfasında tablo hatası almamak için güvenli çekim
+    try:
+        all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
+    except:
+        all_photos = []
     return render_template('index.html', photos=all_photos)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -116,7 +117,6 @@ def upload():
         db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
 
-# 🔍 BuildError'ları önlemek için eksik rotalar
 @app.route('/search')
 def search():
     q = request.args.get('query', '')
@@ -133,10 +133,10 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 if __name__ == "__main__":
-    with app.app_context():
-        # Veritabanını oluşturmadan önce mevcut olanı temizlemek gerekebilir 
-        # ama SQLite kullanıyorsan create_all() yeterlidir.
-        db.create_all()
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
