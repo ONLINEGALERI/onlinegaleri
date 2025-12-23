@@ -80,6 +80,22 @@
 
     .main-content-wrapper { min-height: 100vh; background: var(--ig-bg); }
 
+    /* ✨ YÖNETİCİ PANELİ BUTON STİLİ (KÜÇÜK, SİYAH YAZILI) ✨ */
+    .admin-panel-btn-minimal {
+        background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c) !important;
+        color: #000000 !important; /* Yazı Rengi Siyah */
+        font-weight: 800 !important;
+        border: none !important;
+        padding: 4px 14px !important;
+        font-size: 0.65rem !important;
+        border-radius: 20px !important;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+        display: inline-block;
+        letter-spacing: 1px;
+    }
+
     /* 📱 MASAÜSTÜ AYARI */
     @media (min-width: 769px) {
         {% if request.endpoint in ['profile', 'search'] %}
@@ -89,7 +105,7 @@
         {% endif %}
     }
 
-    /* 📱 MOBİL FULL AYARI (KUSURSUZ HİZALAMA) */
+    /* 📱 MOBİL FULL AYARI */
     @media (max-width: 768px) {
         .main-content-wrapper { 
             margin-left: 0 !important; 
@@ -99,7 +115,6 @@
             flex-direction: column !important;
         }
 
-        /* 1. Giriş Yap & Kayıt Ol (Sağda Alt Alta) */
         .auth-buttons {
             position: absolute !important;
             top: 20px !important;
@@ -118,7 +133,6 @@
             text-align: center;
         }
 
-        /* 2. Hakkında & İletişim (Solda Alt Alta) */
         .about-btn, .contact-btn {
             position: absolute !important;
             left: 15px !important;
@@ -131,7 +145,6 @@
         .about-btn { top: 20px !important; }
         .contact-btn { top: 58px !important; }
 
-        /* 3. Alt Menü (Sidebar -> Alt Bar) */
         .ig-sidebar {
             width: 100% !important;
             height: 60px !important;
@@ -149,14 +162,13 @@
         .sidebar-item { margin-bottom: 0 !important; width: auto !important; font-size: 20px !important; height: 100% !important; }
         .mt-auto { margin-top: 0 !important; display: flex !important; }
 
-        /* 4. Profil Sayfası Sola Yaslama Fix */
         .profile-page-body .main-content-wrapper {
             align-items: flex-start !important;
             padding-left: 0 !important;
         }
     }
 
-    /* ✨ ŞİFRE GÖZ SİMGESİ FİX ✨ */
+    /* ✨ ŞİFRE GÖZ SİMGESİ ✨ */
     #modalToggleIcon {
         position: absolute !important;
         right: 15px !important;
@@ -174,7 +186,6 @@
         border: 1px solid var(--ig-border) !important; 
     }
 
-    /* Silme Animasyonu ✨ */
     .notif-row { transition: all 0.3s ease; }
     </style>
 </head>

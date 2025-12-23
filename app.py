@@ -343,6 +343,37 @@ def get_comments(photo_id):
         )
     } for c in comments])
 
+# --------------------- ADMIN PANEL ---------------------
+@app.route('/admin')
+@login_required
+def admin_panel():
+    if current_user.username.lower() != 'bec':
+        abort(403)
+    users = User.query.all()
+    photos = Photo.query.all()
+    return render_template('admin.html', users=users, photos=photos)
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.username.lower() != 'bec':
+        abort(403)
+    user = User.query.get_or_404(user_id)
+    if user.id != current_user.id:
+        db.session.delete(user)
+        db.session.commit()
+    return redirect(url_for('admin_panel'))
+
+@app.route('/delete_photo_admin/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo(photo_id):
+    if current_user.username.lower() != 'bec':
+        abort(403)
+    photo = Photo.query.get_or_404(photo_id)
+    db.session.delete(photo)
+    db.session.commit()
+    return redirect(url_for('admin_panel'))
+
 # --------------------- RENDER UYUMLU ÇALIŞTIRMA ---------------------
 if __name__ == "__main__":
     with app.app_context():

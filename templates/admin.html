@@ -30,14 +30,14 @@
                     <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
                     <td>
-                        {% if user.is_admin or user.username.lower() == 'bec' %}
+                        {% if user.username.lower() == 'bec' %}
                             <span class="badge verzia-gold-badge">Admin</span>
                         {% else %}
                             <span class="badge bg-secondary">Üye</span>
                         {% endif %}
                     </td>
                     <td class="text-center">
-                        {% if user.id != current_user.id %}
+                        {% if user.username.lower() != 'bec' %}
                         <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline;">
                             <button class="btn btn-danger btn-sm action-btn verzia-gold-btn" onclick="return confirm('Bu kullanıcı silinsin mi?');">Sil</button>
                         </form>
@@ -100,7 +100,6 @@ body {
 body.light-mode { background-color: #ffffff !important; }
 body.light-mode .admin-page { color: #000000 !important; }
 
-/* Mobilde tabloların sağa sola kaydırılabilmesi için (Ekran taşmasını önler) */
 .table-responsive {
     border-radius: 12px;
     border: none;
@@ -184,7 +183,6 @@ body.light-mode .exit-btn { color: #000; }
     border-color: transparent !important;
 }
 
-/* MOBİL İNCE AYAR */
 @media (max-width: 768px) {
     .admin-title { font-size: 1.5rem; }
     .exit-btn { top: 10px; left: 10px; font-size: 1.5rem; }
