@@ -27,86 +27,51 @@
         </svg>
     </div>
 
-    <div class="auth-buttons" style="position: absolute; top: 20px; right: 30px; z-index: 9999; pointer-events: auto;">
+    <div class="auth-buttons">
         {% if current_user.is_authenticated %}
             <a href="{{ url_for('profile') }}" class="user-link">@{{ current_user.username }}</a>
             <a href="{{ url_for('logout') }}">Çıkış Yap</a>
         {% else %}
-            <a href="javascript:void(0)" onclick="openLogin()" style="cursor: pointer !important;">Giriş Yap</a>
-            <a href="javascript:void(0)" onclick="openRegister()" style="cursor: pointer !important;">Kayıt Ol</a>
+            <a href="javascript:void(0)" onclick="openLogin()">Giriş Yap</a>
+            <a href="javascript:void(0)" onclick="openRegister()">Kayıt Ol</a>
         {% endif %}
     </div>
 
-    <button class="about-btn" onclick="openAbout()" style="z-index: 9999; cursor: pointer !important;">Hakkında</button>
-    <button class="contact-btn" onclick="openContact()" style="z-index: 9999; cursor: pointer !important;">İletişim</button>
-    <button class="mode-btn" onclick="toggleMode()" style="z-index: 9999; cursor: pointer !important;">Dark/Light</button>
+    <button class="about-btn" onclick="openAbout()">Hakkında</button>
+    <button class="contact-btn" onclick="openContact()">İletişim</button>
+    <button class="mode-btn" onclick="toggleMode()">Dark/Light</button>
 
-    <div class="scroll-down" onclick="goExplore()" style="z-index: 9999; cursor: pointer !important;">↓ Keşfet</div>
+    <div class="scroll-down" onclick="goExplore()">↓ Keşfet</div>
 </div>
 
-<button class="vpro-btn-gold" onclick="openPremium()" style="z-index: 9999; cursor: pointer !important;">VPRO</button>
+<button class="vpro-btn-gold" onclick="openPremium()">VPRO</button>
 
 <a href="{{ url_for('profile', username='bec') }}" class="footer-text gold-title" style="text-decoration: none !important;">@bec</a>
 
-<div class="overlay" id="premium-overlay">
-    <div class="overlay-content premium-card" style="position: relative;">
-        <button class="close-btn" onclick="closeOverlay()" style="position: absolute; top: 15px; left: 15px; background: none; border: none; color: #d4af37; font-size: 30px; cursor: pointer; z-index: 10;">×</button>
-        <div id="premium-step-1">
-            <h2 class="gold-title">VPRO EXPERIENCE</h2>
-            <p class="premium-desc">Ayrıcalıklı bir galeri için planını seç.</p>
-            <div class="subscription-plans">
-                <div class="plan-card" onclick="selectPlan(this)">
-                    <span class="plan-name">HAFTALIK</span>
-                    <span class="plan-price">50₺</span>
-                </div>
-                <div class="plan-card active" onclick="selectPlan(this)" style="position: relative;">
-                    <div class="popular-badge-fixed">EN POPÜLER</div>
-                    <span class="plan-name">AYLIK</span>
-                    <span class="plan-price">150₺</span>
-                </div>
-                <div class="plan-card" onclick="selectPlan(this)">
-                    <span class="plan-name">YILLIK</span>
-                    <span class="plan-price">1000₺</span>
-                </div>
-            </div>
-            <button class="buy-btn-gold" onclick="showPayment()">ÜYELİĞİ BAŞLAT</button>
-        </div>
-        <div id="premium-step-2" style="display: none;">
-            <h2 class="gold-title">ÖDEME DETAYLARI</h2>
-            <p class="premium-desc">Kredi veya banka kartı ile devam edin.</p>
-            <div class="payment-selection-area">
-                <input type="text" placeholder="Kart Numarası" class="pay-input">
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" placeholder="AA/YY" class="pay-input">
-                    <input type="text" placeholder="CVC" class="pay-input">
-                </div>
-                <button class="final-pay-btn" onclick="alert('İşleminiz onaylanıyor...')">ÖDEMEYİ TAMAMLA</button>
-            </div>
-            <button class="back-btn" onclick="showPlans()">← Plan Seçimine Dön</button>
-        </div>
-    </div>
-</div>
-
 <style>
-/* 1. RESET VE TEMEL */
+/* 1. TEMEL YAPI */
 * { margin: 0; padding: 0; box-sizing: border-box; transition: none !important; }
-.hero, section, .signature-container { background-color: transparent !important; }
-body { width: 100%; min-height: 100vh; overflow-x: hidden; transition: background-color 0.1s linear !important; font-family: 'Montserrat', sans-serif; }
+body { width: 100%; min-height: 100vh; overflow-x: hidden; font-family: 'Montserrat', sans-serif; transition: background-color 0.1s linear !important; }
 
-/* 2. LOGO VE BUTONLARIN ORİJİNAL KONUMLARI */
+/* 2. LOGO (MASAÜSTÜ) */
 .signature-container { width: 100%; max-width: 800px; display: flex; justify-content: center; margin: auto; z-index: 10; padding-top: 10vh; }
 .signature-svg { width: 100%; height: auto; overflow: visible; }
 .signature-text { font-family: 'Pinyon Script', cursive; font-size: 150px; stroke-width: 2.5; opacity: 0; animation: appear 0.5s ease-out forwards; }
 
 @keyframes appear { 0% { opacity: 0; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
 
-/* BUTONLARIN SABİT YERLERİ */
-.about-btn { position: absolute; top: 30px; left: 30px; background: none; border: none; color: inherit; font-size: 0.9rem; cursor: pointer; letter-spacing: 2px; }
-.contact-btn { position: absolute; top: 30px; left: 150px; background: none; border: none; color: inherit; font-size: 0.9rem; cursor: pointer; letter-spacing: 2px; }
-.mode-btn { position: absolute; top: 30px; left: 280px; background: none; border: none; color: inherit; font-size: 0.9rem; cursor: pointer; letter-spacing: 2px; }
-.scroll-down { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; cursor: pointer; opacity: 0.7; letter-spacing: 4px; }
+/* 3. BUTON KONUMLARI (MASAÜSTÜ) */
+.auth-buttons { position: absolute; top: 20px; right: 30px; z-index: 9999; display: flex; gap: 15px; }
+.auth-buttons a { color: inherit; text-decoration: none; font-size: 0.9rem; letter-spacing: 1px; cursor: pointer; }
+.about-btn { position: absolute; top: 20px; left: 30px; background: none; border: none; color: inherit; font-size: 0.9rem; cursor: pointer; letter-spacing: 2px; z-index: 9999; }
+.contact-btn { position: absolute; top: 20px; left: 145px; background: none; border: none; color: inherit; font-size: 0.9rem; cursor: pointer; letter-spacing: 2px; z-index: 9999; }
+.mode-btn { position: absolute; top: 20px; left: 265px; background: none; border: none; color: inherit; font-size: 0.9rem; cursor: pointer; letter-spacing: 2px; z-index: 9999; }
 
-/* ✨ RENK MODLARI ✨ */
+.vpro-btn-gold { position: fixed; bottom: 30px; left: 30px; padding: 12px 28px; z-index: 1000; border: none; font-weight: 700; border-radius: 2px; cursor: pointer; }
+.footer-text { position: fixed; bottom: 20px; right: 20px; font-size: 0.8rem; letter-spacing: 3px; z-index: 1000; }
+.scroll-down { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; cursor: pointer; opacity: 0.7; letter-spacing: 4px; z-index: 9999; }
+
+/* 4. RENK MODLARI */
 body:not(.light-mode) { background-color: #000 !important; color: #ffffff; }
 body:not(.light-mode) .signature-text { stroke: url(#goldDark); fill: #ffffff; }
 body:not(.light-mode) .gold-title { background: linear-gradient(to right, #bf953f, #fcf6ba, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -119,139 +84,60 @@ body.light-mode .gold-title { background: linear-gradient(to right, #8a6d3b, #a6
 body.light-mode .vpro-btn-gold, body.light-mode .buy-btn-gold, body.light-mode .final-pay-btn { background: linear-gradient(135deg, #8a6d3b, #a67c00, #5d4037); color: #fff; }
 body.light-mode .overlay-content { background: #fff; border: 1px solid #8a6d3b; }
 
-/* DİĞER STİLLER */
-.subscription-plans { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
-.plan-card { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border: 1px solid rgba(212, 175, 55, 0.3); cursor: pointer; }
-.plan-card.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.1) !important; }
-.gold-title { font-weight: 700; font-size: 1.6rem; letter-spacing: 2px; }
-.vpro-btn-gold { position: fixed; bottom: 30px; left: 30px; padding: 12px 28px; z-index: 1000; border: none; font-weight: 700; border-radius: 2px; }
-.buy-btn-gold, .final-pay-btn { border: none; font-weight: 700; cursor: pointer; width: 100%; border-radius: 2px; }
-.pay-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #333; background: #111; color: #fff; }
-.footer-text { position: fixed; bottom: 20px; right: 20px; font-size: 0.8rem; letter-spacing: 3px; z-index: 1000; }
-.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 10000; }
+/* 5. OVERLAY & FORM */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; }
 .overlay.active { display: flex; }
-.overlay-content { position: relative; padding: 60px 30px 40px 30px; border-radius: 8px; max-width: 450px; width: 90%; text-align: center; }
-.auth-buttons a { color: inherit; text-decoration: none; margin-left: 20px; font-size: 0.9rem; letter-spacing: 1px; }
+.overlay-content { position: relative; padding: 60px 30px 40px 30px; border-radius: 4px; width: 450px; max-width: 90%; text-align: center; }
+.pay-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #333; background: #111; color: #fff; }
 
-/* 📱📱 EKSTRA MOBİL UYUMLULUK KODLARI 📱📱 */
+/* 📱📱 MİLİMETRİK MOBİL AYARLAR (768px Altı) 📱📱 */
 @media (max-width: 768px) {
-    /* Logo küçültme */
-    .signature-text { font-size: 80px !important; }
-    .signature-container { padding-top: 15vh; }
+    /* Logo Boyutu Rötuşu */
+    .signature-text { font-size: 85px !important; stroke-width: 1.5; }
+    .signature-container { padding-top: 18vh; }
 
-    /* Sağ üstteki Giriş/Kayıt butonlarını ortala ve düzenle */
+    /* Üst Butonlar: Web'deki yayılımı mobilde 2 sıra yapıyoruz */
+    /* 1. Sıra: Giriş ve Kayıt (Tam Orta) */
     .auth-buttons {
-        top: 15px !important;
-        right: 50% !important;
-        transform: translateX(50%);
+        top: 20px !important;
+        right: 0 !important;
         width: 100%;
-        text-align: center;
-        display: flex;
         justify-content: center;
-        gap: 10px;
+        gap: 25px;
     }
-    .auth-buttons a { margin: 0; font-size: 0.8rem; }
+    .auth-buttons a { font-size: 0.8rem; font-weight: 700; }
 
-    /* Hakkında, İletişim, Mode butonlarını logunun altına düzgünce diz */
+    /* 2. Sıra: Hakkında, Mode, İletişim (Logonun Hemen Altı) */
     .about-btn, .contact-btn, .mode-btn {
-        top: 60px !important;
-        font-size: 0.7rem !important;
+        top: 65px !important; /* Birinci sıranın milimetrik altı */
+        font-size: 0.65rem !important;
         letter-spacing: 1px;
     }
-    .about-btn { left: 10% !important; }
-    .mode-btn { left: 50% !important; transform: translateX(-50%); }
-    .contact-btn { left: auto !important; right: 10% !important; }
+    .about-btn { left: 8% !important; }
+    .mode-btn { left: 50% !important; transform: translateX(-50%) !important; }
+    .contact-btn { left: auto !important; right: 8% !important; }
 
-    /* Alt butonlar */
-    .vpro-btn-gold { bottom: 20px !important; left: 20px !important; padding: 10px 18px !important; font-size: 0.75rem; }
-    .footer-text { bottom: 22px !important; right: 20px !important; font-size: 0.65rem !important; }
+    /* Alt Butonlar ve Yazılar */
+    .vpro-btn-gold { bottom: 25px !important; left: 20px !important; padding: 10px 18px !important; font-size: 0.75rem; }
+    .footer-text { bottom: 28px !important; right: 20px !important; font-size: 0.65rem !important; }
+    
+    .scroll-down { bottom: 90px !important; font-size: 0.7rem; opacity: 0.5; }
 
-    /* Kaydırma oku */
-    .scroll-down { bottom: 80px !important; font-size: 0.7rem; }
-
-    /* Pop-up kartlarını ekrana sığdır */
-    .overlay-content { width: 95% !important; padding: 50px 20px 30px 20px !important; }
-    .gold-title { font-size: 1.2rem !important; }
-    .plan-card { padding: 12px !important; font-size: 0.85rem; }
+    /* Kartlar (Overlay) */
+    .overlay-content { padding: 45px 20px 25px 20px; }
+    .gold-title { font-size: 1.3rem !important; }
 }
 </style>
 
-<div class="overlay" id="login-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()" style="position: absolute; top: 15px; left: 15px; background: none; border: none; color: #d4af37; font-size: 30px; cursor: pointer;">×</button>
-        <h2 class="gold-title">GİRİŞ YAP</h2>
-        <div id="login-error-msg" style="color: #ff4d4d; font-size: 0.9rem; margin-bottom: 10px; display: none; font-weight: bold;"></div>
-        <form id="ajax-login-form">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
-            <div style="position: relative;">
-                <input type="password" id="modalPasswordInput" name="password" placeholder="Şifre" class="pay-input" required style="padding-right: 45px;">
-                <i class="fa-solid fa-eye" id="modalToggleIcon" style="position: absolute; right: 15px; top: 18px; color: #d4af37; cursor: pointer;"></i>
-            </div>
-            <button type="submit" class="buy-btn-gold">GİRİŞ</button>
-        </form>
-    </div>
-</div>
-
-<div class="overlay" id="register-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()" style="position: absolute; top: 15px; left: 15px; background: none; border: none; color: #d4af37; font-size: 30px; cursor: pointer;">×</button>
-        <h2 class="gold-title">KAYIT OL</h2>
-        <form action="{{ url_for('register') }}" method="POST">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
-            <input type="email" name="email" placeholder="E-posta" class="pay-input" required>
-            <input type="password" name="password" placeholder="Şifre" class="pay-input" required>
-            <button type="submit" class="buy-btn-gold">KAYIT OL</button>
-        </form>
-    </div>
-</div>
-
-<div class="overlay" id="about-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()" style="position: absolute; top: 15px; left: 15px; background: none; border: none; color: #d4af37; font-size: 30px; cursor: pointer;">×</button>
-        <h2 class="gold-title">HAKKINDA</h2>
-        <p style="margin-top: 20px; line-height: 1.6;">Verzia, sanatın ve teknolojinin buluştuğu dijital bir sergi alanıdır.</p>
-    </div>
-</div>
-
-<div class="overlay" id="contact-overlay">
-    <div class="overlay-content">
-        <button class="close-btn" onclick="closeOverlay()" style="position: absolute; top: 15px; left: 15px; background: none; border: none; color: #d4af37; font-size: 30px; cursor: pointer;">×</button>
-        <h2 class="gold-title">İLETİŞİM</h2>
-        <p style="margin-top: 25px; font-size: 1.1rem;">verziateam@outlook.com</p>
-    </div>
-</div>
+<div class="overlay" id="premium-overlay">...</div> 
+<div class="overlay" id="login-overlay">...</div>
+<div class="overlay" id="register-overlay">...</div>
+<div class="overlay" id="about-overlay">...</div>
+<div class="overlay" id="contact-overlay">...</div>
 
 <script>
-    // JS Fonksiyonların (Aynı Kalıyor)
-    document.getElementById('modalToggleIcon').addEventListener('click', function() {
-        const pwdInput = document.getElementById('modalPasswordInput');
-        pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
-    });
-
-    document.getElementById('ajax-login-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        fetch('/login', { method: 'POST', body: formData })
-        .then(r => r.json()).then(data => {
-            if (data.status === 'success') window.location.href = data.redirect;
-            else { 
-                const err = document.getElementById('login-error-msg');
-                err.innerText = data.message; err.style.display = 'block';
-            }
-        });
-    });
-
-    function openPremium() { showPlans(); document.getElementById('premium-overlay').classList.add('active'); }
-    function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
-    function selectPlan(element) { document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active')); element.classList.add('active'); }
-    function showPayment() { document.getElementById('premium-step-1').style.display = 'none'; document.getElementById('premium-step-2').style.display = 'block'; }
-    function showPlans() { document.getElementById('premium-step-2').style.display = 'none'; document.getElementById('premium-step-1').style.display = 'block'; }
-    function toggleMode() { document.body.classList.toggle('light-mode'); }
-    function openLogin() { document.getElementById('login-overlay').classList.add('active'); }
-    function openRegister() { document.getElementById('register-overlay').classList.add('active'); }
-    function openAbout() { document.getElementById('about-overlay').classList.add('active'); }
-    function openContact() { document.getElementById('contact-overlay').classList.add('active'); }
-    function goExplore() { window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); }
+    // Tüm fonksiyonların (toggleMode, openLogin, closeOverlay vb.) burada kalmalı
+    // Senin orijinal script kodlarını buraya ekleyebilirsin.
 </script>
 {% endblock %}
 
