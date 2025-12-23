@@ -16,7 +16,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = "gizli-key"
 
-# 1. Veritabanı ve Klasör Yollarını Sabitleyelim
+# 1. Veritabanı ve Klasör Yolları
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
@@ -27,7 +27,7 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# 🚀 3. RENDER İÇİN KRİTİK: Tabloları uygulama başlar başlamaz oluştur
+# 🚀 3. RENDER İÇİN KRİTİK: Otomatik Tablo Oluşturma
 with app.app_context():
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     db.create_all()
@@ -42,10 +42,10 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --------------------- ROTALAR ---------------------
+
 @app.route('/')
 def index():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
+    # ✨ KİLİT KALDIRILDI: Artık herkes ana sayfayı görebilir!
     try:
         all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
     except:
@@ -54,7 +54,7 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # ✨ Zaten giriş yapmışsa direkt profiline gönder
+    # Zaten giriş yapmışsa kendi profiline gitsin
     if current_user.is_authenticated:
         return redirect(url_for('profile', username=current_user.username))
 
@@ -65,7 +65,6 @@ def login():
         
         if user and check_password_hash(user.password, p):
             login_user(user)
-            # JSON çıktısı yerine doğrudan yönlendirme yapıyoruz
             return redirect(url_for('profile', username=user.username))
         
         flash('Kullanıcı adı veya şifre hatalı.', 'error')
@@ -75,7 +74,6 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # ✨ Zaten giriş yapmışsa direkt profiline gönder
     if current_user.is_authenticated:
         return redirect(url_for('profile', username=current_user.username))
 
@@ -101,6 +99,7 @@ def profile():
     username = request.args.get('username')
     user_to_show = User.query.filter_by(username=username).first() if username else current_user
     
+    # Profil gizli kalsın, sadece üyelere özel olsun
     if not user_to_show or (not username and not current_user.is_authenticated):
         return redirect(url_for('login'))
 
@@ -141,15 +140,10 @@ def search():
     users = User.query.filter(User.username.ilike(f'%{q}%')).all() if q else []
     return render_template('search.html', users=users, query=q)
 
-@app.route('/notifications/unread-count')
-@login_required
-def unread_notif_count():
-    return jsonify({'count': 0})
-
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
