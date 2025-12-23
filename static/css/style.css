@@ -460,3 +460,67 @@ body.light-mode .footer-text {
     }
     .scroll-down { display: none !important; } /* Karışıklığı önlemek için mobilde kapalı */
 }
+/* --- PROFİL SAYFASI MOBİL REVİZE --- */
+@media (max-width: 768px) {
+    /* 1. Yan Menüyü (Sidebar) Alt Menüye Dönüştür */
+    /* Eğer sidebar sınıfın farklıysa ismini ona göre güncelleyebiliriz */
+    .sidebar, [class*="left-nav"] { 
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        top: auto !important;
+        width: 100% !important;
+        height: 60px !important;
+        flex-direction: row !important; /* İkonları yan yana diz */
+        justify-content: space-around !important;
+        background: rgba(0, 0, 0, 0.9) !important;
+        border-right: none !important;
+        border-top: 1px solid rgba(212, 175, 55, 0.3) !important;
+        z-index: 10000 !important;
+        padding: 0 10px !important;
+    }
+
+    /* 2. Profil Başlık Alanı (Avatar ve Bilgiler) */
+    .profile-header {
+        flex-direction: column !important; /* Fotoğraf ve yazıları alt alta al */
+        align-items: center !important;
+        padding-top: 80px !important; /* Üstteki butonlara çarpmaması için */
+        text-align: center !important;
+    }
+
+    .profile-avatar {
+        width: 120px !important;
+        height: 120px !important;
+        margin-right: 0 !important;
+        margin-bottom: 15px !important;
+    }
+
+    .profile-info {
+        align-items: center !important;
+    }
+
+    .profile-stats {
+        display: flex !important;
+        gap: 20px !important;
+        justify-content: center !important;
+        margin-top: 10px !important;
+    }
+
+    /* 3. Gönderiler Alanı */
+    .gonderiler-container {
+        padding: 20px !important;
+        margin-bottom: 80px !important; /* Alt menü kapatmasın diye boşluk */
+    }
+
+    .gonderi-card {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+
+    /* 4. "Hemen Paylaş" Butonu Mobil Uyumu */
+    .paylas-btn {
+        width: 80% !important;
+        max-width: 300px !important;
+        margin: 20px auto !important;
+    }
+}
