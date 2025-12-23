@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 
 <div class="hero">
-    <div class="signature-container" style="pointer-events: none;">
+    <div class="signature-container">
         <svg viewBox="0 0 600 200" class="signature-svg">
             <defs>
                 <linearGradient id="goldDark" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -24,26 +24,29 @@
 
     <div class="auth-buttons">
     {% if current_user.is_authenticated %}
-        <a href="{{ url_for('profile', username=current_user.username) }}" style="color: #d4af37; text-decoration: none; font-weight: bold;">@{{ current_user.username }}</a>
-        <a href="{{ url_for('logout') }}" style="margin-left: 15px; color: #fff; text-decoration: none; font-size: 0.8rem; opacity: 0.7;">Çıkış</a>
+        <a href="{{ url_for('profile', username=current_user.username) }}" class="user-link">@{{ current_user.username }}</a>
+        <a href="{{ url_for('logout') }}" class="logout-link">Çıkış Yap</a>
     {% else %}
-        <a href="javascript:void(0)" onclick="openLogin()" style="color: #fff; text-decoration: none; margin-right: 20px; font-weight: 500;">Giriş Yap</a>
-        <a href="javascript:void(0)" onclick="openRegister()" style="color: #fff; text-decoration: none; font-weight: 500;">Kayıt Ol</a>
+        <a href="javascript:void(0)" onclick="openLogin()" class="auth-link">Giriş Yap</a>
+        <a href="javascript:void(0)" onclick="openRegister()" class="auth-link">Kayıt Ol</a>
     {% endif %}
     </div>
 
-    <button class="about-btn" onclick="openAbout()">Hakkında</button>
-    <button class="contact-btn" onclick="openContact()">İletişim</button>
-    <button class="mode-btn" onclick="toggleMode()">Dark/Light</button>
+    <div class="info-buttons">
+        <button class="minimal-btn" onclick="openAbout()">Hakkında</button>
+        <button class="minimal-btn" onclick="openContact()">İletişim</button>
+    </div>
+
     <button class="vpro-btn-gold" onclick="openPremium()">VPRO</button>
-    <div class="footer-text">@bec</div>
+    <button class="mode-btn" onclick="toggleMode()">Dark/Light</button>
+    <a href="{{ url_for('profile', username='bec') }}" class="footer-text gold-gradient-text">@bec</a>
 </div>
 
 <div class="overlay" id="login-overlay">
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2 class="gold-title">GİRİŞ YAP</h2>
-        <div id="login-error-msg" style="color: #ff4d4d; display: none; margin: 10px 0; font-weight: bold;"></div>
+        <h2 class="gold-gradient-text">GİRİŞ YAP</h2>
+        <div id="login-error-msg" style="color: #ff4d4d; display: none; margin-bottom: 15px; font-weight: bold;"></div>
         <form id="ajax-login-form">
             <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
             <input type="password" name="password" placeholder="Şifre" class="pay-input" required>
@@ -55,7 +58,7 @@
 <div class="overlay" id="register-overlay">
     <div class="overlay-content">
         <button class="close-btn" onclick="closeOverlay()">×</button>
-        <h2 class="gold-title">KAYIT OL</h2>
+        <h2 class="gold-gradient-text">KAYIT OL</h2>
         <form action="{{ url_for('register') }}" method="POST">
             <input type="text" name="username" placeholder="Kullanıcı Adı" class="pay-input" required>
             <input type="email" name="email" placeholder="E-posta" class="pay-input" required>
@@ -67,69 +70,62 @@
 
 <style>
 /* Reset */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #000;
-    overflow: hidden;
-    font-family: 'Montserrat', sans-serif;
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; }
+
+.hero { position: relative; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #000; }
+
+/* Logo Tasarımı */
+.signature-container { width: 100%; max-width: 800px; pointer-events: none; z-index: 1; }
+.signature-text { 
+    font-family: 'Pinyon Script', cursive; 
+    font-size: 160px; 
+    fill: none; 
+    stroke: url(#goldDark); 
+    stroke-width: 1.5; 
+    filter: drop-shadow(0 0 10px rgba(191, 149, 63, 0.3));
 }
 
-/* Hero Full Screen */
-.hero {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+/* Üst Buton Grupları */
+.auth-buttons { position: absolute; top: 40px; right: 50px; z-index: 100; display: flex; gap: 25px; }
+.info-buttons { position: absolute; top: 40px; left: 50px; z-index: 100; display: flex; flex-direction: column; gap: 15px; }
 
-/* Logo */
-.signature-container {
-    width: 90%;
-    max-width: 800px;
-}
-.signature-text {
-    font-family: 'Pinyon Script', cursive;
-    font-size: 150px;
-    stroke: url(#goldDark);
-    fill: transparent;
-    stroke-width: 2;
-}
+/* Link ve Buton Stilleri */
+.auth-link, .logout-link { color: #fff; text-decoration: none; font-size: 0.9rem; letter-spacing: 1px; transition: 0.3s; }
+.auth-link:hover { color: #d4af37; }
+.user-link { color: #d4af37; text-decoration: none; font-weight: bold; letter-spacing: 1px; }
 
-/* Köşe Butonları */
-.auth-buttons { position: absolute; top: 40px; right: 40px; z-index: 100; }
-.about-btn { position: absolute; top: 40px; left: 40px; z-index: 100; background: none; border: 1px solid #d4af37; color: #fff; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
-.contact-btn { position: absolute; top: 90px; left: 40px; z-index: 100; background: none; border: 1px solid #d4af37; color: #fff; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
-.mode-btn { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 100; background: #222; border: 1px solid #444; color: #fff; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
-.vpro-btn-gold { position: absolute; bottom: 40px; left: 40px; z-index: 100; background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border: none; padding: 12px 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-.footer-text { position: absolute; bottom: 40px; right: 40px; color: #d4af37; font-weight: bold; letter-spacing: 2px; }
+.minimal-btn { background: none; border: 1px solid rgba(212, 175, 55, 0.4); color: #fff; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-size: 0.8rem; letter-spacing: 1px; transition: 0.3s; }
+.minimal-btn:hover { border-color: #d4af37; background: rgba(212, 175, 55, 0.1); }
 
-/* Overlays */
+/* Alt Butonlar */
+.vpro-btn-gold { position: absolute; bottom: 50px; left: 50px; z-index: 100; background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border: none; padding: 12px 35px; border-radius: 5px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+.mode-btn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); z-index: 100; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 10px 25px; border-radius: 50px; cursor: pointer; font-size: 0.8rem; }
+.footer-text { position: absolute; bottom: 50px; right: 50px; z-index: 100; text-decoration: none; font-weight: bold; letter-spacing: 3px; font-size: 0.9rem; }
+
+/* Altın Metin Efekti */
+.gold-gradient-text { background: linear-gradient(to right, #bf953f, #fcf6ba, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+/* Overlays (Modallar) */
 .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 10000; }
 .overlay.active { display: flex; }
-.overlay-content { background: #000; padding: 50px; border: 1px solid #d4af37; text-align: center; position: relative; width: 90%; max-width: 400px; }
-.close-btn { position: absolute; top: 15px; left: 15px; background: none; border: none; color: #d4af37; font-size: 30px; cursor: pointer; }
-.pay-input { width: 100%; padding: 12px; margin: 10px 0; background: #111; border: 1px solid #333; color: #fff; }
-.gold-title { color: #d4af37; margin-bottom: 25px; letter-spacing: 3px; }
-.buy-btn-gold { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+.overlay-content { background: #000; padding: 60px 40px; border: 1px solid #d4af37; text-align: center; position: relative; width: 90%; max-width: 400px; border-radius: 10px; }
+.close-btn { position: absolute; top: 20px; left: 20px; background: none; border: none; color: #d4af37; font-size: 35px; cursor: pointer; }
+.pay-input { width: 100%; padding: 15px; margin: 12px 0; background: #0a0a0a; border: 1px solid #222; color: #fff; font-family: inherit; }
+.buy-btn-gold { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 15px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 15px; letter-spacing: 2px; }
 
-/* Light Mode */
+/* Light Mode Adaptasyonu */
 body.light-mode { background-color: #fff !important; }
-body.light-mode .about-btn, body.light-mode .contact-btn { color: #000; border-color: #8a6d3b; }
-body.light-mode .auth-buttons a { color: #000 !important; }
+body.light-mode .hero { background-color: #fff !important; }
+body.light-mode .minimal-btn { color: #000; border-color: #8a6d3b; }
+body.light-mode .auth-link, body.light-mode .logout-link { color: #000; }
 </style>
 
 <script>
-function openLogin() { document.getElementById('login-overlay').classList.add('active'); }
-function openRegister() { document.getElementById('register-overlay').classList.add('active'); }
+function openLogin() { closeOverlay(); document.getElementById('login-overlay').classList.add('active'); }
+function openRegister() { closeOverlay(); document.getElementById('register-overlay').classList.add('active'); }
 function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
 function toggleMode() { document.body.classList.toggle('light-mode'); }
 
-// AJAX Login
 document.getElementById('ajax-login-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const formData = new FormData(this);
