@@ -524,3 +524,92 @@ body.light-mode .footer-text {
         margin: 20px auto !important;
     }
 }
+/* ===================== */
+/* 📱 MOBİL KESİN ÇÖZÜM - VERZIA */
+@media screen and (max-width: 768px) {
+    
+    /* 1. ANA SAYFA: BUTONLARIN HİZALANMASI */
+    .auth-buttons {
+        position: absolute !important;
+        top: 25px !important;
+        right: 15px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: flex-end !important;
+    }
+    .auth-buttons a {
+        min-width: 90px !important;
+        padding: 5px 12px !important;
+        font-size: 0.75rem !important;
+        border-radius: 15px !important;
+        text-align: center;
+    }
+
+    /* Sol Üst Butonlar (Giriş/Kayıt ile simetrik) */
+    .about-btn, .contact-btn {
+        position: absolute !important;
+        top: 25px !important;
+        left: 15px !important;
+        min-width: 90px !important;
+        padding: 5px 12px !important;
+        font-size: 0.75rem !important;
+        border-radius: 15px !important;
+    }
+    .contact-btn {
+        top: calc(25px + 38px) !important; /* Kayıt Ol butonunun hizası */
+    }
+
+    /* 2. PROFİL SAYFASI: YAN MENÜYÜ ALT BARA ALMA (Instagram Style) */
+    .ig-sidebar {
+        width: 100% !important;
+        height: 60px !important;
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        flex-direction: row !important; /* İkonlar yan yana */
+        justify-content: space-around !important;
+        padding: 0 !important;
+        border-right: none !important;
+        border-top: 1px solid var(--ig-border) !important;
+    }
+
+    .sidebar-item {
+        margin-bottom: 0 !important;
+        width: auto !important;
+        height: 100% !important;
+        font-size: 20px !important;
+    }
+
+    .sidebar-item .v-logo-btn {
+        font-size: 24px !important;
+    }
+
+    /* Çıkış yap butonunu diğerlerinin yanına getir */
+    .mt-auto {
+        margin-top: 0 !important;
+        display: flex !important;
+    }
+
+    /* 3. İÇERİK ALANI: SOLDAKİ BOŞLUĞU KALDIRMA */
+    .main-content-wrapper {
+        margin-left: 0 !important;
+        padding-bottom: 70px !important; /* Alt menüye çarpmaması için */
+    }
+
+    /* 4. LOGO VE DARK/LIGHT */
+    .signature-container {
+        transform: scale(1.1) !important; /* Verzia yazısını büyüt */
+        margin-top: -20px !important;
+    }
+
+    .mode-btn {
+        position: absolute !important;
+        top: 60% !important; /* Logonun hemen altı */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        font-size: 0.75rem !important;
+        padding: 5px 15px !important;
+    }
+}
