@@ -74,7 +74,7 @@
                     <td>{{ photo.filename }}</td>
                     <td>{{ photo.owner.username if photo.owner else '-' }}</td>
                     <td class="text-center">
-                        <form method="POST" action="{{ url_for('delete_photo', photo_id=photo.id) }}" style="display:inline;">
+                        <form method="POST" action="{{ url_for('delete_photo_admin_route', photo_id=photo.id) }}" style="display:inline;">
                             <button class="btn btn-danger btn-sm action-btn verzia-gold-btn" onclick="return confirm('Fotoğraf silinsin mi?');">Sil</button>
                         </form>
                     </td>
