@@ -20,10 +20,13 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Klasör Yapılandırması
+# Klasör Yapılandırması - GÜVENLİ HALE GETİRİLDİ
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 THUMB_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbs')
+
+# Klasörlerin varlığından emin oluyoruz (Hata 500 önleyici)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(THUMB_FOLDER, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -283,21 +286,35 @@ def follow(username):
     db.session.commit()
     return jsonify({'status': 'success'})
 
+# FOTOĞRAF YÜKLEME - HATA FİXLENDİ (UPLOAD GÜNCELLENDİ)
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload():
     file = request.files.get('photo')
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filename = f"{current_user.id}_{filename}"
+        # Dosya ismini daha güvenli hale getirelim
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        original_filename = secure_filename(file.filename)
+        filename = f"{current_user.id}_{timestamp}_{original_filename}"
+        
         path = os.path.join(UPLOAD_FOLDER, filename)
+        
+        # Klasörün varlığını burada da teyit ediyoruz
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        os.makedirs(THUMB_FOLDER, exist_ok=True)
+        
         file.save(path)
 
         try:
             img = Image.open(path)
+            # RGB formatına çevirelim (Bazı JPEG'lerde 500 hatası verebilir)
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
             img.thumbnail((400, 400))
             img.save(os.path.join(THUMB_FOLDER, filename))
-        except:
+        except Exception as e:
+            print(f"Thumbnail Error: {e}")
             pass
 
         new_photo = Photo(
@@ -364,15 +381,27 @@ def delete_user(user_id):
         db.session.commit()
     return redirect(url_for('admin_panel'))
 
+# Admin fotoğraf silme ismini çakışma olmaması için netleştirdim
 @app.route('/delete_photo_admin/<int:photo_id>', methods=['POST'])
 @login_required
-def delete_photo(photo_id):
+def delete_photo_admin_route(photo_id):
     if current_user.username.lower() != 'bec':
         abort(403)
     photo = Photo.query.get_or_404(photo_id)
     db.session.delete(photo)
     db.session.commit()
     return redirect(url_for('admin_panel'))
+
+# Profil üzerinden silme için (Eğer HTML'de delete_photo_profile kullanıyorsan)
+@app.route('/delete_photo_profile/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo_profile(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if photo.owner_id != current_user.id and current_user.username.lower() != 'bec':
+        abort(403)
+    db.session.delete(photo)
+    db.session.commit()
+    return redirect(url_for('profile', username=current_user.username))
 
 # --------------------- RENDER UYUMLU ÇALIŞTIRMA ---------------------
 if __name__ == "__main__":
