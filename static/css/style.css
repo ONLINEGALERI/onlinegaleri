@@ -387,42 +387,27 @@ body.light-mode .footer-text {
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
 /* ===================== */
-/* 📱 VERZIA MOBİL - EKRANA SIĞDIRMA VE ORTALAMA */
+/* 📱 PROFIL ÜST KISIM SIĞDIRMA (ALT PANEL SABİT) */
 @media screen and (max-width: 768px) {
-    
-    /* 1. ÜST BUTONLAR VE LOGO AYARI */
-    .auth-buttons {
-        position: absolute !important;
-        top: 25px !important;
-        right: 15px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 8px !important;
-        z-index: 10001 !important;
-    }
-    .about-btn, .contact-btn {
-        position: absolute !important;
-        top: 25px !important;
-        left: 15px !important;
-        z-index: 10001 !important;
-    }
-    .contact-btn { top: 63px !important; }
 
-    /* 2. PROFİL ÜST KISIM (EKRAN KAYMASINI ÖNLEYEN KISIM) */
+    /* 1. ÜST BLOĞU EKRAN GENİŞLİĞİNE ZORLA */
     .profile-header, [class*="profile-header"] {
+        width: 100% !important;
+        max-width: 100vw !important; /* Ekranın dışına taşmasını engeller */
         margin: 0 !important;
-        padding: 20px 10px !important; /* Yanlardaki boşluğu daralttık */
+        padding: 20px 10px !important;
         display: flex !important;
         flex-direction: column !important;
-        align-items: center !important;
-        width: 100vw !important; /* Ekran genişliğine mühürledik */
-        overflow-x: hidden !important; /* Yana kaymayı engeller */
+        align-items: center !important; /* İçeriği ortalar */
+        overflow: hidden !important; /* Taşmaları keser */
     }
 
+    /* 2. AVATAR VE BİLGİLERİ SIKIŞTIR */
     .profile-avatar {
-        margin: 0 auto 15px auto !important;
-        width: 90px !important; /* Daha minimal avatar */
-        height: 90px !important;
+        width: 85px !important; /* Biraz daha küçülttük ki yer açılsın */
+        height: 85px !important;
+        margin-right: 0 !important;
+        margin-bottom: 10px !important;
     }
 
     .profile-info {
@@ -432,49 +417,37 @@ body.light-mode .footer-text {
         align-items: center !important;
     }
 
-    /* İstatistikleri daraltıp ekrana sığdırıyoruz */
+    /* İstatistikleri yan yana ama daha dar alanda topla */
     .profile-stats {
         display: flex !important;
         justify-content: center !important;
-        gap: 15px !important; /* Boşluğu azalttık ki sığsın */
-        margin: 10px 0 !important;
-        width: 95% !important;
-        font-size: 0.8rem !important;
-    }
-
-    /* Profili Düzenle Butonunu Minimal Yap ve Ortala */
-    .btn-outline-light, [class*="edit-btn"] {
-        position: static !important; /* Sağda sabit kalmasın */
-        margin: 10px auto !important;
-        padding: 5px 15px !important;
-        font-size: 0.75rem !important;
-        width: auto !important;
-        min-width: 120px !important;
-    }
-
-    /* 3. ALT MENÜ (FIXED) */
-    .ig-sidebar {
+        gap: 12px !important; /* Yazılar arasındaki boşluğu iyice azalttık */
         width: 100% !important;
-        height: 60px !important;
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-around !important;
-        align-items: center !important;
-        background: var(--ig-sidebar-bg) !important;
-        border-top: 1px solid var(--ig-border) !important;
-        z-index: 10000 !important;
+        margin: 10px 0 !important;
+        font-size: 0.8rem !important; /* Yazı fontunu hafif küçülttük ki sığsın */
+        flex-wrap: nowrap !important; /* Yan yana kalmaya zorla */
     }
 
-    .mt-auto { margin-top: 0 !important; display: flex !important; }
-    
-    .sidebar-item { margin: 0 !important; width: auto !important; font-size: 20px !important; }
+    /* 3. PROFILI DÜZENLE BUTONU (Sağa Kaçmasını Engelle) */
+    .btn-outline-light, [class*="edit-btn"] {
+        position: static !important; /* Bağımsızlığını alıp merkeze koyduk */
+        margin: 5px auto !important;
+        padding: 4px 12px !important;
+        font-size: 0.75rem !important;
+        min-width: 100px !important;
+        width: auto !important;
+    }
 
-    /* Sayfa içeriğinin yana kaymasını global olarak engelle */
+    /* 4. GÖNDERİLER BAŞLIĞI */
+    .gonderiler-container h2, .gonderiler-title {
+        text-align: center !important;
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* GLOBAL: Sayfanın sağa doğru "esnemesini" tamamen bitiriyoruz */
     body, html {
+        max-width: 100% !important;
         overflow-x: hidden !important;
-        position: relative;
     }
 }
