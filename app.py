@@ -1,7 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, abort, jsonify
+from flask import (
+    Flask, render_template, request, redirect,
+    url_for, send_from_directory, flash, jsonify
+)
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user, login_required
+from flask_login import (
+    login_user, logout_user,
+    current_user, login_required
+)
 from datetime import datetime
 import os
 
@@ -15,16 +21,20 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
-# ---------------- DATABASE (RENDER FIX) ----------------
-if os.environ.get("DATABASE_URL"):
-    uri = os.environ.get("DATABASE_URL")
-    if uri.startswith("postgres://"):
-        uri = uri.replace("postgres://", "postgresql://", 1)
-    app.config["SQLALCHEMY_DATABASE_URI"] = uri
+# ---------------- DATABASE (RENDER UYUMLU) ----------------
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
+
+# 🔥 SHELL YOK → TABLOLAR OTOMATİK OLUŞUR
+with app.app_context():
+    db.create_all()
 
 # ---------------- UPLOAD ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,6 +44,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
+# ---------------- LOGIN MANAGER ----------------
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -45,16 +56,18 @@ def allowed_file(filename):
 
 @app.route("/")
 def index():
-    # ❗ created_at yerine id (DB garantili)
     photos = Photo.query.order_by(Photo.id.desc()).all()
     return render_template("index.html", photos=photos)
 
-# ---------- LOGIN (AJAX UYUMLU) ----------
+# ---------- LOGIN (AJAX) ----------
 
 @app.route("/login", methods=["POST"])
 def login():
     if current_user.is_authenticated:
-        return jsonify({"status": "success", "redirect": url_for("profile", username=current_user.username)})
+        return jsonify({
+            "status": "success",
+            "redirect": url_for("profile", username=current_user.username)
+        })
 
     username_or_email = request.form.get("username")
     password = request.form.get("password")
@@ -66,9 +79,15 @@ def login():
 
     if user and check_password_hash(user.password, password):
         login_user(user)
-        return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
+        return jsonify({
+            "status": "success",
+            "redirect": url_for("profile", username=user.username)
+        })
 
-    return jsonify({"status": "error", "message": "Kullanıcı adı veya şifre hatalı"}), 401
+    return jsonify({
+        "status": "error",
+        "message": "Kullanıcı adı veya şifre hatalı"
+    }), 401
 
 # ---------- REGISTER ----------
 
@@ -81,7 +100,10 @@ def register():
     email = request.form.get("email")
     password = request.form.get("password")
 
-    if User.query.filter((User.username == username) | (User.email == email)).first():
+    if User.query.filter(
+        (User.username == username) |
+        (User.email == email)
+    ).first():
         flash("Kullanıcı zaten mevcut", "error")
         return redirect(url_for("index"))
 
@@ -90,11 +112,14 @@ def register():
         email=email,
         password=generate_password_hash(password)
     )
+
     db.session.add(user)
     db.session.commit()
 
     login_user(user)
     return redirect(url_for("profile", username=user.username))
+
+# ---------- LOGOUT ----------
 
 @app.route("/logout")
 @login_required
@@ -102,28 +127,25 @@ def logout():
     logout_user()
     return redirect(url_for("index"))
 
-# ---------- PROFILE (GÜVENLİ) ----------
+# ---------- PROFILE ----------
 
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
     user_to_show = User.query.filter_by(username=username).first_or_404()
 
-    photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
+    photos = Photo.query.filter_by(
+        owner_id=user_to_show.id
+    ).order_by(Photo.id.desc()).all()
+
     is_vip = user_to_show.username.lower() in ["bec", "beril"]
 
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
         "bio": user_to_show.bio or "Henüz bir biyografi yok.",
-        "followers": "2M" if is_vip else (
-            user_to_show.followers_list.count()
-            if hasattr(user_to_show, "followers_list") else 0
-        ),
-        "following": (
-            user_to_show.followed.count()
-            if hasattr(user_to_show, "followed") else 0
-        ),
+        "followers": "2M" if is_vip else user_to_show.followers_list.count(),
+        "following": user_to_show.followed.count(),
         "posts": len(photos),
         "is_vip": is_vip
     }
@@ -143,14 +165,26 @@ def upload():
     file = request.files.get("photo")
 
     if file and allowed_file(file.filename):
-        filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{secure_filename(file.filename)}"
+        filename = (
+            f"{current_user.id}_"
+            f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_"
+            f"{secure_filename(file.filename)}"
+        )
+
         file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-        photo = Photo(title="Verzia Post", filename=filename, owner_id=current_user.id)
+        photo = Photo(
+            title="Verzia Post",
+            filename=filename,
+            owner_id=current_user.id
+        )
+
         db.session.add(photo)
         db.session.commit()
 
     return redirect(url_for("profile", username=current_user.username))
+
+# ---------- FILE SERVE ----------
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
@@ -160,6 +194,8 @@ def uploaded_file(filename):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
+
 
 
 
