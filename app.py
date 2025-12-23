@@ -27,45 +27,42 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL environment variable is not set")
 
-# 🔥 1. Adım: Dialect Düzeltme (psycopg v3 zorlaması)
+# 🔥 1. Adım: URL Temizleme ve Dialect Düzeltme
+# Eğer URL'de önceden kalma sslmode varsa temizle (çakışma olmasın)
+if "?" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split("?")[0]
+
+# Postgres v3 sürücüsünü zorla
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
-# 🔥 2. Adım: URL Parametresiyle SSL Zorlama
-if "sslmode" not in DATABASE_URL:
-    separator = "&" if "?" in DATABASE_URL else "?"
-    DATABASE_URL += f"{separator}sslmode=require"
-
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# 🔥 3. Adım: KRİTİK SSL VE POOL AYARLARI
-# Bu kısım Render'ın bağlantıyı aniden koparmasını engeller.
+# 🔥 2. Adım: EN GARANTİ SSL AYARI
+# Buradaki 'sslmode': 'prefer' bazen 'require'dan daha stabil çalışır
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "connect_args": {
         "sslmode": "require",
     },
-    "pool_pre_ping": True,   # Her sorgudan önce bağlantıyı test eder
-    "pool_recycle": 280,     # Render 300 saniyede bir kesebilir, biz 280'de yeniliyoruz
-    "pool_size": 10,         # Aynı anda açık kalacak bağlantı sayısı
-    "max_overflow": 20,      # Yoğunlukta ek açılacak bağlantı sayısı
+    "pool_pre_ping": True,   # Bağlantı koptuysa sessizce yeniden bağlan
+    "pool_recycle": 240,     # Bağlantıyı 4 dakikada bir tazele (bayatlamayı önler)
+    "pool_size": 5,          # Ücretsiz paket için az bağlantı daha iyidir
+    "max_overflow": 10
 }
 
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# 🔥 4. Adım: TABLOLARI OTOMATİK OLUŞTURMA
-# Eğer veritabanında tabloların yoksa uygulama 500 hatası verir.
-# Bu blok tablolar yoksa ilk çalışmada oluşturur.
+# 🔥 3. Adım: TABLOLARI OTOMATİK OLUŞTURMA
 with app.app_context():
     try:
         db.create_all()
-        print("Veritabanı tabloları başarıyla kontrol edildi/oluşturuldu.")
     except Exception as e:
-        print(f"Tablo oluşturma sırasında hata: {e}")
+        print(f"Veritabanı oluşturma hatası: {e}")
 
 # ---------------- UPLOAD ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -90,63 +87,40 @@ def index():
         photos = Photo.query.order_by(Photo.id.desc()).all()
         return render_template("index.html", photos=photos)
     except Exception as e:
-        return f"Veritabanı hatası: {str(e)}", 500
+        # Eğer hala hata olursa ekranın altına hatayı yazdırır (görmemiz için)
+        return f"Sistem şu an bağlanamıyor, lütfen biraz bekleyip yenileyin. Hata: {str(e)}", 500
 
 # ---------- LOGIN (AJAX) ----------
 @app.route("/login", methods=["POST"])
 def login():
     if current_user.is_authenticated:
-        return jsonify({
-            "status": "success",
-            "redirect": url_for("profile", username=current_user.username)
-        })
+        return jsonify({"status": "success", "redirect": url_for("profile", username=current_user.username)})
 
     username_or_email = request.form.get("username")
     password = request.form.get("password")
 
-    user = User.query.filter(
-        (User.username == username_or_email) |
-        (User.email == username_or_email)
-    ).first()
+    user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email)).first()
 
     if user and check_password_hash(user.password, password):
         login_user(user)
-        return jsonify({
-            "status": "success",
-            "redirect": url_for("profile", username=user.username)
-        })
+        return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
 
-    return jsonify({
-        "status": "error",
-        "message": "Kullanıcı adı veya şifre hatalı"
-    }), 401
+    return jsonify({"status": "error", "message": "Hatalı giriş"}), 401
 
 # ---------- REGISTER ----------
 @app.route("/register", methods=["POST"])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for("profile", username=current_user.username))
-
     username = request.form.get("username")
     email = request.form.get("email")
     password = request.form.get("password")
 
-    if User.query.filter(
-        (User.username == username) |
-        (User.email == email)
-    ).first():
+    if User.query.filter((User.username == username) | (User.email == email)).first():
         flash("Kullanıcı zaten mevcut", "error")
         return redirect(url_for("index"))
 
-    user = User(
-        username=username,
-        email=email,
-        password=generate_password_hash(password)
-    )
-
+    user = User(username=username, email=email, password=generate_password_hash(password))
     db.session.add(user)
     db.session.commit()
-
     login_user(user)
     return redirect(url_for("profile", username=user.username))
 
@@ -162,62 +136,37 @@ def logout():
 @login_required
 def profile(username):
     user_to_show = User.query.filter_by(username=username).first_or_404()
-
-    photos = Photo.query.filter_by(
-        owner_id=user_to_show.id
-    ).order_by(Photo.id.desc()).all()
-
+    photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
+    
     is_vip = user_to_show.username.lower() in ["bec", "beril"]
-
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
         "bio": user_to_show.bio or "Henüz bir biyografi yok.",
-        "followers": "2M" if is_vip else user_to_show.followers_list.count(),
-        "following": user_to_show.followed.count(),
+        "followers": "2M" if is_vip else "0",
+        "following": "0",
         "posts": len(photos),
         "is_vip": is_vip
     }
-
-    return render_template(
-        "profile.html",
-        server_profile=profile_data,
-        photos=photos,
-        can_edit=(current_user.id == user_to_show.id)
-    )
+    return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id))
 
 # ---------- UPLOAD ----------
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
     file = request.files.get("photo")
-
     if file and allowed_file(file.filename):
-        filename = (
-            f"{current_user.id}_"
-            f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_"
-            f"{secure_filename(file.filename)}"
-        )
-
+        filename = f"{current_user.id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{secure_filename(file.filename)}"
         file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-
-        photo = Photo(
-            title="Verzia Post",
-            filename=filename,
-            owner_id=current_user.id
-        )
-
+        photo = Photo(title="Post", filename=filename, owner_id=current_user.id)
         db.session.add(photo)
         db.session.commit()
-
     return redirect(url_for("profile", username=current_user.username))
 
-# ---------- FILE SERVE ----------
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
-# ---------------- RUN (LOCAL ONLY) ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
