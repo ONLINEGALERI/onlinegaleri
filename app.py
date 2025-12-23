@@ -15,7 +15,7 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 
-# 🔥 TÜM MODELLER: Burası çok kritik, eksik model kalmamalı
+# Modeller (Eksiksiz liste)
 from models.user import User, Comment, Like, Notification
 from models.photo import Photo
 
@@ -24,117 +24,96 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
-# ---------------- DATABASE (RENDER INTERNAL UYUMLU) ----------------
+# ---------------- DATABASE (INTERNAL) ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fallback.db"
 else:
-    # Render Postgres/Psycopg v3 uyumu için URL düzenleme
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
-    
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True, # Her sorguda bağlantıyı kontrol et
-    "pool_recycle": 280,   # Bağlantıyı Render koparmadan önce tazele
-}
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True, "pool_recycle": 280}
 
-# Uzantıları Başlat
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# 🔥 KRİTİK: Tabloları Otomatik ve Eksiksiz Oluştur
+# Tabloları oluştur
 with app.app_context():
     try:
         db.create_all()
-        db.session.commit()
     except Exception as e:
-        print(f"Veritabanı kurulum hatası: {e}")
+        print(f"DB Error: {e}")
 
-# ---------------- LOGIN MANAGER ----------------
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-# ---------------- UPLOAD AYARLARI ----------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in {"png", "jpg", "jpeg", "gif"}
 
 # ---------------- ROUTES ----------------
 
 @app.route("/")
 def index():
+    # Eğer zaten giriş yapmışsa, ana sayfada durmasın direkt profiline gitsin
+    if current_user.is_authenticated:
+        return redirect(url_for("profile", username=current_user.username))
+    
     try:
         photos = Photo.query.order_by(Photo.id.desc()).all()
         return render_template("index.html", photos=photos)
     except:
         return render_template("index.html", photos=[])
 
-# ---------- LOGIN ----------
+# 🔥 GİRİŞ YAP (LOGIN) - Hata vermeden profilini açar
 @app.route("/login", methods=["POST"])
 def login():
-    if current_user.is_authenticated:
-        return jsonify({"status": "success", "redirect": url_for("profile", username=current_user.username)})
-
     username_or_email = request.form.get("username")
     password = request.form.get("password")
 
-    # Kullanıcıyı bul
     user = User.query.filter(
         (User.username == username_or_email) | (User.email == username_or_email)
     ).first()
 
-    # User modelindeki check_password metodunu kullanıyoruz
     if user and user.check_password(password):
-        login_user(user)
-        return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
+        login_user(user, remember=True) # Seni hatırlasın diye True yaptık
+        # JSON dönüyoruz çünkü buton muhtemelen JS ile bekliyor
+        return jsonify({
+            "status": "success", 
+            "redirect": url_for("profile", username=user.username)
+        })
 
-    return jsonify({"status": "error", "message": "Kullanıcı adı veya şifre hatalı"}), 401
+    return jsonify({"status": "error", "message": "Bilgiler hatalı!"}), 401
 
-# ---------- REGISTER ----------
+# 🔥 ÜYE OL (REGISTER) - Kayıt eder ve otomatik giriş yapar
 @app.route("/register", methods=["POST"])
 def register():
     username = request.form.get("username")
     email = request.form.get("email")
     password = request.form.get("password")
 
-    # Çakışma kontrolü
     if User.query.filter((User.username == username) | (User.email == email)).first():
-        flash("Bu kullanıcı adı veya e-posta zaten kullanımda.", "error")
+        flash("Bu hesap zaten var!", "error")
         return redirect(url_for("index"))
 
-    # Yeni kullanıcı (Şifre set_password ile şifreleniyor)
-    user = User(username=username, email=email)
-    user.set_password(password)
+    new_user = User(username=username, email=email)
+    new_user.set_password(password)
 
-    try:
-        db.session.add(user)
-        db.session.commit()
-        login_user(user)
-        return redirect(url_for("profile", username=user.username))
-    except Exception as e:
-        db.session.rollback()
-        return f"Kayıt sırasında bir hata oluştu: {str(e)}", 500
+    db.session.add(new_user)
+    db.session.commit()
 
-# ---------- LOGOUT ----------
+    login_user(new_user) # Otomatik giriş
+    return redirect(url_for("profile", username=new_user.username))
+
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("index"))
 
-# ---------- PROFILE ----------
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
@@ -142,34 +121,23 @@ def profile(username):
     photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
     
     is_vip = user_to_show.username.lower() in ["bec", "beril"]
-
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
-        "bio": user_to_show.bio or "Henüz bir biyografi yok.",
-        "followers": "2M" if is_vip else "0",
-        "following": "0",
+        "bio": user_to_show.bio or "Verzia kullanıcısı",
         "posts": len(photos),
         "is_vip": is_vip
     }
+    return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id))
 
-    return render_template(
-        "profile.html",
-        server_profile=profile_data,
-        photos=photos,
-        can_edit=(current_user.id == user_to_show.id)
-    )
-
-# ---------- UPLOAD ----------
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
     file = request.files.get("photo")
-    if file and allowed_file(file.filename):
+    if file:
         filename = f"{current_user.id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{secure_filename(file.filename)}"
         file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-        
-        photo = Photo(title="Verzia Post", filename=filename, owner_id=current_user.id)
+        photo = Photo(title="Post", filename=filename, owner_id=current_user.id)
         db.session.add(photo)
         db.session.commit()
     return redirect(url_for("profile", username=current_user.username))
@@ -179,8 +147,7 @@ def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
 
 
 
