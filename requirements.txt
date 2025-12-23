@@ -3,6 +3,8 @@ Flask-SQLAlchemy
 Flask-Migrate
 Flask-Login
 psycopg[binary]
+gunicorn
+
 
 
 
