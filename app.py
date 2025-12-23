@@ -27,25 +27,34 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL environment variable is not set")
 
-# 🔥 psycopg v3 uyumu
-DATABASE_URL = DATABASE_URL.replace(
-    "postgres://", "postgresql+psycopg://", 1
-).replace(
-    "postgresql://", "postgresql+psycopg://", 1
-)
+# 🔥 psycopg v3 ve PostgreSQL uyumu
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
-# 🔥 Render SSL ister
+# Render SSL zorunluluğu için URL parametresi
 if "sslmode" not in DATABASE_URL:
-    DATABASE_URL += "?sslmode=require"
+    if "?" in DATABASE_URL:
+        DATABASE_URL += "&sslmode=require"
+    else:
+        DATABASE_URL += "?sslmode=require"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# 🔥 KRİTİK AYAR: SSL ve Bağlantı Kopmalarını Engelleyen Motor Ayarları
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "connect_args": {
+        "sslmode": "require",
+    },
+    "pool_pre_ping": True,  # Bağlantı koptuysa otomatik yeniden bağlanır
+    "pool_recycle": 300,    # 5 dakikada bir bağlantıyı tazeler
+}
+
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
-
-# ❌ db.create_all() YOK (migration ile)
 
 # ---------------- UPLOAD ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
