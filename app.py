@@ -21,24 +21,23 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
-# ---------------- DATABASE (RENDER + SSL UYUMLU) ----------------
-DATABASE_URL = os.environ.get("DATABASE_URL") or \
-    "postgresql://verzia_db_user:ZalolrKxedwUv2GZK8r0ZGIohCRJXjqn@dpg-d55d66fgi27c73eilld0-a.oregon-postgres.render.com/verzia_db"
+# ---------------- DATABASE (RENDER UYUMLU – TEMİZ) ----------------
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is not set")
 
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "connect_args": {"sslmode": "require"}  # SSL zorunlu
-}
 
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# ❌ db.create_all() kullanılmaz — migration ile yönetilecek
+# ❌ db.create_all() YOK (migration kullanılacak)
 
 # ---------------- UPLOAD ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -191,6 +190,7 @@ def uploaded_file(filename):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
