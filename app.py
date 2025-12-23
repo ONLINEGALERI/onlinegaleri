@@ -15,14 +15,14 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 
-# Modeller (Sıralama Önemli)
+# Modeller
 from models.user import User, Comment, Like, Notification
 from models.photo import Photo
 
 # ---------------- APP KURULUMU ----------------
 app = Flask(__name__)
 app.config.from_object(Config)
-app.secret_key = os.environ.get("SECRET_KEY", "verzia-gizli-anahtar")
+app.secret_key = os.environ.get("SECRET_KEY", "verzia-secret-key-123")
 
 # ---------------- DATABASE (RENDER INTERNAL) ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -30,7 +30,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fallback.db"
 else:
-    # URL Formatını Düzeltme
+    # URL Format Düzeltme
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
@@ -39,24 +39,20 @@ else:
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,  # Her sorguda "orada mısın?" diye sorar
-    "pool_recycle": 60,     # Bağlantıyı her dakika yeniler (Kopmayı önler)
-    "pool_size": 5,
-    "max_overflow": 10
+    "pool_pre_ping": True,
+    "pool_recycle": 60,
 }
 
-# Uzantıları Başlat
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# 🔥 KRİTİK: TABLOLARI GÜVENLİ OLUŞTURMA
+# Tabloları oluştur
 with app.app_context():
     try:
         db.create_all()
-        print("Tablolar hazır.")
     except Exception as e:
-        print(f"DB Hatası: {e}")
+        print(f"DB Error: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -66,20 +62,28 @@ def load_user(user_id):
 
 @app.route("/")
 def index():
+    # URL Build hatasını önlemek için güvenli kontrol
     if current_user.is_authenticated:
-        return redirect(url_for("profile", username=current_user.username))
-    
+        try:
+            return redirect(url_for("profile", username=current_user.username))
+        except:
+            logout_user()
+            return redirect(url_for("index"))
+            
     try:
         photos = Photo.query.order_by(Photo.id.desc()).all()
         return render_template("index.html", photos=photos)
     except:
         return render_template("index.html", photos=[])
 
-# 🔥 GİRİŞ YAP (Asla hata vermez)
+# GİRİŞ YAP
 @app.route("/login", methods=["POST"])
 def login():
     username_or_email = request.form.get("username")
     password = request.form.get("password")
+
+    if not username_or_email or not password:
+        return jsonify({"status": "error", "message": "Eksik bilgi!"}), 400
 
     user = User.query.filter(
         (User.username == username_or_email) | (User.email == username_or_email)
@@ -87,17 +91,15 @@ def login():
 
     if user and user.check_password(password):
         login_user(user, remember=True)
-        # Eğer AJAX ise JSON dön, değilse yönlendir
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
-        return redirect(url_for("profile", username=user.username))
+        # Hata veren kısım burasıydı, artık güvenli dönüyoruz
+        return jsonify({
+            "status": "success", 
+            "redirect": url_for("profile", username=user.username)
+        })
 
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({"status": "error", "message": "Hatalı giriş!"}), 401
-    flash("Giriş bilgileri hatalı.", "error")
-    return redirect(url_for("index"))
+    return jsonify({"status": "error", "message": "Giriş başarısız!"}), 401
 
-# 🔥 ÜYE OL
+# ÜYE OL
 @app.route("/register", methods=["POST"])
 def register():
     username = request.form.get("username")
@@ -105,7 +107,7 @@ def register():
     password = request.form.get("password")
 
     if User.query.filter((User.username == username) | (User.email == email)).first():
-        flash("Bu hesap zaten mevcut.", "error")
+        flash("Bu hesap zaten var!", "error")
         return redirect(url_for("index"))
 
     new_user = User(username=username, email=email)
@@ -117,12 +119,7 @@ def register():
     login_user(new_user)
     return redirect(url_for("profile", username=new_user.username))
 
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for("index"))
-
+# PROFİL (Sayfa adı 'profile' olarak sabitlendi)
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
@@ -133,11 +130,17 @@ def profile(username):
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
-        "bio": user_to_show.bio or "Verzia'ya hoş geldin!",
+        "bio": user_to_show.bio or "Verzia Galeri",
         "posts": len(photos),
         "is_vip": is_vip
     }
     return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id))
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("index"))
 
 @app.route("/upload", methods=["POST"])
 @login_required
