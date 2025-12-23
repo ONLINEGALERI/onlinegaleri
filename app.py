@@ -15,7 +15,7 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 
-# 🔥 MODELLER: Hepsini buraya ekledik ki tablo hatası vermesin
+# 🔥 TÜM MODELLER: Burası çok kritik, eksik model kalmamalı
 from models.user import User, Comment, Like, Notification
 from models.photo import Photo
 
@@ -24,13 +24,13 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
-# ---------------- DATABASE (RENDER UYUMLU) ----------------
+# ---------------- DATABASE (RENDER INTERNAL UYUMLU) ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fallback.db"
 else:
-    # Render Postgres/Psycopg v3 uyumu
+    # Render Postgres/Psycopg v3 uyumu için URL düzenleme
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
@@ -40,8 +40,8 @@ else:
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,
-    "pool_recycle": 300,
+    "pool_pre_ping": True, # Her sorguda bağlantıyı kontrol et
+    "pool_recycle": 280,   # Bağlantıyı Render koparmadan önce tazele
 }
 
 # Uzantıları Başlat
@@ -49,12 +49,13 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# 🔥 VERİTABANI TABLOLARINI OLUŞTUR (Sildiğin app.db'nin yerine geçer)
+# 🔥 KRİTİK: Tabloları Otomatik ve Eksiksiz Oluştur
 with app.app_context():
     try:
         db.create_all()
+        db.session.commit()
     except Exception as e:
-        print(f"Tablo oluşturma sırasında hata: {e}")
+        print(f"Veritabanı kurulum hatası: {e}")
 
 # ---------------- LOGIN MANAGER ----------------
 @login_manager.user_loader
@@ -89,11 +90,13 @@ def login():
     username_or_email = request.form.get("username")
     password = request.form.get("password")
 
+    # Kullanıcıyı bul
     user = User.query.filter(
         (User.username == username_or_email) | (User.email == username_or_email)
     ).first()
 
-    if user and check_password_hash(user.password, password):
+    # User modelindeki check_password metodunu kullanıyoruz
+    if user and user.check_password(password):
         login_user(user)
         return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
 
@@ -106,21 +109,23 @@ def register():
     email = request.form.get("email")
     password = request.form.get("password")
 
+    # Çakışma kontrolü
     if User.query.filter((User.username == username) | (User.email == email)).first():
-        flash("Kullanıcı zaten mevcut", "error")
+        flash("Bu kullanıcı adı veya e-posta zaten kullanımda.", "error")
         return redirect(url_for("index"))
 
-    user = User(
-        username=username,
-        email=email,
-        password=generate_password_hash(password)
-    )
+    # Yeni kullanıcı (Şifre set_password ile şifreleniyor)
+    user = User(username=username, email=email)
+    user.set_password(password)
 
-    db.session.add(user)
-    db.session.commit()
-
-    login_user(user)
-    return redirect(url_for("profile", username=user.username))
+    try:
+        db.session.add(user)
+        db.session.commit()
+        login_user(user)
+        return redirect(url_for("profile", username=user.username))
+    except Exception as e:
+        db.session.rollback()
+        return f"Kayıt sırasında bir hata oluştu: {str(e)}", 500
 
 # ---------- LOGOUT ----------
 @app.route("/logout")
@@ -136,7 +141,6 @@ def profile(username):
     user_to_show = User.query.filter_by(username=username).first_or_404()
     photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
     
-    # VIP Kontrolü (Senin mantığın)
     is_vip = user_to_show.username.lower() in ["bec", "beril"]
 
     profile_data = {
