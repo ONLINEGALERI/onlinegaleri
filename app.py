@@ -16,17 +16,24 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = "gizli-key"
 
-# 1. Klasör Yolları (Veritabanı artık Config'den otomatik geliyor, elle yazma!)
+# 1. Klasör Yolları
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# ✨ KRİTİK: Render'daki DATABASE_URL'i zorla kullan (Silinmeyi önler)
+if os.environ.get('DATABASE_URL'):
+    db_uri = os.environ.get('DATABASE_URL')
+    if db_uri.startswith("postgres://"):
+        db_uri = db_uri.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 
 # 2. Uzantıları Başlat
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# 🚀 3. RENDER İÇİN KRİTİK: Otomatik Tablo Oluşturma
+# 🚀 3. RENDER İÇİN: Tabloları oluştur
 with app.app_context():
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     db.create_all()
@@ -44,6 +51,7 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
+    # Artık herkes ana sayfayı görebilir!
     try:
         all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
     except:
@@ -138,32 +146,6 @@ def delete_photo_profile(photo_id):
         db.session.delete(photo)
         db.session.commit()
     return redirect(url_for('profile', username=current_user.username))
-
-@app.route('/follow/<username>', methods=['POST'])
-@login_required
-def follow(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    current_user.follow(user)
-    db.session.commit()
-    return jsonify({'status': 'success'})
-
-@app.route('/unfollow/<username>', methods=['POST'])
-@login_required
-def unfollow(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    current_user.unfollow(user)
-    db.session.commit()
-    return jsonify({'status': 'success'})
-
-@app.route('/get_followers/<username>')
-def get_followers(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    return jsonify([{"username": f.username, "avatar": f.avatar} for f in user.followers_list.all()])
-
-@app.route('/get_following/<username>')
-def get_following(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    return jsonify([{"username": f.username, "avatar": f.avatar} for f in user.followed.all()])
 
 @app.route('/search')
 def search():
