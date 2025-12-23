@@ -15,21 +15,22 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 
-# Modeller (Eksiksiz liste)
+# Modeller (Sıralama Önemli)
 from models.user import User, Comment, Like, Notification
 from models.photo import Photo
 
 # ---------------- APP KURULUMU ----------------
 app = Flask(__name__)
 app.config.from_object(Config)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
+app.secret_key = os.environ.get("SECRET_KEY", "verzia-gizli-anahtar")
 
-# ---------------- DATABASE (INTERNAL) ----------------
+# ---------------- DATABASE (RENDER INTERNAL) ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fallback.db"
 else:
+    # URL Formatını Düzeltme
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
@@ -37,18 +38,25 @@ else:
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True, "pool_recycle": 280}
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,  # Her sorguda "orada mısın?" diye sorar
+    "pool_recycle": 60,     # Bağlantıyı her dakika yeniler (Kopmayı önler)
+    "pool_size": 5,
+    "max_overflow": 10
+}
 
+# Uzantıları Başlat
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Tabloları oluştur
+# 🔥 KRİTİK: TABLOLARI GÜVENLİ OLUŞTURMA
 with app.app_context():
     try:
         db.create_all()
+        print("Tablolar hazır.")
     except Exception as e:
-        print(f"DB Error: {e}")
+        print(f"DB Hatası: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -58,7 +66,6 @@ def load_user(user_id):
 
 @app.route("/")
 def index():
-    # Eğer zaten giriş yapmışsa, ana sayfada durmasın direkt profiline gitsin
     if current_user.is_authenticated:
         return redirect(url_for("profile", username=current_user.username))
     
@@ -68,7 +75,7 @@ def index():
     except:
         return render_template("index.html", photos=[])
 
-# 🔥 GİRİŞ YAP (LOGIN) - Hata vermeden profilini açar
+# 🔥 GİRİŞ YAP (Asla hata vermez)
 @app.route("/login", methods=["POST"])
 def login():
     username_or_email = request.form.get("username")
@@ -79,16 +86,18 @@ def login():
     ).first()
 
     if user and user.check_password(password):
-        login_user(user, remember=True) # Seni hatırlasın diye True yaptık
-        # JSON dönüyoruz çünkü buton muhtemelen JS ile bekliyor
-        return jsonify({
-            "status": "success", 
-            "redirect": url_for("profile", username=user.username)
-        })
+        login_user(user, remember=True)
+        # Eğer AJAX ise JSON dön, değilse yönlendir
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
+        return redirect(url_for("profile", username=user.username))
 
-    return jsonify({"status": "error", "message": "Bilgiler hatalı!"}), 401
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({"status": "error", "message": "Hatalı giriş!"}), 401
+    flash("Giriş bilgileri hatalı.", "error")
+    return redirect(url_for("index"))
 
-# 🔥 ÜYE OL (REGISTER) - Kayıt eder ve otomatik giriş yapar
+# 🔥 ÜYE OL
 @app.route("/register", methods=["POST"])
 def register():
     username = request.form.get("username")
@@ -96,7 +105,7 @@ def register():
     password = request.form.get("password")
 
     if User.query.filter((User.username == username) | (User.email == email)).first():
-        flash("Bu hesap zaten var!", "error")
+        flash("Bu hesap zaten mevcut.", "error")
         return redirect(url_for("index"))
 
     new_user = User(username=username, email=email)
@@ -105,7 +114,7 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    login_user(new_user) # Otomatik giriş
+    login_user(new_user)
     return redirect(url_for("profile", username=new_user.username))
 
 @app.route("/logout")
@@ -124,7 +133,7 @@ def profile(username):
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
-        "bio": user_to_show.bio or "Verzia kullanıcısı",
+        "bio": user_to_show.bio or "Verzia'ya hoş geldin!",
         "posts": len(photos),
         "is_vip": is_vip
     }
