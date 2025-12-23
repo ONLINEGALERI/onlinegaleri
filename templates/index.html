@@ -48,8 +48,6 @@
     <button class="about-btn" onclick="openAbout()" style="z-index: 9999; cursor: pointer !important;">Hakkında</button>
     <button class="contact-btn" onclick="openContact()" style="z-index: 9999; cursor: pointer !important;">İletişim</button>
     <button class="mode-btn" onclick="toggleMode()" style="z-index: 9999; cursor: pointer !important;">Dark/Light</button>
-
-    <div class="scroll-down" onclick="goExplore()" style="z-index: 9999; cursor: pointer !important;">↓ Keşfet</div>
 </div>
 
 <button class="vpro-btn-gold" onclick="openPremium()" style="z-index: 9999; cursor: pointer !important;">VPRO</button>
@@ -280,7 +278,6 @@ function openLogin() { document.getElementById('login-overlay').classList.add('a
 function openRegister() { document.getElementById('register-overlay').classList.add('active'); }
 function openAbout() { document.getElementById('about-overlay').classList.add('active'); }
 function openContact() { document.getElementById('contact-overlay').classList.add('active'); }
-function goExplore() { window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); }
 </script>
 {% endblock %}
 
