@@ -15,14 +15,14 @@ import os
 from config import Config
 from extensions import db, migrate, login_manager
 
-# Modeller
+# Modeller (Eksiksiz Liste)
 from models.user import User, Comment, Like, Notification
 from models.photo import Photo
 
 # ---------------- APP KURULUMU ----------------
 app = Flask(__name__)
 app.config.from_object(Config)
-app.secret_key = os.environ.get("SECRET_KEY", "verzia-secret-key-123")
+app.secret_key = os.environ.get("SECRET_KEY", "verzia-special-key-2025")
 
 # ---------------- DATABASE (RENDER INTERNAL) ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -30,6 +30,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fallback.db"
 else:
+    # URL Format Düzeltme (Psycopg v3 uyumu)
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
@@ -38,34 +39,31 @@ else:
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,  # Bağlantı koptuğunda otomatik anlar
-    "pool_recycle": 300,    # Bağlantıyı 5 dakikada bir yeniler
-    "pool_size": 10,
-    "max_overflow": 20
+    "pool_pre_ping": True,
+    "pool_recycle": 60,
 }
 
+# Uzantıları Başlat
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 
-# Tabloları Güvenli Başlat
+# Tabloları oluştur
 with app.app_context():
     try:
         db.create_all()
     except Exception as e:
-        print(f"Veritabanı Tablo Hatası: {e}")
+        print(f"DB Error: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
-    try:
-        return User.query.get(int(user_id))
-    except:
-        return None
+    return User.query.get(int(user_id))
 
 # ---------------- ROUTES ----------------
 
 @app.route("/")
 def index():
+    # Giriş yapılmışsa URL hatası almamak için güvenli yönlendirme
     if current_user.is_authenticated:
         try:
             return redirect(url_for("profile", username=current_user.username))
@@ -79,31 +77,30 @@ def index():
     except:
         return render_template("index.html", photos=[])
 
-# 🔥 GİRİŞ YAP (INTERNAL SERVER ERROR ÖNLEYİCİ)
+# 🔥 GİRİŞ YAP (Build Error Çözüldü)
 @app.route("/login", methods=["POST"])
 def login():
-    try:
-        username_or_email = request.form.get("username")
-        password = request.form.get("password")
+    username_or_email = request.form.get("username")
+    password = request.form.get("password")
 
-        if not username_or_email or not password:
-            return jsonify({"status": "error", "message": "Bilgiler eksik!"}), 400
+    if not username_or_email or not password:
+        return jsonify({"status": "error", "message": "Eksik bilgi!"}), 400
 
-        user = User.query.filter(
-            (User.username == username_or_email) | (User.email == username_or_email)
-        ).first()
+    user = User.query.filter(
+        (User.username == username_or_email) | (User.email == username_or_email)
+    ).first()
 
-        if user and user.check_password(password):
-            login_user(user, remember=True)
-            return jsonify({
-                "status": "success", 
-                "redirect": url_for("profile", username=user.username)
-            })
+    if user and user.check_password(password):
+        login_user(user, remember=True)
+        
+        # Build Error'u önlemek için username'in varlığını kesinleştiriyoruz
+        target_username = user.username
+        return jsonify({
+            "status": "success", 
+            "redirect": url_for("profile", username=target_username)
+        })
 
-        return jsonify({"status": "error", "message": "Hatalı kullanıcı adı veya şifre!"}), 401
-    except Exception as e:
-        print(f"Login Hatası: {e}")
-        return jsonify({"status": "error", "message": "Giriş işlemi sırasında bir hata oluştu."}), 500
+    return jsonify({"status": "error", "message": "Giriş başarısız!"}), 401
 
 # ÜYE OL
 @app.route("/register", methods=["POST"])
@@ -119,16 +116,13 @@ def register():
     new_user = User(username=username, email=email)
     new_user.set_password(password)
 
-    try:
-        db.session.add(new_user)
-        db.session.commit()
-        login_user(new_user)
-        return redirect(url_for("profile", username=new_user.username))
-    except Exception as e:
-        db.session.rollback()
-        return f"Kayıt hatası: {str(e)}", 500
+    db.session.add(new_user)
+    db.session.commit()
 
-# PROFİL
+    login_user(new_user)
+    return redirect(url_for("profile", username=new_user.username))
+
+# PROFİL (Endpoint Adı: profile)
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
@@ -157,9 +151,7 @@ def upload():
     file = request.files.get("photo")
     if file:
         filename = f"{current_user.id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{secure_filename(file.filename)}"
-        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
         file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-        
         photo = Photo(title="Post", filename=filename, owner_id=current_user.id)
         db.session.add(photo)
         db.session.commit()
