@@ -3,7 +3,14 @@
 {% block content %}
 <style>
 /* --- MEVCUT TASARIMIN (DOKUNULMADI) --- */
-.ig-container { width: 100%; max-width: 935px; margin: 0 auto; padding: 30px 20px; color: var(--ig-text); font-family: 'Montserrat', sans-serif; }
+.ig-container { 
+    width: 100%; 
+    max-width: 935px; 
+    margin: 0 auto; /* Sayfayı ortalar */
+    padding: 30px 20px; 
+    color: var(--ig-text); 
+    font-family: 'Montserrat', sans-serif; 
+}
 .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; }
 .ig-avatar-area { flex: 1; display: flex; justify-content: center; position: relative; }
 .avatar-wrapper { position: relative; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -38,28 +45,25 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     border: 1px dashed #d4af37; border-radius: 12px; background: rgba(212, 175, 55, 0.03);
 }
 
-/* SOL BAR TASARIMI (GÖNDERİLER YAZISIYLA AYNI GRADIENT GOLD) */
+/* SOL BAR TASARIMI (GRADIENT GOLD) */
 .side-nav {
     width: 60px; background-color: #000; border-right: 1px solid #262626;
     display: flex; flex-direction: column; align-items: center;
     padding-top: 25px; position: fixed; height: 100vh; left: 0; top: 0; z-index: 999;
 }
 
-/* İkonlara gradient efekti verme */
 .side-nav i, .side-nav a { 
     font-size: 22px; 
     margin-bottom: 35px; 
     cursor: pointer; 
     transition: 0.3s; 
     text-decoration: none;
-    /* Gönderiler yazısındaki gradient'in aynısı */
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
 }
 
-/* Üzerine gelince veya aktifken hafif bir parlama (glow) ekleyelim */
 .side-nav i:hover, .side-nav a:hover, .side-nav .active { 
     filter: drop-shadow(0 0 8px rgba(252, 246, 186, 0.5));
     transform: scale(1.1);
@@ -79,7 +83,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     <a href="{{ url_for('logout') }}" title="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></a>
 </aside>
 
-<div class="ig-container" style="margin-left: 60px;">
+<div class="ig-container" style="padding-left: 80px;"> 
     <header class="ig-header">
         <div class="ig-avatar-area">
             <div class="avatar-wrapper" {% if can_edit %}onclick="document.getElementById('avatarInput').click()"{% endif %}>
