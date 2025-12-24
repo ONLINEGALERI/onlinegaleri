@@ -71,19 +71,30 @@ def profile(username):
     user_to_show = User.query.filter_by(username=username).first_or_404()
     photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
     
-    # KURUCU LİSTESİ
+    # KURUCU VE ANA PROFİL KONTROLÜ (TÜRKÇE KARAKTER GARANTİLİ)
+    # Büyük İ ve I sorununu çözmek için normalize ediyoruz
+    username_check = user_to_show.username.replace('İ', 'i').replace('I', 'ı').lower()
+    
     kurucular = ["beril", "ecem", "cemre"]
-    is_kurucu = user_to_show.username.lower() in kurucular
+    is_ana_profil = "verzia" in username_check
+    is_kurucu = username_check in kurucular
+    
+    # Takipçi Sayısı Mantığı
+    if is_ana_profil:
+        followers_display = "2M"
+    elif is_kurucu:
+        followers_display = "1.5M"
+    else:
+        followers_display = user_to_show.followers_list.count()
     
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
         "bio": user_to_show.bio or "Verzia Experience",
-        # Kuruculara 1.5M tanımlıyoruz
-        "followers": "1.5M" if is_kurucu else user_to_show.followers_list.count(),
+        "followers": followers_display,
         "following": user_to_show.followed.count(),
-        "is_vip": is_kurucu or user_to_show.username.lower() == "bec",
-        "is_kurucu": is_kurucu # HTML'de takipçi listesini kilitlemek için
+        "is_vip": is_kurucu or is_ana_profil or user_to_show.username.lower() == "bec",
+        "is_kurucu": is_kurucu or is_ana_profil
     }
     
     is_following = current_user.is_following(user_to_show)
@@ -99,22 +110,20 @@ def update_bio():
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
-# --------------------- AYARLAR (GÜNCELLENDİ: ŞİFRE DOĞRULAMA) ---------------------
+# --------------------- AYARLAR (ŞİFRE DOĞRULAMA) ---------------------
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
     if request.method == "POST":
         user = User.query.get(current_user.id)
-        current_password = request.form.get("current_password") # HTML'den gelen mevcut şifre
+        current_password = request.form.get("current_password")
         new_username = request.form.get("username")
         new_password = request.form.get("password")
 
-        # GÜVENLİK: Önce mevcut şifreyi kontrol et
         if not current_password or not user.check_password(current_password):
             flash("Mevcut şifren hatalı aşkım, kontrol eder misin?", "error")
             return redirect(url_for("settings"))
 
-        # Kullanıcı adı müsait mi kontrolü
         if new_username and new_username != user.username:
             existing_user = User.query.filter_by(username=new_username).first()
             if existing_user and existing_user.id != user.id:
@@ -122,7 +131,6 @@ def settings():
             else:
                 user.username = new_username
         
-        # Yeni şifre girildiyse güncelle
         if new_password:
             user.set_password(new_password)
             
@@ -196,8 +204,10 @@ def search_users():
 def get_user_list(username, type):
     user = User.query.filter_by(username=username).first_or_404()
     if type == 'followers':
-        kurucular = ["beril", "ecem", "cemre"]
-        if user.username.lower() in kurucular:
+        kurucular = ["beril", "ecem", "cemre", "verzia"]
+        # Büyük harf kontrolü için normalize ediyoruz
+        user_name_lower = user.username.replace('İ', 'i').replace('I', 'ı').lower()
+        if user_name_lower in kurucular:
             return jsonify([])
         users = user.followers_list.all()
     else:

@@ -12,7 +12,7 @@ followers_association = db.Table(
 
 # ---------------- USER MODEL ----------------
 class User(UserMixin, db.Model):
-    __tablename__ = "user"  # 🔥 KRİTİK: tablo adını sabitle
+    __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -46,7 +46,6 @@ class User(UserMixin, db.Model):
 
     # -------- PASSWORD HELPERS --------
     def set_password(self, raw_password):
-        # 🔥 HATA GİDERİLDİ: 'scrypt' hatasını önlemek için uyumlu olan pbkdf2 yöntemi seçildi.
         self.password = generate_password_hash(raw_password, method='pbkdf2:sha256')
 
     def check_password(self, raw_password):
