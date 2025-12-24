@@ -15,7 +15,7 @@
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover admin-table">
+        <table class="table admin-table-custom">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -29,7 +29,7 @@
                 {% for user in users %}
                 <tr>
                     <td>{{ user.id }}</td>
-                    <td>@{{ user.username }}</td>
+                    <td class="user-name-cell">@{{ user.username }}</td>
                     <td>{{ user.email }}</td>
                     <td>
                         {% if user.username.upper() == 'VERZİA' or user.username.upper() == 'VERZIA' %}
@@ -58,7 +58,7 @@
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover admin-table">
+        <table class="table admin-table-custom">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -76,12 +76,12 @@
                     <td><span class="badge bg-dark text-white">Base64 Data</span></td>
                     <td><span class="badge bg-success">Yayında</span></td>
                     <td class="text-center">
-                        <span class="opacity-50" style="font-size: 11px;">Admin Yetkili ✨</span>
+                        <span class="admin-yetki-text">Admin Yetkili ✨</span>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="text-center opacity-50 p-4">Henüz sistemde fotoğraf bulunmuyor.</td>
+                    <td colspan="5" class="text-center no-data-text">Henüz sistemde fotoğraf bulunmuyor.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -90,27 +90,46 @@
 </div>
 
 <style>
-/* --- VERZIA DINAMIK TEMA (DARK/LIGHT) --- */
+/* --- VERZIA DINAMIK TEMA (TEXT GÖRÜNÜRLÜK DÜZENLEMESİ) --- */
 :root {
     --verzia-gold: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
 }
 
-/* Sayfa Genel Renkleri */
 .admin-page { 
-    color: var(--ig-text) !important; /* Base.html'deki değişkene bağladım ✨ */
+    color: var(--ig-text) !important;
     padding-top: 60px;
     padding-bottom: 60px;
-    transition: all 0.3s ease;
 }
 
-/* Başlık ve Bölümler */
+/* Tablo Arka Plan Çakışmasını Kökten Çözen Kısım ✨ */
+.admin-table-custom {
+    background-color: transparent !important;
+    color: var(--ig-text) !important;
+    border: 1px solid rgba(191, 149, 63, 0.2) !important;
+    width: 100%;
+}
+
+.admin-table-custom td, .admin-table-custom th {
+    background-color: transparent !important; /* Bootstrap beyazlığını sildik */
+    color: inherit !important;
+    border-color: rgba(191, 149, 63, 0.1) !important;
+    padding: 15px;
+}
+
+.admin-table-custom thead th {
+    color: #bf953f !important;
+    border-bottom: 2px solid #bf953f !important;
+}
+
+/* Text Görünürlük Ayarları */
+body:not(.light-mode) .admin-table-custom { color: #ffffff !important; }
+body.light-mode .admin-table-custom { color: #000000 !important; }
+
 .admin-title {
     background: var(--verzia-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 3px;
 }
 
 .section-header h3 {
@@ -119,74 +138,27 @@
     color: #bf953f !important;
 }
 
-/* Tablo Tasarımı */
-.admin-table {
-    background-color: transparent;
-    border: 1px solid rgba(191, 149, 63, 0.2) !important;
-    color: var(--ig-text) !important;
-}
-
-.admin-table thead th {
-    background-color: rgba(191, 149, 63, 0.1);
-    color: #bf953f;
-    border-bottom: 2px solid #bf953f;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-}
-
-/* Modlara Göre Satır Renkleri */
-body:not(.light-mode) .admin-table tbody td { color: #fff; }
-body.light-mode .admin-table tbody td { color: #333; }
-
-.admin-table tbody tr:hover {
-    background-color: rgba(191, 149, 63, 0.08) !important;
-}
-
-/* Rozetler ve Butonlar */
 .verzia-gold-badge {
     background: var(--verzia-gold) !important;
     color: #000 !important;
     font-weight: bold;
 }
 
-.status-badge {
-    background: rgba(128, 128, 128, 0.2);
-    color: var(--ig-text);
-}
+.current-user-text { color: #fcf6ba; font-weight: bold; }
+.admin-yetki-text, .no-data-text { color: var(--ig-text); opacity: 0.6; }
 
-.current-user-text {
-    color: #aa771c;
-    font-weight: bold;
-}
-
-/* Çarpı Butonu (Dinamik Renk) */
+/* Çarpı Butonu */
 .exit-btn-fixed {
-    position: fixed;
-    top: 30px;
-    right: 40px;
-    font-size: 2.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 10000;
-    color: var(--ig-text); /* Mod değiştikçe otomatik renk değiştirir ✨ */
-    transition: 0.4s ease;
+    position: fixed; top: 30px; right: 40px; font-size: 2.5rem;
+    background: none; border: none; cursor: pointer; z-index: 10000;
+    color: var(--ig-text); transition: 0.4s ease;
 }
-
-.exit-btn-fixed:hover {
-    transform: rotate(180deg);
-    color: #bf953f;
-}
+.exit-btn-fixed:hover { transform: rotate(180deg); color: #bf953f; }
 
 .verzia-gold-btn {
     border: 1px solid #bf953f !important;
     background: transparent !important;
     color: #bf953f !important;
-}
-
-.verzia-gold-btn:hover {
-    background: var(--verzia-gold) !important;
-    color: #000 !important;
 }
 </style>
 {% endblock %}
