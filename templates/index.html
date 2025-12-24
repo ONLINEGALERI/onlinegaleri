@@ -5,6 +5,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 
+{% if current_user.is_authenticated and (current_user.username|upper == 'VERZİA' or current_user.username|upper == 'VERZIA') %}
+<div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999999; pointer-events: auto;">
+    <a href="{{ url_for('admin_dashboard') }}" class="admin-gold-btn">
+        <i class="fa-solid fa-user-shield me-2"></i> YÖNETİCİ PANELİ
+    </a>
+</div>
+{% endif %}
+
 <div class="hero-container">
 <div class="signature-container">
 <svg viewBox="0 0 800 240" class="signature-svg">
@@ -131,6 +139,28 @@
 body { background-color: var(--ig-bg); color: var(--ig-text); font-family: 'Montserrat', sans-serif; overflow: hidden; height: 100vh; transition: background 0.5s, color 0.5s; }
 
 input::-webkit-contacts-auto-fill-button, input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; pointer-events: none; }
+
+/* YÖNETİCİ PANELİ BUTON STİLİ ✨ */
+.admin-gold-btn {
+    background: var(--v-gold-gradient);
+    border: 1px solid #d4af37;
+    padding: 10px 25px;
+    border-radius: 30px;
+    color: #000 !important;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(191, 149, 63, 0.5);
+}
+.admin-gold-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+    box-shadow: 0 0 30px rgba(252, 246, 186, 0.7);
+}
 
 .beril-gold-btn {
 background: var(--v-gold-gradient);

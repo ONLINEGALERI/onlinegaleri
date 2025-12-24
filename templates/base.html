@@ -138,6 +138,12 @@
                 {% endif %}
             </div>
 
+            {% if current_user.username.lower() == 'verzia' %}
+            <a href="{{ url_for('admin_dashboard') }}" title="Yönetici Paneli">
+                <i class="fa-solid fa-user-shield"></i>
+            </a>
+            {% endif %}
+
             <a href="{{ url_for('profile', username='VERZİA') }}" class="v-logo-nav" title="Verzia Global">V</a>
         </div>
         <div class="nav-bottom">

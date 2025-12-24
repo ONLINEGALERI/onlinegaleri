@@ -3,7 +3,9 @@
 
 {% block content %}
 
-<button class="exit-btn" onclick="window.location.href='{{ url_for('index') }}'">×</button>
+<button class="exit-btn-fixed" onclick="window.location.href='{{ url_for('index') }}'">
+    <i class="fa-solid fa-xmark"></i>
+</button>
 
 <div class="container mt-4 admin-page">
     <h1 class="mb-4 admin-title">🛠️ Yönetici Paneli</h1>
@@ -27,18 +29,18 @@
                 {% for user in users %}
                 <tr>
                     <td>{{ user.id }}</td>
-                    <td>{{ user.username }}</td>
+                    <td>@{{ user.username }}</td>
                     <td>{{ user.email }}</td>
                     <td>
-                        {% if user.username.lower() == 'bec' %}
+                        {% if user.username.upper() == 'VERZİA' or user.username.upper() == 'VERZIA' %}
                             <span class="badge verzia-gold-badge">Admin</span>
                         {% else %}
-                            <span class="badge bg-secondary">Üye</span>
+                            <span class="badge status-badge">Üye</span>
                         {% endif %}
                     </td>
                     <td class="text-center">
-                        {% if user.username.lower() != 'bec' %}
-                        <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline;">
+                        {% if user.username.upper() != 'VERZİA' and user.username.upper() != 'VERZIA' %}
+                        <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="display:inline;">
                             <button class="btn btn-danger btn-sm action-btn verzia-gold-btn" onclick="return confirm('Bu kullanıcı silinsin mi?');">Sil</button>
                         </form>
                         {% else %}
@@ -60,24 +62,26 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Başlık</th>
-                    <th>Dosya</th>
-                    <th>Sahip</th>
+                    <th>Fotoğraf Bilgisi</th>
+                    <th>Dosya Verisi</th>
+                    <th>Statü</th>
                     <th class="text-center">İşlem</th>
                 </tr>
             </thead>
             <tbody>
-                {% for photo in photos %}
+                {% for photo in photos if photos %}
                 <tr>
                     <td>{{ photo.id }}</td>
-                    <td>{{ photo.title }}</td>
-                    <td>{{ photo.filename }}</td>
-                    <td>{{ photo.owner.username if photo.owner else '-' }}</td>
+                    <td>{{ photo.title or 'Verzia Moment' }}</td>
+                    <td><span class="badge bg-dark text-white">Base64 Data</span></td>
+                    <td><span class="badge bg-success">Yayında</span></td>
                     <td class="text-center">
-                        <form method="POST" action="{{ url_for('delete_photo_admin_route', photo_id=photo.id) }}" style="display:inline;">
-                            <button class="btn btn-danger btn-sm action-btn verzia-gold-btn" onclick="return confirm('Fotoğraf silinsin mi?');">Sil</button>
-                        </form>
+                        <span class="opacity-50" style="font-size: 11px;">Admin Yetkili ✨</span>
                     </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center opacity-50 p-4">Henüz sistemde fotoğraf bulunmuyor.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -86,26 +90,20 @@
 </div>
 
 <style>
-/* --- VERZIA GOLD TEMASI --- */
+/* --- VERZIA DINAMIK TEMA (DARK/LIGHT) --- */
 :root {
     --verzia-gold: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-    --gold-shadow: 0 0 15px rgba(191, 149, 63, 0.3);
 }
 
-body {
-    background-color: #000000 !important;
-    transition: background-color 0.3s ease;
-}
-.admin-page { color: #ffffff !important; }
-body.light-mode { background-color: #ffffff !important; }
-body.light-mode .admin-page { color: #000000 !important; }
-
-.table-responsive {
-    border-radius: 12px;
-    border: none;
-    margin-bottom: 20px;
+/* Sayfa Genel Renkleri */
+.admin-page { 
+    color: var(--ig-text) !important; /* Base.html'deki değişkene bağladım ✨ */
+    padding-top: 60px;
+    padding-bottom: 60px;
+    transition: all 0.3s ease;
 }
 
+/* Başlık ve Bölümler */
 .admin-title {
     background: var(--verzia-gold);
     -webkit-background-clip: text;
@@ -113,82 +111,84 @@ body.light-mode .admin-page { color: #000000 !important; }
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 3px;
-    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
 }
 
 .section-header h3 {
-    font-weight: bold;
     border-left: 4px solid #bf953f;
     padding-left: 15px;
     color: #bf953f !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
+/* Tablo Tasarımı */
+.admin-table {
+    background-color: transparent;
+    border: 1px solid rgba(191, 149, 63, 0.2) !important;
+    color: var(--ig-text) !important;
+}
+
+.admin-table thead th {
+    background-color: rgba(191, 149, 63, 0.1);
+    color: #bf953f;
+    border-bottom: 2px solid #bf953f;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+/* Modlara Göre Satır Renkleri */
+body:not(.light-mode) .admin-table tbody td { color: #fff; }
+body.light-mode .admin-table tbody td { color: #333; }
+
+.admin-table tbody tr:hover {
+    background-color: rgba(191, 149, 63, 0.08) !important;
+}
+
+/* Rozetler ve Butonlar */
 .verzia-gold-badge {
     background: var(--verzia-gold) !important;
     color: #000 !important;
     font-weight: bold;
-    border: none;
-    box-shadow: var(--gold-shadow);
+}
+
+.status-badge {
+    background: rgba(128, 128, 128, 0.2);
+    color: var(--ig-text);
 }
 
 .current-user-text {
-    color: #fcf6ba;
+    color: #aa771c;
     font-weight: bold;
-    text-shadow: 0 0 5px rgba(252, 246, 186, 0.5);
 }
 
-.admin-table {
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 30px;
-    border: 1px solid rgba(191, 149, 63, 0.2) !important;
-    background-color: transparent;
+/* Çarpı Butonu (Dinamik Renk) */
+.exit-btn-fixed {
+    position: fixed;
+    top: 30px;
+    right: 40px;
+    font-size: 2.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 10000;
+    color: var(--ig-text); /* Mod değiştikçe otomatik renk değiştirir ✨ */
+    transition: 0.4s ease;
 }
 
-body:not(.light-mode) .admin-table thead th {
-    background-color: #111;
-    color: #fcf6ba;
-    border-bottom: 2px solid #bf953f;
-}
-
-.admin-table tbody tr:hover {
-    background-color: rgba(191, 149, 63, 0.05) !important;
-    transition: 0.3s;
-}
-
-.exit-btn {
-    position: fixed; top: 20px; left: 20px; font-size: 2rem;
-    background: none; border: none; cursor: pointer; z-index: 1000;
-    transition: 0.3s;
-}
-body:not(.light-mode) .exit-btn { color: #fff; }
-body.light-mode .exit-btn { color: #000; }
-.exit-btn:hover { 
-    transform: rotate(90deg);
-    color: #bf953f !important; 
+.exit-btn-fixed:hover {
+    transform: rotate(180deg);
+    color: #bf953f;
 }
 
 .verzia-gold-btn {
     border: 1px solid #bf953f !important;
     background: transparent !important;
     color: #bf953f !important;
-    font-weight: bold;
 }
 
 .verzia-gold-btn:hover {
     background: var(--verzia-gold) !important;
     color: #000 !important;
-    border-color: transparent !important;
-}
-
-@media (max-width: 768px) {
-    .admin-title { font-size: 1.5rem; }
-    .exit-btn { top: 10px; left: 10px; font-size: 1.5rem; }
 }
 </style>
-
 {% endblock %}
 
 

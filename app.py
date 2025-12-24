@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config.from_object('config.Config')
 app.secret_key = os.environ.get("SECRET_KEY", "verzia-special-2025")
 
-# --------------------- DATABASE AYARI ---------------------
+# --------------------- DATABASE AYARI (RAILWAY UYUMLU) ---------------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
@@ -29,6 +29,7 @@ login_manager.init_app(app)
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
+# --------------------- BİLDİRİM SİSTEMİ ENJEKSİYONU ---------------------
 @app.context_processor
 def inject_notifications():
     if current_user.is_authenticated:
@@ -96,7 +97,7 @@ def update_bio():
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
-# --------------------- TAKİP SİSTEMİ (BOZUK OLAN KISIM MÜHÜRLENDİ ✨) ---------------------
+# --------------------- TAKİP SİSTEMİ ---------------------
 @app.route("/follow/<username>", methods=['POST'])
 @login_required
 def toggle_follow(username):
@@ -110,7 +111,6 @@ def toggle_follow(username):
     else:
         current_user.follow(user_to_follow)
         status = "followed"
-        # Takip bildirimi mühürlendi
         notif = Notification(
             user_id=user_to_follow.id,
             sender_username=current_user.username,
@@ -123,25 +123,21 @@ def toggle_follow(username):
     db.session.commit()
     return jsonify({"status": status, "follower_count": user_to_follow.followers_list.count()})
 
+# --------------------- ARAMA VE LİSTELEME ---------------------
 @app.route("/get_user_list/<username>/<type>")
 @login_required
 def get_user_list(username, type):
     user = User.query.filter_by(username=username).first_or_404()
-    # Kurucu profilleri takipçi listesi koruması
     if user.username.lower() in ["beril", "ecem", "cemre", "verzia"] and type == 'followers':
         return jsonify([])
-    
     users = user.followers_list.all() if type == 'followers' else user.followed.all()
     return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
 
-# --------------------- ARAMA SİSTEMİ (BOZUK OLAN KISIM MÜHÜRLENDİ ✨) ---------------------
 @app.route("/search_users")
 @login_required
 def search_users():
     q = request.args.get("q", "").strip()
-    if not q:
-        return jsonify([])
-    # Kullanıcı adı içinde geçenleri pırlanta gibi arıyoruz
+    if not q: return jsonify([])
     users = User.query.filter(User.username.ilike(f"%{q}%")).limit(10).all()
     return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
 
@@ -173,7 +169,37 @@ def add_comment(photo_id):
         db.session.rollback()
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-# --------------------- BİLDİRİM VE AYARLAR ---------------------
+# --------------------- ADMIN / YÖNETİCİ PANELİ (KESİN ÇÖZÜM ✨) ---------------------
+@app.route("/admin/dashboard")
+@login_required
+def admin_dashboard():
+    # Karakter uyuşmazlığını önleyen asalet kilidi
+    current_username = current_user.username.replace('İ', 'i').replace('I', 'ı').lower()
+    if "verzia" not in current_username:
+        flash("Yetkisiz erişim!", "error")
+        return redirect(url_for("profile", username=current_user.username))
+    
+    try:
+        all_users = User.query.order_by(User.id.desc()).all()
+        all_photos = Photo.query.order_by(Photo.id.desc()).all()
+        return render_template("admin.html", users=all_users, photos=all_photos)
+    except Exception as e:
+        print(f"Admin Hatası: {e}")
+        return redirect(url_for("profile", username=current_user.username))
+
+@app.route("/admin/delete_user/<int:user_id>", methods=['POST'])
+@login_required
+def admin_delete_user(user_id):
+    if "verzia" not in current_user.username.lower():
+        return jsonify({"status": "error"}), 403
+    user_to_delete = User.query.get_or_404(user_id)
+    if user_to_delete.username.lower() == "verzia":
+        return jsonify({"status": "error", "message": "Kurucu silinemez!"}), 400
+    db.session.delete(user_to_delete)
+    db.session.commit()
+    return jsonify({"status": "success"})
+
+# --------------------- DİĞER ROTALAR ---------------------
 @app.route("/notifications")
 @login_required
 def get_notifications():
@@ -195,10 +221,7 @@ def settings():
         if request.form.get("password"): current_user.set_password(request.form.get("password"))
         db.session.commit()
         return redirect(url_for("profile", username=current_user.username))
-    try:
-        return render_template("settings.html", user=current_user)
-    except:
-        return redirect(url_for("profile", username=current_user.username))
+    return render_template("settings.html", user=current_user)
 
 @app.route("/logout")
 def logout():
