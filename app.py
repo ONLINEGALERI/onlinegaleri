@@ -97,7 +97,18 @@ def update_bio():
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
-# --------------------- TAKİP SİSTEMİ ---------------------
+@app.route("/update_avatar", methods=["POST"])
+@login_required
+def update_avatar():
+    file = request.files.get('avatar')
+    if file:
+        img_data = base64.b64encode(file.read()).decode('utf-8')
+        current_user.avatar = f"data:{file.mimetype};base64,{img_data}"
+        db.session.commit()
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 400
+
+# --------------------- TAKİP SİSTEMİ (MÜHÜRLENDİ ✨) ---------------------
 @app.route("/follow/<username>", methods=['POST'])
 @login_required
 def toggle_follow(username):
@@ -114,6 +125,17 @@ def toggle_follow(username):
         db.session.add(notif)
     db.session.commit()
     return jsonify({"status": status, "follower_count": user_to_follow.followers_list.count()})
+
+@app.route("/get_user_list/<username>/<type>")
+@login_required
+def get_user_list(username, type):
+    user = User.query.filter_by(username=username).first_or_404()
+    users = []
+    if type == 'followers':
+        users = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in user.followers_list.all()]
+    else:
+        users = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in user.followed.all()]
+    return jsonify(users)
 
 # --------------------- ETKİLEŞİM (BEĞENİ & YORUM) ---------------------
 @app.route('/like/<int:photo_id>', methods=['POST'])
@@ -146,7 +168,7 @@ def add_comment(photo_id):
         if photo.owner_id != current_user.id:
             db.session.add(Notification(user_id=photo.owner_id, sender_username=current_user.username, notif_type="comment", message=f"@{current_user.username} fotoğrafına yorum yaptı.", is_read=False))
         db.session.commit()
-        return jsonify({'status': 'success', 'username': current_user.username, 'text': comment_body})
+        return jsonify({'status': 'success'})
     except Exception as e:
         db.session.rollback()
         return jsonify({'status': 'error'}), 500
@@ -173,11 +195,10 @@ def delete_comment(comment_id):
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 403
 
-# --------------------- BİLDİRİM PANELİ ROTALARI (GÜNCELLENDİ ✨) ---------------------
+# --------------------- BİLDİRİM PANELİ ROTALARI ---------------------
 @app.route("/notifications")
 @login_required
 def get_notifications():
-    # En yeni 20 bildirim çekiliyor ve kullanıcı linkleri için sender verisi işleniyor
     notifications = current_user.notifications.order_by(Notification.id.desc()).limit(20).all()
     data = []
     for n in notifications:
@@ -186,15 +207,13 @@ def get_notifications():
             "sender": n.sender_username,
             "message": n.message,
             "type": n.notif_type,
-            "timestamp": n.timestamp.strftime("%d.%m %H:%M"),
-            "is_read": n.is_read
+            "timestamp": n.timestamp.strftime("%d.%m %H:%M")
         })
-    # Bildirimler görüntülendiğinde hepsini okundu yap
     current_user.notifications.filter_by(is_read=False).update({"is_read": True})
     db.session.commit()
     return jsonify(data)
 
-@app.route("/delete_notification/<int:notif_id>", methods=['POST']) # Bildirimi imparatorluktan silme kapısı
+@app.route("/delete_notification/<int:notif_id>", methods=['POST'])
 @login_required
 def delete_notification(notif_id):
     notif = Notification.query.get_or_404(notif_id)
@@ -204,7 +223,7 @@ def delete_notification(notif_id):
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 403
 
-# --------------------- ADMIN & AYARLAR ---------------------
+# --------------------- ADMIN & ARAMA ---------------------
 @app.route("/admin/dashboard")
 @login_required
 def admin_dashboard():
@@ -225,24 +244,22 @@ def admin_delete_user(user_id):
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
-@app.route("/settings", methods=["GET", "POST"])
+@app.route("/search_users")
 @login_required
-def settings():
-    if request.method == "POST":
-        if request.form.get("username"): current_user.username = request.form.get("username")
-        if request.form.get("password"): current_user.set_password(request.form.get("password"))
-        db.session.commit()
-        return redirect(url_for("profile", username=current_user.username))
-    return render_template("settings.html", user=current_user)
+def search_users():
+    q = request.args.get("q", "").strip()
+    if not q: return jsonify([])
+    users = User.query.filter(User.username.ilike(f"%{q}%")).limit(10).all()
+    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
 
-# --------------------- FOTOĞRAF İŞLEMLERİ ---------------------
+# --------------------- FOTOĞRAF VE AYARLAR ---------------------
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
     file = request.files.get('photo')
     if file:
         img_data = base64.b64encode(file.read()).decode('utf-8')
-        new_photo = Photo(filename=f"data:{file.mimetype};base64,{img_data}", owner_id=current_user.id, title="Verzia Moment")
+        new_photo = Photo(filename=f"data:{file.mimetype};base64,{img_data}", owner_id=current_user.id)
         db.session.add(new_photo)
         db.session.commit()
     return redirect(url_for("profile", username=current_user.username))
@@ -255,6 +272,16 @@ def delete_photo(photo_id):
     db.session.delete(photo)
     db.session.commit()
     return jsonify({"status": "success"})
+
+@app.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings():
+    if request.method == "POST":
+        if request.form.get("username"): current_user.username = request.form.get("username")
+        if request.form.get("password"): current_user.set_password(request.form.get("password"))
+        db.session.commit()
+        return redirect(url_for("profile", username=current_user.username))
+    return render_template("settings.html", user=current_user)
 
 @app.route("/logout")
 def logout():
