@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+/* --- AYARLAR SAYFASI ÖZEL TASARIMI --- */
+.settings-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 50px;
+    padding-left: 70px;
+    background-color: #000;
+}
+
+.settings-card {
+    width: 100%;
+    max-width: 500px;
+    background: #000;
+    border: 1px solid #d4af37;
+    padding: 40px;
+    border-radius: 12px;
+    position: relative;
+}
+
+.settings-title {
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+    font-size: 22px;
+    margin-bottom: 35px;
+    text-align: center;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: #bf953f;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.input-container {
+    position: relative;
+    width: 100%;
+}
+
+.settings-input {
+    width: 100%;
+    padding: 14px 15px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    transition: 0.3s;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.settings-input:focus {
+    border-color: #d4af37;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #bf953f;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 5px;
+    z-index: 10;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+    color: #000;
+    border: none;
+    padding: 16px;
+    width: 100%;
+    font-weight: 800;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 15px;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 25px;
+    color: rgba(212, 175, 55, 0.6);
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: 0.3s;
+}
+
+.back-link:hover {
+    color: #d4af37;
+}
+
+/* Sol Bar */
+.side-nav {
+    width: 70px; background-color: #000; border-right: 1px solid #262626;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 25px 0; position: fixed; height: 100vh; left: 0; top: 0; z-index: 999;
+    justify-content: space-between;
+}
+.nav-top, .nav-bottom { display: flex; flex-direction: column; align-items: center; gap: 35px; }
+.side-nav i, .side-nav a { 
+    font-size: 24px; cursor: pointer; transition: 0.3s; text-decoration: none;
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;
+}
+</style>
+
+<aside class="side-nav">
+    <div class="nav-top">
+        <a href="{{ url_for('index') }}" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
+        <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle"></i></a>
+    </div>
+    <div class="nav-bottom">
+        <a href="{{ url_for('settings') }}" title="Ayarlar"><i class="fa-solid fa-gear active" style="filter: drop-shadow(0 0 8px rgba(252, 246, 186, 0.5));"></i></a>
+        <a href="{{ url_for('logout') }}" title="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></a>
+    </div>
+</aside>
+
+<div class="settings-wrapper">
+    <div class="settings-card">
+        <h2 class="settings-title">Hesap Ayarları</h2>
+
+        <form action="{{ url_for('settings') }}" method="POST" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label>Kullanıcı Adı</label>
+                <div class="input-container">
+                    <input type="text" name="username" class="settings-input" value="{{ current_user.username }}" placeholder="Kullanıcı Adı">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Yeni Şifre</label>
+                <div class="input-container">
+                    <input type="password" name="password" id="settings-pass" class="settings-input" placeholder="••••••••">
+                    <i class="far fa-eye toggle-password" onclick="toggleSettingsPass('settings-pass', this)"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Yeni Şifreyi Onayla</label>
+                <div class="input-container">
+                    <input type="password" id="settings-pass-confirm" class="settings-input" placeholder="••••••••">
+                    <i class="far fa-eye toggle-password" onclick="toggleSettingsPass('settings-pass-confirm', this)"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="save-btn">GÜNCELLEMELERİ KAYDET</button>
+        </form>
+
+        <a href="{{ url_for('profile', username=current_user.username) }}" class="back-link">← Profilime Geri Dön</a>
+    </div>
+</div>
+
+<script>
+function toggleSettingsPass(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = "password";
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+function validateForm() {
+    const pass = document.getElementById('settings-pass').value;
+    const confirmPass = document.getElementById('settings-pass-confirm').value;
+
+    if (pass !== confirmPass) {
+        alert("Şifreler birbiriyle eşleşmiyor aşkım, kontrol eder misin?");
+        return false;
+    }
+    return true;
+}
+</script>
+{% endblock %}

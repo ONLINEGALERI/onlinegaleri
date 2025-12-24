@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, flash
 from flask_login import login_user, logout_user, current_user, login_required
 import os
 from werkzeug.utils import secure_filename
@@ -36,7 +36,6 @@ def load_user(user_id):
 # --------------------- ANA SAYFA VE AUTH (DÜZENLENDİ) ---------------------
 @app.route("/")
 def index():
-    # Giriş yapmış olsa bile anasayfayı (index.html) görmesini sağlıyoruz
     return render_template("index.html")
 
 @app.route("/login", methods=["POST"])
@@ -92,6 +91,33 @@ def update_bio():
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
+# --------------------- AYARLAR (YENİ EKLEME) ---------------------
+@app.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings():
+    if request.method == "POST":
+        user = User.query.get(current_user.id)
+        new_username = request.form.get("username")
+        new_password = request.form.get("password")
+
+        if new_username:
+            # Kullanıcı adı müsait mi kontrolü
+            existing_user = User.query.filter_by(username=new_username).first()
+            if existing_user and existing_user.id != user.id:
+                flash("Bu kullanıcı adı zaten alınmış!", "error")
+            else:
+                user.username = new_username
+        
+        if new_password:
+            user.set_password(new_password)
+            
+        db.session.commit()
+        flash("Değişiklikler başarıyla kaydedildi.", "success")
+        return redirect(url_for("profile", username=user.username))
+        
+    return render_template("settings.html")
+
+# --------------------- UPLOAD ---------------------
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():

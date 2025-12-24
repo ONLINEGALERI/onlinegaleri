@@ -45,16 +45,32 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     border: 1px dashed #d4af37; border-radius: 12px; background: rgba(212, 175, 55, 0.03);
 }
 
-/* SOL BAR TASARIMI (GRADIENT GOLD) */
+/* SOL BAR TASARIMI (GRADIENT GOLD) - DÜZENLENDİ */
 .side-nav {
-    width: 60px; background-color: #000; border-right: 1px solid #262626;
-    display: flex; flex-direction: column; align-items: center;
-    padding-top: 25px; position: fixed; height: 100vh; left: 0; top: 0; z-index: 999;
+    width: 70px; /* Biraz daha genişlettik ferah durması için */
+    background-color: #000; 
+    border-right: 1px solid #262626;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    padding: 25px 0; 
+    position: fixed; 
+    height: 100vh; 
+    left: 0; 
+    top: 0; 
+    z-index: 999;
+    justify-content: space-between; /* Üst ve alt grupları ayırır */
+}
+
+.nav-top, .nav-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 35px; /* Butonlar arası eşit mesafe */
 }
 
 .side-nav i, .side-nav a { 
-    font-size: 22px; 
-    margin-bottom: 35px; 
+    font-size: 24px; 
     cursor: pointer; 
     transition: 0.3s; 
     text-decoration: none;
@@ -77,14 +93,19 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 </style>
 
 <aside class="side-nav">
-    <a href="{{ url_for('index') }}" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
-    <i class="fa-solid fa-magnifying-glass" onclick="openSearchModal()" title="Kullanıcı Ara"></i>
-    <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle active"></i></a>
-    <a href="{{ url_for('logout') }}" title="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></a>
+    <div class="nav-top">
+        <a href="{{ url_for('index') }}" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
+        <i class="fa-solid fa-magnifying-glass" onclick="openSearchModal()" title="Kullanıcı Ara"></i>
+        <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle active"></i></a>
+    </div>
+
+    <div class="nav-bottom">
+        <a href="{{ url_for('settings') }}" title="Ayarlar"><i class="fa-solid fa-gear"></i></a>
+        <a href="{{ url_for('logout') }}" title="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></a>
+    </div>
 </aside>
 
-<div class="ig-container" style="padding-left: 80px;"> 
-    <header class="ig-header">
+<div class="ig-container" style="padding-left: 90px;"> <header class="ig-header">
         <div class="ig-avatar-area">
             <div class="avatar-wrapper" {% if can_edit %}onclick="document.getElementById('avatarInput').click()"{% endif %}>
                 <img class="profile-avatar" id="avatarPreview" src="{{ server_profile.avatar }}" alt="avatar">
