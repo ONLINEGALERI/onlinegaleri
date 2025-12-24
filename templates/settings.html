@@ -30,19 +30,19 @@
     -webkit-text-fill-color: transparent;
     font-weight: bold;
     font-size: 22px;
-    margin-bottom: 35px;
+    margin-bottom: 30px; /* Başlık alt boşluğu sabitlendi */
     text-align: center;
     letter-spacing: 2px;
     text-transform: uppercase;
 }
 
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 20px; /* Tüm alanlar arası boşluk eşitlendi */
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     color: #bf953f;
     font-size: 0.85rem;
     font-weight: 600;
@@ -56,7 +56,7 @@
 
 .settings-input {
     width: 100%;
-    padding: 14px 15px;
+    padding: 12px 15px;
     background: #111;
     border: 1px solid #333;
     border-radius: 8px;
@@ -86,13 +86,13 @@
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
     color: #000;
     border: none;
-    padding: 16px;
+    padding: 15px;
     width: 100%;
     font-weight: 800;
     border-radius: 8px;
     cursor: pointer;
     transition: 0.3s;
-    margin-top: 15px;
+    margin-top: 10px; /* Buton üst boşluğu ayarlandı */
     font-size: 0.95rem;
     letter-spacing: 1px;
 }
@@ -146,11 +146,27 @@
     <div class="settings-card">
         <h2 class="settings-title">Hesap Ayarları</h2>
 
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div style="color: #d4af37; text-align: center; margin-bottom: 15px; font-size: 0.85rem;">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
         <form action="{{ url_for('settings') }}" method="POST" onsubmit="return validateForm()">
             <div class="form-group">
                 <label>Kullanıcı Adı</label>
                 <div class="input-container">
                     <input type="text" name="username" class="settings-input" value="{{ current_user.username }}" placeholder="Kullanıcı Adı">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Mevcut Şifre</label>
+                <div class="input-container">
+                    <input type="password" name="current_password" id="current-pass" class="settings-input" placeholder="••••••••" required>
+                    <i class="far fa-eye toggle-password" onclick="toggleSettingsPass('current-pass', this)"></i>
                 </div>
             </div>
 
@@ -190,11 +206,11 @@ function toggleSettingsPass(inputId, icon) {
 }
 
 function validateForm() {
-    const pass = document.getElementById('settings-pass').value;
+    const newPass = document.getElementById('settings-pass').value;
     const confirmPass = document.getElementById('settings-pass-confirm').value;
 
-    if (pass !== confirmPass) {
-        alert("Şifreler birbiriyle eşleşmiyor aşkım, kontrol eder misin?");
+    if (newPass !== "" && newPass !== confirmPass) {
+        alert("Yeni şifreler birbiriyle eşleşmiyor aşkım, kontrol eder misin?");
         return false;
     }
     return true;

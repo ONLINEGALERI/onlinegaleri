@@ -99,22 +99,30 @@ def update_bio():
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
-# --------------------- AYARLAR ---------------------
+# --------------------- AYARLAR (GÜNCELLENDİ: ŞİFRE DOĞRULAMA) ---------------------
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
     if request.method == "POST":
         user = User.query.get(current_user.id)
+        current_password = request.form.get("current_password") # HTML'den gelen mevcut şifre
         new_username = request.form.get("username")
         new_password = request.form.get("password")
 
-        if new_username:
+        # GÜVENLİK: Önce mevcut şifreyi kontrol et
+        if not current_password or not user.check_password(current_password):
+            flash("Mevcut şifren hatalı aşkım, kontrol eder misin?", "error")
+            return redirect(url_for("settings"))
+
+        # Kullanıcı adı müsait mi kontrolü
+        if new_username and new_username != user.username:
             existing_user = User.query.filter_by(username=new_username).first()
             if existing_user and existing_user.id != user.id:
                 flash("Bu kullanıcı adı zaten alınmış!", "error")
             else:
                 user.username = new_username
         
+        # Yeni şifre girildiyse güncelle
         if new_password:
             user.set_password(new_password)
             
@@ -182,19 +190,17 @@ def search_users():
     results = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users]
     return jsonify(results)
 
-# --------------------- LİSTE GETİRME (YENİ EKLENEN) ---------------------
+# --------------------- LİSTE GETİRME ---------------------
 @app.route("/get_user_list/<username>/<type>")
 @login_required
 def get_user_list(username, type):
     user = User.query.filter_by(username=username).first_or_404()
     if type == 'followers':
-        # Kurucu kontrolü: Eğer kurucuysa listeyi boş döndür (Gizlilik için)
         kurucular = ["beril", "ecem", "cemre"]
         if user.username.lower() in kurucular:
             return jsonify([])
         users = user.followers_list.all()
     else:
-        # Takip edilenler her zaman görünebilir
         users = user.followed.all()
         
     results = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users]
