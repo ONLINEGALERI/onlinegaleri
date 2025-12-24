@@ -12,7 +12,7 @@
     font-family: 'Montserrat', sans-serif; 
 }
 .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; }
-.ig-avatar-area { flex: 1; display: flex; justify-content: center; position: relative; }
+.ig-avatar-area { flex: 1; display: flex; justify(center); position: relative; }
 .avatar-wrapper { position: relative; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .avatar-wrapper:hover { transform: scale(1.05); }
 .profile-avatar { width: 150px !important; height: 150px !important; border-radius: 50% !important; object-fit: cover; border: 1px solid var(--ig-border); padding: 5px; background-color: var(--ig-bg); }
@@ -84,30 +84,10 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     gap: 35px !important; 
 }
 
-/* BİLDİRİM ZİLİ */
-.notif-wrapper { position: relative; cursor: pointer; }
-.notif-badge {
-    position: absolute; top: -5px; right: -5px;
-    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728); color: #000;
-    font-size: 10px; font-weight: bold; border-radius: 50%;
-    width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
-    border: 1px solid #000;
-}
-.shake-active { animation: bellShake 1.5s infinite; }
-@keyframes bellShake {
-    0%, 100% { transform: rotate(0); }
-    10, 30, 50, 70, 90% { transform: rotate(10deg); }
-    20, 40, 60, 80% { transform: rotate(-10deg); }
-}
-
-/* MODAL AYARLARI */
-.v-modal-content { background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important; color: var(--ig-text) !important; border-radius: 12px; }
-.btn-close-left { background: none; border: none; color: #bf953f; font-size: 24px; cursor: pointer; padding: 0; margin-right: 15px; line-height: 1; }
-
-.notif-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 15px 20px; border-bottom: 1px solid var(--ig-border);
-}
+/* MODAL GÜNCELLEMELERİ */
+.v-modal-content { background-color: #000 !important; border: 1px solid #d4af37 !important; color: var(--ig-text) !important; border-radius: 12px; }
+.btn-close-left { background: none; border: none; color: #bf953f; font-size: 24px; cursor: pointer; padding: 0; margin-right: 15px; }
+.notif-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid #262626; }
 
 #avatarInput, #photoUploadInput { display: none; }
 </style>
@@ -219,6 +199,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 </div>
 
 <script>
+// BİLDİRİM FONKSİYONLARI - KESİN ÇÖZÜM
 async function openNotifModal() {
     const container = document.getElementById('notifContainer');
     const bell = document.getElementById('notifBell');
@@ -232,12 +213,13 @@ async function openNotifModal() {
         const data = await response.json();
         
         if (data.length === 0) {
-            container.innerHTML = '<p class="text-center p-4 opacity-50">Bildirim yok.</p>';
+            container.innerHTML = '<p class="text-center p-4 opacity-50">Henüz bildirim yok.</p>';
         } else {
             container.innerHTML = data.map(n => `
                 <div class="notif-item" id="notif-${n.id}">
-                    <div style="flex: 1; padding-right: 10px;">
-                        <strong style="color: #bf953f;">@${n.sender}</strong> ${n.message.split(n.sender)[1] || n.message}
+                    <div style="flex: 1; padding-right: 15px;">
+                        <a href="/profile/${n.sender}" style="color: #bf953f; font-weight: bold; text-decoration: none;">@${n.sender}</a> 
+                        <span style="color: #f5f5f5;">${n.message.split(n.sender)[1] || n.message}</span>
                         <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 4px;">${n.timestamp}</div>
                     </div>
                     <button onclick="deleteNotif(${n.id})" style="background:none; border:none; cursor:pointer; color:#bf953f; display:flex; align-items:center;">
