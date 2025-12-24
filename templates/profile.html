@@ -98,7 +98,15 @@ input[type="file"] { display: none !important; }
                 </li>
             </ul>
             
-            <div class="ig-bio"><p class="mt-1" style="white-space: pre-wrap;">{{ server_profile.bio }}</p></div>
+            <div class="ig-bio">
+                <p class="mt-1" style="white-space: pre-wrap; font-family: 'Montserrat', sans-serif; line-height: 1.6;">
+                    {% if server_profile.username.lower() in ["beril", "ecem", "cemre", "verzia"] %}
+                        Sıradanlığın ötesinde, ışığın ve estetiğin en asil buluşma noktası. Verzia; derin bir asaletin altının büyüleyici parıltısıyla harmanlandığı, dijital dünyanın pırlanta dokunuşlu sergi salonudur. Burada her kare zarafetle mühürlenir, her detay ihtişamla nefes alır. Sadece en özel anılarınızı değil, ruhunuzun ışıltısını da bu altın standartlarda ölümsüzleştirin.
+                    {% else %}
+                        {{ server_profile.bio }}
+                    {% endif %}
+                </p>
+            </div>
         </div>
     </header>
 
@@ -266,22 +274,16 @@ async function toggleLike() {
     document.getElementById('likeIcon').className = data.status === 'liked' ? 'fa-solid fa-heart verzia-gold-text' : 'fa-regular fa-heart verzia-gold-text';
 }
 
-// PROFİL FOTOĞRAFI GÜNCELLEME VE VERİTABANINA MÜHÜRLEME
 async function previewImage(event) {
     const file = event.target.files[0];
     if (!file) return;
-
-    // 1. Önce ekranda hemen gösterelim (Kullanıcı deneyimi için)
     const reader = new FileReader();
     reader.onload = function(){ 
         document.getElementById('avatarPreview').src = reader.result; 
     };
     reader.readAsDataURL(file);
-
-    // 2. Şimdi bu pırlantayı veritabanına mühürleyelim (Kalıcılık için)
     const formData = new FormData();
     formData.append('avatar', file);
-
     try {
         const res = await fetch('/update_avatar', {
             method: 'POST',
@@ -290,8 +292,6 @@ async function previewImage(event) {
         const data = await res.json();
         if (data.status === "success") {
             console.log("Profil fotoğrafı veritabanına mühürlendi! ✨");
-        } else {
-            console.error("Yükleme hatası:", data.message);
         }
     } catch(e) {
         console.error("Fetch hatası:", e);

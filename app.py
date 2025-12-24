@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config.from_object('config.Config')
 app.secret_key = os.environ.get("SECRET_KEY", "verzia-special-2025")
 
-# DATABASE AYARI
+# --------------------- DATABASE AYARI (RAILWAY UYUMLU) ---------------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
@@ -77,9 +77,12 @@ def profile(username):
     is_ana_profil = "verzia" in username_check
     is_kurucu = username_check in kurucular
     
+    # LUXURY BIO UPDATE - JİLET GİBİ EKLEDİM AŞKIM
+    luxury_bio = "Sıradanlığın ötesinde, ışığın ve estetiğin en asil buluşma noktası. Verzia; derin bir asaletin altının büyüleyici parıltısıyla harmanlandığı, dijital dünyanın pırlanta dokunuşlu sergi salonudur. Burada her kare zarafetle mühürlenir, her detay ihtişamla nefes alır. Sadece en özel anılarınızı değil, ruhunuzun ışıltısını da bu altın standartlarda ölümsüzleştirin."
+    
     profile_data = {
         "id": user_to_show.id, "username": user_to_show.username, "avatar": user_to_show.avatar or "https://picsum.photos/400", 
-        "bio": user_to_show.bio or "Verzia Experience", 
+        "bio": user_to_show.bio or luxury_bio, 
         "followers": "2M" if is_ana_profil else ("1.5M" if is_kurucu else user_to_show.followers_list.count()), 
         "following": user_to_show.followed.count(), 
         "is_vip": is_kurucu or is_ana_profil, "is_kurucu": is_kurucu or is_ana_profil
@@ -119,7 +122,7 @@ def update_avatar():
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 400
 
-# --------------------- BİLDİRİM ROTALARI (BASE.HTML UYUMLU) ---------------------
+# --------------------- BİLDİRİM ROTALARI (MÜHÜRLENDİ) ---------------------
 @app.route("/notifications")
 @login_required
 def get_notifications():
@@ -127,15 +130,13 @@ def get_notifications():
         notifications = current_user.notifications.order_by(Notification.id.desc()).limit(15).all()
         data = []
         for n in notifications:
-            # Base.html'deki JS n.sender ve n.timestamp bekliyor
             data.append({
                 "id": n.id,
-                "sender": n.sender_username if hasattr(n, 'sender_username') else "Sistem",
+                "sender": n.sender_username if hasattr(n, 'sender_username') else "Verzia",
                 "message": n.message,
                 "timestamp": n.timestamp.strftime("%d.%m %H:%M") if hasattr(n, 'timestamp') else "",
                 "is_read": n.is_read
             })
-        # Bildirimleri okundu olarak işaretleyelim
         current_user.notifications.filter_by(is_read=False).update({"is_read": True})
         db.session.commit()
         return jsonify(data)
@@ -215,7 +216,8 @@ def logout():
 
 if __name__ == "__main__":
     with app.app_context(): db.create_all()
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    # PORT ÇAKIŞMASINI ÖNLEMEK İÇİN 5001 YAPTIM AŞKIM
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5001)), debug=True)
 
 
 
