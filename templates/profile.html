@@ -2,11 +2,12 @@
 
 {% block content %}
 <style>
-    /* 1. ANA TASARIM VE HEADER */
+    /* ANA KONTEYNER VE HEADER */
     .ig-container { width: 100%; max-width: 935px; margin: 0 auto; padding: 30px 20px; color: var(--ig-text); font-family: 'Montserrat', sans-serif; }
     .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; }
     .ig-avatar-area { flex: 1; display: flex; justify-content: center; position: relative; }
     
+    /* PROFİL FOTOĞRAFI ETKİSİ */
     .avatar-wrapper { position: relative; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .avatar-wrapper:hover { transform: scale(1.05); }
     .profile-avatar { width: 150px !important; height: 150px !important; border-radius: 50% !important; object-fit: cover; border: 1px solid var(--ig-border); padding: 5px; background-color: var(--ig-bg); }
@@ -15,7 +16,7 @@
     .ig-user-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .profile-name { font-size: 28px; font-weight: 300; margin: 0; color: var(--ig-text); text-transform: uppercase; }
 
-    /* 2. VERZIA GOLD DETAYLAR */
+    /* VERZIA GOLD DETAYLAR */
     .verzia-gold-text {
         background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;
@@ -41,17 +42,17 @@
         padding: 5px 20px; border-radius: 5px; font-weight: 600; font-size: 14px; cursor: pointer; 
     }
 
-    /* 3. İSTATİSTİKLER VE BİYO */
+    /* İSTATİSTİKLER */
     .ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
-    .ig-stats li { font-size: 16px; color: var(--ig-text); cursor: pointer; }
+    .ig-stats li { font-size: 16px; color: var(--ig-text); }
     .ig-stats b { font-weight: 600; }
     .ig-bio { font-size: 16px; line-height: 1.5; color: var(--ig-text); }
     .bio-link { color: #d4af37; text-decoration: none; font-weight: 600; }
 
-    /* 4. GALERİ VE POSTLAR */
+    /* GALERİ VE POSTLAR */
     .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
     .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
-    .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+    .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; cursor: pointer; }
     
     .grid-item-overlay {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -71,14 +72,34 @@
         display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 10;
     }
 
-    /* 5. GOLD MODAL TASARIMI */
-    .v-modal-content { background: #000000 !important; border: 1px solid #d4af37 !important; color: #f5f5f5; border-radius: 12px; }
+    /* VERZIA GOLD MODAL TASARIMI */
+    .v-modal-content {
+        background: #000000 !important;
+        border: 1px solid #d4af37 !important;
+        color: #f5f5f5;
+        border-radius: 12px;
+    }
     .v-modal-header { border-bottom: 1px solid #262626; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
     .v-close-btn { color: #d4af37; font-size: 28px; cursor: pointer; background: none; border: none; line-height: 1; }
-    .user-list-item { display: flex; align-items: center; gap: 15px; padding: 12px 20px; border-bottom: 1px solid #1a1a1a; text-decoration: none !important; color: #f5f5f5 !important; }
+    .user-list-item {
+        display: flex; align-items: center; gap: 15px; padding: 12px 20px;
+        border-bottom: 1px solid #1a1a1a; text-decoration: none !important; color: #f5f5f5 !important;
+    }
     .user-list-item:hover { background: #1a1a1a; color: #d4af37 !important; }
     .user-list-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid #d4af37; }
 
+    /* LIGHTBOX (BÜYÜTME EKRANI) */
+    .v-lightbox {
+        display: none; position: fixed; z-index: 10001; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center;
+    }
+    .v-lightbox.active { display: flex; animation: fadeIn 0.3s ease; }
+    .v-lightbox-content { max-width: 90%; max-height: 85vh; border: 1px solid #d4af37; border-radius: 8px; }
+    .v-lightbox-close { position: absolute; top: 20px; right: 30px; color: #d4af37; font-size: 50px; cursor: pointer; }
+    
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* DOSYA INPUTLARINI GİZLİ TUTUYORUZ */
     #avatarInput, #photoUploadInput, #plusPhotoInput { display: none; }
 </style>
 
@@ -87,7 +108,7 @@
         <div class="ig-avatar-area">
             <div class="avatar-wrapper" {% if can_edit %}onclick="document.getElementById('avatarInput').click()"{% endif %}>
                 <img class="profile-avatar" id="avatarPreview" src="{{ server_profile.avatar }}" alt="avatar">
-                {% if can_edit %}<input type="file" id="avatarInput" accept="image/*" onchange="previewImage(event)">{% endif %}
+                {% if can_edit %}<input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="previewImage(event)">{% endif %}
             </div>
         </div>
         <div class="ig-info-area">
@@ -98,20 +119,20 @@
                 {% if can_edit %}
                     <button class="btn-ig-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">Profili Düzenle</button>
                 {% else %}
-                    <button id="followBtn" class="{{ 'btn-unfollow' if is_following else 'verzia-gold-btn' }}" 
-                            onclick="toggleFollow('{{ server_profile.username }}', this)">
-                        {{ 'Takibi Bırak' if is_following else 'Takip Et' }}
-                    </button>
+                    {% if is_following %}
+                        <button class="btn-unfollow" onclick="toggleFollow('{{ server_profile.username }}', this)">Takibi Bırak</button>
+                    {% else %}
+                        <button class="verzia-gold-btn" onclick="toggleFollow('{{ server_profile.username }}', this)">Takip Et</button>
+                    {% endif %}
                 {% endif %}
             </div>
             <ul class="ig-stats">
                 <li><b>{{ photos|length }}</b> gönderi</li>
-                <li onclick="showUserList('followers')">
+                <li onclick="showUserList('followers')" style="cursor:pointer">
                     <b id="followerCount">{% if server_profile.is_vip %}2.4M{% else %}{{ server_profile.followers|default(0) }}{% endif %}</b> takipçi
                 </li>
-                <li onclick="showUserList('following')">
-                    <b>{{ server_profile.following|default(0) }}</b> takip
-                </li>
+                <li onclick="showUserList('following')" style="cursor:pointer">
+                    <b>{{ server_profile.following|default(0) }}</b> takip</li>
             </ul>
             <div class="ig-bio">
                 <div id="profileBio">
@@ -130,8 +151,9 @@
             <button class="verzia-gold-btn btn-sm" onclick="document.getElementById('plusPhotoInput').click()">
                 <i class="fa-solid fa-plus"></i> Yeni Ekle
             </button>
-            <form id="plusUploadForm" action="#" method="POST" enctype="multipart/form-data" style="display:none;">
-                <input type="file" name="photo" id="plusPhotoInput" onchange="alert('Yükleme sistemi backend üzerinden aktif edilmeli!')">
+            <form id="plusUploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                <input type="file" name="photo" id="plusPhotoInput" onchange="this.form.submit()">
+                <input type="hidden" name="title" value="Profil Gönderisi">
             </form>
         {% endif %}
     </div>
@@ -140,13 +162,15 @@
         {% if photos %}
             {% for photo in photos %}
             <div class="grid-item">
-                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" alt="{{ photo.title }}">
+                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" alt="{{ photo.title }}" onclick="openLightbox(this.src)">
                 <div class="grid-item-overlay">
                     <span><i class="fa-solid fa-heart"></i> {{ photo.likes|length if photo.likes else 0 }}</span>
                     <span><i class="fa-solid fa-comment"></i> {{ photo.comments|length if photo.comments else 0 }}</span>
                 </div>
                 {% if can_edit %}
-                <button type="button" class="delete-btn" onclick="confirmDelete('{{ photo.id }}')">&times;</button>
+                <form action="{{ url_for('delete_photo_profile', photo_id=photo.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="delete-btn" onclick="return confirm('Silmek istediğine emin misin?')">&times;</button>
+                </form>
                 {% endif %}
             </div>
             {% endfor %}
@@ -157,11 +181,19 @@
                 <p style="opacity: 0.7; margin-bottom: 20px;">Sen de hemen şimdi ilk fotoğrafını paylaş!</p>
                 {% if can_edit %}
                     <button class="verzia-gold-btn" onclick="document.getElementById('photoUploadInput').click()">Hemen Paylaş</button>
-                    <input type="file" id="photoUploadInput" accept="image/*" onchange="alert('Yükleme için /upload rotası kullanılmalı')">
+                    <form id="directUploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                        <input type="file" name="photo" id="photoUploadInput" onchange="this.form.submit()">
+                        <input type="hidden" name="title" value="İlk Profil Gönderisi">
+                    </form>
                 {% endif %}
             </div>
         {% endif %}
     </div>
+</div>
+
+<div id="photoLightbox" class="v-lightbox" onclick="closeLightbox()">
+    <span class="v-lightbox-close">&times;</span>
+    <img class="v-lightbox-content" id="lightboxImg">
 </div>
 
 <div class="modal fade" id="userListModal" tabindex="-1">
@@ -178,41 +210,54 @@
 
 <div class="modal fade" id="editProfileModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content v-modal-content" style="border: 1px solid #262626 !important;">
+        <div class="modal-content v-modal-content">
             <div class="modal-header border-bottom-0">
                 <h5 class="modal-title verzia-gold-text">Profili Düzenle</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label opacity-75">Biyografi</label>
-                    <textarea id="editBio" class="form-control bg-dark text-white border-secondary">{{ server_profile.bio }}</textarea>
-                </div>
-                <div class="text-end">
-                    <button type="button" class="verzia-gold-btn" onclick="saveProfileData()">Kaydet</button>
-                </div>
+                <form id="editProfileForm">
+                    <div class="mb-3">
+                        <label class="form-label opacity-75">Biyografi</label>
+                        <textarea id="editBio" class="form-control bg-dark text-white border-secondary">{{ server_profile.bio }}</textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="verzia-gold-btn" onclick="saveProfileData()">Kaydet</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // 0. Lightbox Mantığı
+    function openLightbox(src) {
+        const lb = document.getElementById('photoLightbox');
+        const img = document.getElementById('lightboxImg');
+        img.src = src;
+        lb.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        const lb = document.getElementById('photoLightbox');
+        lb.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
     // 1. Profil Fotoğrafı Kaydetme
     function previewImage(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                const base64 = reader.result;
-                document.getElementById('avatarPreview').src = base64;
-                // Backend'de /profile/save rotası mevcut olmalı
-                fetch('/profile/save', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({avatar: base64})
-                });
-            };
-            reader.readAsDataURL(file);
-        }
+        const reader = new FileReader();
+        reader.onload = function() {
+            const base64 = reader.result;
+            document.getElementById('avatarPreview').src = base64;
+            fetch('/profile/save', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({avatar: base64})
+            });
+        };
+        reader.readAsDataURL(event.target.files[0]);
     }
 
     // 2. Biyografi Kaydetme
@@ -235,14 +280,15 @@
             if(data.status === 'success') {
                 btn.textContent = isFollowing ? 'Takip Et' : 'Takibi Bırak';
                 btn.className = isFollowing ? 'verzia-gold-btn' : 'btn-unfollow';
-                if ("{{ 'true' if not server_profile.is_vip else 'false' }}" === "true") {
+                const isVip = {{ 'true' if server_profile.is_vip else 'false' }};
+                if (!isVip) {
                     document.getElementById('followerCount').innerText = data.followers;
                 }
             }
         });
     }
 
-    // 4. Takipçi Listesi Gösterimi
+    // 4. Takipçi Listesi
     function showUserList(type) {
         const username = "{{ server_profile.username }}";
         const title = type === 'followers' ? 'Takipçiler' : 'Takip Edilenler';
@@ -260,26 +306,15 @@
             .then(data => {
                 if (!data || data.length === 0) {
                     body.innerHTML = '<div class="p-4 text-center opacity-50">Henüz kimse yok.</div>';
-                } else {
-                    body.innerHTML = data.map(user => `
-                        <a href="/profile/${user.username}" class="user-list-item">
-                            <img src="${user.avatar || 'https://picsum.photos/200'}" class="user-list-avatar">
-                            <span style="font-weight: 500;">${user.username}</span>
-                        </a>
-                    `).join('');
+                    return;
                 }
+                body.innerHTML = data.map(user => `
+                    <a href="/profile/${user.username}" class="user-list-item">
+                        <img src="${user.avatar || 'https://picsum.photos/200'}" class="user-list-avatar">
+                        <span style="font-weight: 500;">${user.username}</span>
+                    </a>
+                `).join('');
             });
-    }
-
-    function confirmDelete(photoId) {
-        if(confirm('Silmek istediğine emin misin?')) {
-            // Backend silme rotası /delete_photo_profile/<id> olmalı
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/delete_photo_profile/${photoId}`;
-            document.body.appendChild(form);
-            form.submit();
-        }
     }
 </script>
 {% endblock %}
