@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config.from_object('config.Config')
 app.secret_key = os.environ.get("SECRET_KEY", "verzia-special-2025")
 
-# --------------------- DATABASE AYARI (RAILWAY UYUMLU) ---------------------
+# --------------------- DATABASE AYARI ---------------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
@@ -29,7 +29,6 @@ login_manager.init_app(app)
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# --------------------- BİLDİRİM SİSTEMİ ENJEKSİYONU ---------------------
 @app.context_processor
 def inject_notifications():
     if current_user.is_authenticated:
@@ -77,12 +76,9 @@ def profile(username):
     is_ana_profil = "verzia" in username_check
     is_kurucu = username_check in kurucular
     
-    # LUXURY BIO UPDATE - JİLET GİBİ EKLEDİM AŞKIM
-    luxury_bio = "Sıradanlığın ötesinde, ışığın ve estetiğin en asil buluşma noktası. Verzia; derin bir asaletin altının büyüleyici parıltısıyla harmanlandığı, dijital dünyanın pırlanta dokunuşlu sergi salonudur. Burada her kare zarafetle mühürlenir, her detay ihtişamla nefes alır. Sadece en özel anılarınızı değil, ruhunuzun ışıltısını da bu altın standartlarda ölümsüzleştirin."
-    
     profile_data = {
         "id": user_to_show.id, "username": user_to_show.username, "avatar": user_to_show.avatar or "https://picsum.photos/400", 
-        "bio": user_to_show.bio or luxury_bio, 
+        "bio": user_to_show.bio or "Verzia Experience", 
         "followers": "2M" if is_ana_profil else ("1.5M" if is_kurucu else user_to_show.followers_list.count()), 
         "following": user_to_show.followed.count(), 
         "is_vip": is_kurucu or is_ana_profil, "is_kurucu": is_kurucu or is_ana_profil
@@ -100,101 +96,92 @@ def update_bio():
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
-# --------------------- FOTOĞRAF VE AVATAR UPLOAD (BASE64) ---------------------
+# --------------------- TAKİP SİSTEMİ (BOZUK OLAN KISIM MÜHÜRLENDİ ✨) ---------------------
+@app.route("/follow/<username>", methods=['POST'])
+@login_required
+def toggle_follow(username):
+    user_to_follow = User.query.filter_by(username=username).first_or_404()
+    if user_to_follow == current_user:
+        return jsonify({"status": "error", "message": "Kendinizi takip edemezsiniz."}), 400
+    
+    if current_user.is_following(user_to_follow):
+        current_user.unfollow(user_to_follow)
+        status = "unfollowed"
+    else:
+        current_user.follow(user_to_follow)
+        status = "followed"
+        # Takip bildirimi mühürlendi
+        notif = Notification(
+            user_id=user_to_follow.id,
+            sender_username=current_user.username,
+            notif_type="follow",
+            message=f"@{current_user.username} sizi takip etmeye başladı.",
+            is_read=False
+        )
+        db.session.add(notif)
+        
+    db.session.commit()
+    return jsonify({"status": status, "follower_count": user_to_follow.followers_list.count()})
+
+@app.route("/get_user_list/<username>/<type>")
+@login_required
+def get_user_list(username, type):
+    user = User.query.filter_by(username=username).first_or_404()
+    # Kurucu profilleri takipçi listesi koruması
+    if user.username.lower() in ["beril", "ecem", "cemre", "verzia"] and type == 'followers':
+        return jsonify([])
+    
+    users = user.followers_list.all() if type == 'followers' else user.followed.all()
+    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
+
+# --------------------- ARAMA SİSTEMİ (BOZUK OLAN KISIM MÜHÜRLENDİ ✨) ---------------------
+@app.route("/search_users")
+@login_required
+def search_users():
+    q = request.args.get("q", "").strip()
+    if not q:
+        return jsonify([])
+    # Kullanıcı adı içinde geçenleri pırlanta gibi arıyoruz
+    users = User.query.filter(User.username.ilike(f"%{q}%")).limit(10).all()
+    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
+
+# --------------------- FOTOĞRAF VE YORUM ---------------------
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
     file = request.files.get('photo')
     if file:
         img_data = base64.b64encode(file.read()).decode('utf-8')
-        db.session.add(Photo(filename=f"data:{file.mimetype};base64,{img_data}", owner_id=current_user.id))
+        new_photo = Photo(filename=f"data:{file.mimetype};base64,{img_data}", owner_id=current_user.id, title="Verzia Moment", description="")
+        db.session.add(new_photo)
         db.session.commit()
     return redirect(url_for("profile", username=current_user.username))
 
-@app.route("/update_avatar", methods=["POST"])
+@app.route('/add_comment/<int:photo_id>', methods=['POST'])
 @login_required
-def update_avatar():
-    file = request.files.get('avatar')
-    if file:
-        img_data = base64.b64encode(file.read()).decode('utf-8')
-        current_user.avatar = f"data:{file.mimetype};base64,{img_data}"
+def add_comment(photo_id):
+    try:
+        data = request.get_json()
+        photo = Photo.query.get_or_404(photo_id)
+        new_comment = Comment(body=data.get('text'), user_id=current_user.id, photo_id=photo_id)
+        db.session.add(new_comment)
+        if photo.owner_id != current_user.id:
+            db.session.add(Notification(user_id=photo.owner_id, sender_username=current_user.username, notif_type="comment", message=f"@{current_user.username} fotoğrafına yorum yaptı.", is_read=False))
         db.session.commit()
-        return jsonify({"status": "success"})
-    return jsonify({"status": "error"}), 400
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
-# --------------------- BİLDİRİM ROTALARI (MÜHÜRLENDİ) ---------------------
+# --------------------- BİLDİRİM VE AYARLAR ---------------------
 @app.route("/notifications")
 @login_required
 def get_notifications():
-    try:
-        notifications = current_user.notifications.order_by(Notification.id.desc()).limit(15).all()
-        data = []
-        for n in notifications:
-            data.append({
-                "id": n.id,
-                "sender": n.sender_username if hasattr(n, 'sender_username') else "Verzia",
-                "message": n.message,
-                "timestamp": n.timestamp.strftime("%d.%m %H:%M") if hasattr(n, 'timestamp') else "",
-                "is_read": n.is_read
-            })
-        current_user.notifications.filter_by(is_read=False).update({"is_read": True})
-        db.session.commit()
-        return jsonify(data)
-    except Exception as e:
-        return jsonify([])
-
-@app.route("/delete_notification/<int:notif_id>", methods=["POST"])
-@login_required
-def delete_notification(notif_id):
-    n = Notification.query.get_or_404(notif_id)
-    if n.user_id == current_user.id:
-        db.session.delete(n)
-        db.session.commit()
-        return jsonify({"status": "success"})
-    return jsonify({"status": "error"}), 403
-
-# --------------------- DİĞER SOSYAL ROTALAR ---------------------
-@app.route("/search_users")
-@login_required
-def search_users():
-    q = request.args.get("q", "").strip()
-    if not q: return jsonify([])
-    users = User.query.filter(User.username.ilike(f"%{q}%")).limit(10).all()
-    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
-
-@app.route('/get_post_details/<int:photo_id>')
-@login_required
-def get_post_details(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    is_liked = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first() is not None
-    comment_data = [{"id": c.id, "username": db.session.get(User, c.user_id).username, "text": c.body, "can_delete": (c.user_id == current_user.id or photo.owner_id == current_user.id)} for c in photo.comments]
-    return jsonify({"likes": len(photo.likes), "is_liked": is_liked, "comments": comment_data})
-
-@app.route('/like/<int:photo_id>', methods=['POST'])
-@login_required
-def like_photo(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    existing_like = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first()
-    if existing_like: db.session.delete(existing_like)
-    else: db.session.add(Like(user_id=current_user.id, photo_id=photo_id))
+    notifications = current_user.notifications.order_by(Notification.id.desc()).limit(15).all()
+    data = [{"id": n.id, "sender": n.sender_username, "message": n.message, "timestamp": n.timestamp.strftime("%d.%m %H:%M"), "is_read": n.is_read} for n in notifications]
+    current_user.notifications.filter_by(is_read=False).update({"is_read": True})
     db.session.commit()
-    return jsonify({'status': 'liked' if not existing_like else 'unliked', 'like_count': len(photo.likes)})
-
-@app.route('/comment/<int:photo_id>', methods=['POST'])
-@login_required
-def add_comment(photo_id):
-    data = request.get_json()
-    db.session.add(Comment(body=data.get('text'), user_id=current_user.id, photo_id=photo_id))
-    db.session.commit()
-    return jsonify({'status': 'success'})
-
-@app.route("/get_user_list/<username>/<type>")
-@login_required
-def get_user_list(username, type):
-    user = User.query.filter_by(username=username).first_or_404()
-    if user.username.lower() in ["beril", "ecem", "cemre", "verzia"] and type == 'followers': return jsonify([])
-    users = user.followers_list.all() if type == 'followers' else user.followed.all()
-    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
+    return jsonify(data)
 
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
@@ -208,7 +195,10 @@ def settings():
         if request.form.get("password"): current_user.set_password(request.form.get("password"))
         db.session.commit()
         return redirect(url_for("profile", username=current_user.username))
-    return render_template("settings.html", user=current_user)
+    try:
+        return render_template("settings.html", user=current_user)
+    except:
+        return redirect(url_for("profile", username=current_user.username))
 
 @app.route("/logout")
 def logout():
@@ -216,10 +206,7 @@ def logout():
 
 if __name__ == "__main__":
     with app.app_context(): db.create_all()
-    # PORT ÇAKIŞMASINI ÖNLEMEK İÇİN 5001 YAPTIM AŞKIM
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5001)), debug=True)
-
-
 
 
 
