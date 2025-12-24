@@ -172,6 +172,23 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     </div>
 </div>
 
+<div class="modal fade" id="editBioModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content v-modal-content">
+            <div class="modal-header border-bottom-0 p-3">
+                <h5 class="modal-title verzia-gold-text">Biyografiyi Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{{ url_for('update_bio') }}" method="POST">
+                    <textarea name="bio" class="form-control mb-3" rows="4" style="background: #111; border: 1px solid #262626; color: white;" placeholder="Kendinizden bahsedin...">{{ server_profile.bio }}</textarea>
+                    <button type="submit" class="verzia-gold-btn w-100">Kaydet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="notifModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content v-modal-content">
@@ -270,5 +287,14 @@ async function showUserList(type) {
 
 function openSearchModal() { new bootstrap.Modal(document.getElementById('searchModal')).show(); }
 function openEditBioModal() { new bootstrap.Modal(document.getElementById('editBioModal')).show(); }
+
+function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+        const output = document.getElementById('avatarPreview');
+        output.src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
 </script>
 {% endblock %}
