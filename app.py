@@ -173,6 +173,37 @@ def delete_comment(comment_id):
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 403
 
+# --------------------- BİLDİRİM PANELİ ROTALARI (GÜNCELLENDİ ✨) ---------------------
+@app.route("/notifications")
+@login_required
+def get_notifications():
+    # En yeni 20 bildirim çekiliyor ve kullanıcı linkleri için sender verisi işleniyor
+    notifications = current_user.notifications.order_by(Notification.id.desc()).limit(20).all()
+    data = []
+    for n in notifications:
+        data.append({
+            "id": n.id,
+            "sender": n.sender_username,
+            "message": n.message,
+            "type": n.notif_type,
+            "timestamp": n.timestamp.strftime("%d.%m %H:%M"),
+            "is_read": n.is_read
+        })
+    # Bildirimler görüntülendiğinde hepsini okundu yap
+    current_user.notifications.filter_by(is_read=False).update({"is_read": True})
+    db.session.commit()
+    return jsonify(data)
+
+@app.route("/delete_notification/<int:notif_id>", methods=['POST']) # Bildirimi imparatorluktan silme kapısı
+@login_required
+def delete_notification(notif_id):
+    notif = Notification.query.get_or_404(notif_id)
+    if notif.user_id == current_user.id:
+        db.session.delete(notif)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 403
+
 # --------------------- ADMIN & AYARLAR ---------------------
 @app.route("/admin/dashboard")
 @login_required
@@ -183,7 +214,7 @@ def admin_dashboard():
     all_photos = Photo.query.order_by(Photo.id.desc()).all()
     return render_template("admin.html", users=all_users, photos=all_photos)
 
-@app.route("/admin/delete_user/<int:user_id>", methods=['POST']) # Silme hatasını çözen asil rota!
+@app.route("/admin/delete_user/<int:user_id>", methods=['POST'])
 @login_required
 def admin_delete_user(user_id):
     current_username = current_user.username.replace('İ', 'i').replace('I', 'ı').lower()
