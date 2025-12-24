@@ -266,10 +266,36 @@ async function toggleLike() {
     document.getElementById('likeIcon').className = data.status === 'liked' ? 'fa-solid fa-heart verzia-gold-text' : 'fa-regular fa-heart verzia-gold-text';
 }
 
-function previewImage(event) {
+// PROFİL FOTOĞRAFI GÜNCELLEME VE VERİTABANINA MÜHÜRLEME
+async function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 1. Önce ekranda hemen gösterelim (Kullanıcı deneyimi için)
     const reader = new FileReader();
-    reader.onload = function(){ document.getElementById('avatarPreview').src = reader.result; };
-    reader.readAsDataURL(event.target.files[0]);
+    reader.onload = function(){ 
+        document.getElementById('avatarPreview').src = reader.result; 
+    };
+    reader.readAsDataURL(file);
+
+    // 2. Şimdi bu pırlantayı veritabanına mühürleyelim (Kalıcılık için)
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+        const res = await fetch('/update_avatar', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+            console.log("Profil fotoğrafı veritabanına mühürlendi! ✨");
+        } else {
+            console.error("Yükleme hatası:", data.message);
+        }
+    } catch(e) {
+        console.error("Fetch hatası:", e);
+    }
 }
 </script>
 {% endblock %}

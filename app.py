@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, flash, session
 from flask_login import login_user, logout_user, current_user, login_required
 import os
 import base64 
-from werkzeug.utils import secure_filename
+from datetime import datetime
 
 from extensions import db, migrate, login_manager
 from models.user import User, Comment, Like, Notification 
@@ -11,11 +11,6 @@ from models.photo import Photo
 app = Flask(__name__)
 app.config.from_object('config.Config')
 app.secret_key = os.environ.get("SECRET_KEY", "verzia-special-2025")
-
-# UPLOAD AYARI
-app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static/uploads")
-if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-    os.makedirs(app.config["UPLOAD_FOLDER"])
 
 # DATABASE AYARI
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -34,7 +29,7 @@ login_manager.init_app(app)
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# --------------------- BİLDİRİM SİSTEMİ ---------------------
+# --------------------- BİLDİRİM SİSTEMİ ENJEKSİYONU ---------------------
 @app.context_processor
 def inject_notifications():
     if current_user.is_authenticated:
@@ -81,19 +76,17 @@ def profile(username):
     kurucular = ["beril", "ecem", "cemre"]
     is_ana_profil = "verzia" in username_check
     is_kurucu = username_check in kurucular
-    if is_ana_profil: followers_display = "2M"
-    elif is_kurucu: followers_display = "1.5M"
-    else: followers_display = user_to_show.followers_list.count()
     
     profile_data = {
         "id": user_to_show.id, "username": user_to_show.username, "avatar": user_to_show.avatar or "https://picsum.photos/400", 
-        "bio": user_to_show.bio or "Verzia Experience", "followers": followers_display, "following": user_to_show.followed.count(), 
+        "bio": user_to_show.bio or "Verzia Experience", 
+        "followers": "2M" if is_ana_profil else ("1.5M" if is_kurucu else user_to_show.followers_list.count()), 
+        "following": user_to_show.followed.count(), 
         "is_vip": is_kurucu or is_ana_profil, "is_kurucu": is_kurucu or is_ana_profil
     }
     is_following = current_user.is_following(user_to_show)
     return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id), is_following=is_following)
 
-# --------------------- BİYOGRAFİ GÜNCELLEME (HATA ALAN KISIM) ---------------------
 @app.route("/update_bio", methods=["POST"])
 @login_required
 def update_bio():
@@ -104,133 +97,124 @@ def update_bio():
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
-# --------------------- RENDER ÖLÜMSÜZ UPLOAD (BASE64) ---------------------
+# --------------------- FOTOĞRAF VE AVATAR UPLOAD (BASE64) ---------------------
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
-    if 'photo' not in request.files: return redirect(request.url)
-    file = request.files['photo']
-    if file and file.filename != '':
+    file = request.files.get('photo')
+    if file:
         img_data = base64.b64encode(file.read()).decode('utf-8')
-        data_url = f"data:{file.mimetype};base64,{img_data}"
-        new_photo = Photo(filename=data_url, owner_id=current_user.id, title="Verzia Photo")
-        db.session.add(new_photo)
+        db.session.add(Photo(filename=f"data:{file.mimetype};base64,{img_data}", owner_id=current_user.id))
         db.session.commit()
     return redirect(url_for("profile", username=current_user.username))
 
-# --------------------- FOTOĞRAF SİLME (YENİ EKLENDİ) ---------------------
-@app.route("/delete_photo/<int:photo_id>", methods=["POST"])
+@app.route("/update_avatar", methods=["POST"])
 @login_required
-def delete_photo(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    if photo.owner_id == current_user.id:
-        db.session.delete(photo)
+def update_avatar():
+    file = request.files.get('avatar')
+    if file:
+        img_data = base64.b64encode(file.read()).decode('utf-8')
+        current_user.avatar = f"data:{file.mimetype};base64,{img_data}"
+        db.session.commit()
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 400
+
+# --------------------- BİLDİRİM ROTALARI (BASE.HTML UYUMLU) ---------------------
+@app.route("/notifications")
+@login_required
+def get_notifications():
+    try:
+        notifications = current_user.notifications.order_by(Notification.id.desc()).limit(15).all()
+        data = []
+        for n in notifications:
+            # Base.html'deki JS n.sender ve n.timestamp bekliyor
+            data.append({
+                "id": n.id,
+                "sender": n.sender_username if hasattr(n, 'sender_username') else "Sistem",
+                "message": n.message,
+                "timestamp": n.timestamp.strftime("%d.%m %H:%M") if hasattr(n, 'timestamp') else "",
+                "is_read": n.is_read
+            })
+        # Bildirimleri okundu olarak işaretleyelim
+        current_user.notifications.filter_by(is_read=False).update({"is_read": True})
+        db.session.commit()
+        return jsonify(data)
+    except Exception as e:
+        return jsonify([])
+
+@app.route("/delete_notification/<int:notif_id>", methods=["POST"])
+@login_required
+def delete_notification(notif_id):
+    n = Notification.query.get_or_404(notif_id)
+    if n.user_id == current_user.id:
+        db.session.delete(n)
         db.session.commit()
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 403
 
-# --------------------- AYARLAR ---------------------
-@app.route("/settings", methods=["GET", "POST"])
+# --------------------- DİĞER SOSYAL ROTALAR ---------------------
+@app.route("/search_users")
 @login_required
-def settings():
-    user = db.session.get(User, current_user.id)
-    if request.method == "POST":
-        current_password = request.form.get("current_password")
-        new_username = request.form.get("username")
-        new_password = request.form.get("password")
-        if not current_password or not user.check_password(current_password):
-            flash("Mevcut şifren hatalı!", "error")
-            return redirect(url_for("settings"))
-        if new_username: user.username = new_username
-        if new_password: user.set_password(new_password)
-        db.session.commit()
-        return redirect(url_for("profile", username=user.username))
-    return render_template("settings.html", user=user)
+def search_users():
+    q = request.args.get("q", "").strip()
+    if not q: return jsonify([])
+    users = User.query.filter(User.username.ilike(f"%{q}%")).limit(10).all()
+    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
 
-# --------------------- ETKİLEŞİM VE LİSTELER ---------------------
 @app.route('/get_post_details/<int:photo_id>')
 @login_required
 def get_post_details(photo_id):
     photo = Photo.query.get_or_404(photo_id)
     is_liked = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first() is not None
-    # Yorum verisini, silme yetkisini de içerecek şekilde güncelledik
-    comment_data = []
-    for c in photo.comments:
-        u = db.session.get(User, c.user_id)
-        comment_data.append({
-            "id": c.id,
-            "username": u.username,
-            "text": c.body,
-            "can_delete": (c.user_id == current_user.id or photo.owner_id == current_user.id)
-        })
+    comment_data = [{"id": c.id, "username": db.session.get(User, c.user_id).username, "text": c.body, "can_delete": (c.user_id == current_user.id or photo.owner_id == current_user.id)} for c in photo.comments]
     return jsonify({"likes": len(photo.likes), "is_liked": is_liked, "comments": comment_data})
 
 @app.route('/like/<int:photo_id>', methods=['POST'])
-@app.route('/like_post/<int:photo_id>', methods=['POST'])
 @login_required
 def like_photo(photo_id):
     photo = Photo.query.get_or_404(photo_id)
     existing_like = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first()
-    if existing_like:
-        db.session.delete(existing_like)
-        status = 'unliked'
-    else:
-        db.session.add(Like(user_id=current_user.id, photo_id=photo_id))
-        status = 'liked'
+    if existing_like: db.session.delete(existing_like)
+    else: db.session.add(Like(user_id=current_user.id, photo_id=photo_id))
     db.session.commit()
-    return jsonify({'status': status, 'like_count': len(photo.likes)})
+    return jsonify({'status': 'liked' if not existing_like else 'unliked', 'like_count': len(photo.likes)})
 
 @app.route('/comment/<int:photo_id>', methods=['POST'])
-@app.route('/add_comment/<int:photo_id>', methods=['POST'])
 @login_required
 def add_comment(photo_id):
     data = request.get_json()
-    content = data.get('text')
-    db.session.add(Comment(body=content, user_id=current_user.id, photo_id=photo_id))
+    db.session.add(Comment(body=data.get('text'), user_id=current_user.id, photo_id=photo_id))
     db.session.commit()
     return jsonify({'status': 'success'})
-
-# --------------------- YORUM SİLME (YENİ EKLENDİ) ---------------------
-@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
-@login_required
-def delete_comment(comment_id):
-    comment = Comment.query.get_or_404(comment_id)
-    photo = Photo.query.get(comment.photo_id)
-    if comment.user_id == current_user.id or photo.owner_id == current_user.id:
-        db.session.delete(comment)
-        db.session.commit()
-        return jsonify({'status': 'success'})
-    return jsonify({'status': 'error'}), 403
 
 @app.route("/get_user_list/<username>/<type>")
 @login_required
 def get_user_list(username, type):
     user = User.query.filter_by(username=username).first_or_404()
-    ozel_uyeler = ["beril", "ecem", "cemre", "verzia"]
-    username_lower = user.username.replace('İ', 'i').replace('I', 'ı').lower()
-    if username_lower in ozel_uyeler and type == 'followers':
-        return jsonify([])
+    if user.username.lower() in ["beril", "ecem", "cemre", "verzia"] and type == 'followers': return jsonify([])
     users = user.followers_list.all() if type == 'followers' else user.followed.all()
     return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
 
-# --------------------- KULLANICI ARAMA (YENİ EKLENDİ) ---------------------
-@app.route("/search_users")
+@app.route("/settings", methods=["GET", "POST"])
 @login_required
-def search_users():
-    q = request.args.get("q", "").strip()
-    if not q:
-        return jsonify([])
-    users = User.query.filter(User.username.ilike(f"%{q}%")).limit(10).all()
-    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
+def settings():
+    if request.method == "POST":
+        cp = request.form.get("current_password")
+        if not current_user.check_password(cp):
+            flash("Mevcut şifre hatalı!", "error")
+            return redirect(url_for("settings"))
+        if request.form.get("username"): current_user.username = request.form.get("username")
+        if request.form.get("password"): current_user.set_password(request.form.get("password"))
+        db.session.commit()
+        return redirect(url_for("profile", username=current_user.username))
+    return render_template("settings.html", user=current_user)
 
 @app.route("/logout")
 def logout():
-    logout_user()
-    return redirect(url_for("index"))
+    logout_user(); return redirect(url_for("index"))
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+    with app.app_context(): db.create_all()
     app.run(host="127.0.0.1", port=5000, debug=True)
 
 
