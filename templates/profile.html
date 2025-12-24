@@ -81,32 +81,41 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     z-index: 999;
     justify-content: space-between; 
 }
-.nav-top, .nav-bottom { display: flex; flex-direction: column; align-items: center; gap: 35px; }
 
-/* --- LÜKS V LOGO TASARIMI (GÜNCELLENDİ) --- */
+/* TÜM İKONLAR VE V LOGO ARASINDAKİ SİMETRİ */
+.nav-top, .nav-bottom { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 35px !important; 
+}
+
+/* --- ANİMASYONLU VE LÜKS V LOGO STİLİ (360 DÖNÜŞLÜ) --- */
 .v-logo-nav {
-    font-family: 'Cinzel', serif; /* Krallık havası veren font */
+    font-family: 'Cinzel', serif; 
     font-weight: 700;
     font-size: 28px;
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-decoration: none;
-    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Yaylanarak dönme efekti */
     cursor: pointer;
     display: inline-block;
     filter: drop-shadow(0 0 5px rgba(191, 149, 63, 0.4));
-}
-.v-logo-nav:hover {
-    transform: scale(1.15);
-    filter: drop-shadow(0 0 15px rgba(252, 246, 186, 0.8));
-    animation: goldPulse 2s infinite;
+    animation: goldPulse 3s infinite ease-in-out; 
 }
 
 @keyframes goldPulse {
-    0% { filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4)); }
-    50% { filter: drop-shadow(0 0 20px rgba(252, 246, 186, 0.9)); }
-    100% { filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4)); }
+    0% { filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4)); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 20px rgba(252, 246, 186, 0.9)); transform: scale(1.08); }
+    100% { filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4)); transform: scale(1); }
+}
+
+/* ÜZERİNE GELİNDİĞİNDE 360 DERECE DÖNME */
+.v-logo-nav:hover {
+    transform: rotate(360deg) scale(1.2) !important; /* 360 Derece dönme */
+    filter: drop-shadow(0 0 15px rgba(252, 246, 186, 1));
 }
 
 .side-nav i, .side-nav a { 
@@ -119,7 +128,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     transform: scale(1.1);
 }
 
-/* MODALLAR */
+/* MODALLAR - DİNAMİK RENK */
 .v-modal-content { 
     background-color: var(--modal-bg) !important; 
     border: 1px solid #d4af37 !important; 
@@ -252,14 +261,9 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 </div>
 
 <script>
-// FOTOĞRAF YÜKLEME TETİKLEYİCİSİ (KESİN ÇÖZÜM)
 function triggerPhotoUpload() {
     const input = document.getElementById('photoUploadInput');
-    if(input) {
-        input.click();
-    } else {
-        console.error("Upload input bulunamadı!");
-    }
+    if(input) input.click();
 }
 
 async function toggleFollow(username) {
