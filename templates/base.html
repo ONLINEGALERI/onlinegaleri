@@ -13,7 +13,7 @@
         }
         body { background: var(--ig-bg); color: var(--ig-text); margin: 0; font-family: 'Montserrat', sans-serif; overflow-x: hidden; }
 
-        /* --- SOL NAVBAR: ORİJİNAL TASARIM --- */
+        /* --- SOL NAVBAR (ORİJİNAL) --- */
         .side-nav {
             width: 70px; background-color: #000; border-right: 1px solid #262626;
             display: flex; flex-direction: column; align-items: center;
@@ -32,11 +32,39 @@
             transform: scale(1.1);
         }
 
-        /* İç sayfalarda içeriği sağa iten padding, anasayfada 0 olmalı */
+        /* --- ÖZEL @BERİL BUTONU (VPRO TARZI) --- */
+        .beril-btn-gold {
+            background: var(--v-gold-gradient) !important;
+            border: 1px solid #bf953f !important;
+            padding: 8px 20px;
+            border-radius: 25px; /* Hakkında/İletişim gibi oval */
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.3s;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(191, 149, 63, 0.3);
+        }
+        
+        /* Dark Modda Yazı Beyaz olsun */
+        body:not(.light-mode) .beril-btn-gold {
+            color: #fff !important;
+        }
+
+        /* Light Modda Yazı Siyah olsun */
+        body.light-mode .beril-btn-gold {
+            color: #000 !important;
+        }
+
+        .beril-btn-gold:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+            box-shadow: 0 0 15px rgba(252, 246, 186, 0.5);
+        }
+
         .main-content-wrapper { min-height: 100vh; transition: 0.3s; }
         .has-sidebar { margin-left: 70px; width: calc(100% - 70px); }
 
-        /* LİSTE MODAL TASARIMI */
+        /* MODAL */
         .v-modal-list .modal-content { background: #000; border: 1px solid #d4af37; border-radius: 12px; color: #fff; }
         .user-list-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #1a1a1a; text-decoration: none; color: #fff; }
         .user-list-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #d4af37; }
@@ -44,12 +72,10 @@
         @media (max-width: 768px) {
             .side-nav { width: 100%; height: 60px; top: auto; bottom: 0; flex-direction: row; justify-content: space-around; border-right: none; border-top: 1px solid var(--ig-border); padding: 0; }
             .has-sidebar { margin-left: 0; padding-bottom: 60px; width: 100%; }
-            .nav-top, .nav-bottom { flex-direction: row; gap: 0; height: 100%; width: 50%; justify-content: space-around; }
         }
     </style>
 </head>
 <body>
-    {# Sadece anasayfa (index) haricindeki sayfalarda sol barı göster #}
     {% if current_user.is_authenticated and request.endpoint != 'index' %}
     <aside class="side-nav">
         <div class="nav-top">
