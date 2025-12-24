@@ -17,6 +17,17 @@
 .gold-verify { font-size: 20px; background: linear-gradient(135deg, #a67c00 0%, #ffbf00 50%, #b8860b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.3)); }
 
 .btn-ig-edit, .btn-ig-follow { background: transparent !important; border: 1px solid #bf953f !important; border-radius: 4px !important; background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; font-weight: 700; font-size: 14px; padding: 5px 12px; cursor: pointer; transition: all 0.3s ease; display: inline-block; }
+
+/* EKSTRA PLUS BUTON STİLİ (MEVCUTLARI BOZMAZ) */
+.btn-plus-gold {
+    width: 35px; height: 35px; border-radius: 50%;
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+    display: flex; align-items: center; justify-content: center;
+    color: #000; font-size: 18px; cursor: pointer; margin-left: 10px;
+    border: 1px solid #d4af37; transition: 0.3s;
+}
+.btn-plus-gold:hover { transform: scale(1.1) rotate(90deg); }
+
 .ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
 .ig-stats li { font-size: 16px; color: var(--ig-text); }
 .ig-stats b { font-weight: 600; }
@@ -28,13 +39,11 @@
 .v-modal-content { background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important; color: var(--ig-text) !important; border-radius: 12px; position: relative; }
 .verzia-manual-close { position: absolute !important; top: 15px !important; left: 15px !important; background: none !important; border: none !important; color: #bf953f !important; font-size: 28px !important; font-weight: bold; cursor: pointer; z-index: 1060; }
 
-/* POST MODAL EKSTRA STİLLER */
 .post-modal-body { display: flex; padding: 0; min-height: 500px; flex-wrap: wrap; }
 .post-modal-img-area { flex: 1.2; background: #000; position: relative; display: flex; align-items: center; justify-content: center; min-width: 300px; }
 .post-modal-img-area img { max-width: 100%; max-height: 80vh; object-fit: contain; }
-.post-modal-info-area { flex: 0.8; display: flex; flex-direction: column; background: var(--modal-bg); border-left: 1px solid var(--ig-border); min-width: 250px; }
+.post-modal-side { flex: 0.8; display: flex; flex-direction: column; background: var(--modal-bg); border-left: 1px solid var(--ig-border); min-width: 250px; }
 
-/* LUXE GOLD KALP ANİMASYONU */
 .big-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: #fcf6ba; font-size: 80px; opacity: 0; pointer-events: none; z-index: 10; text-shadow: 0 0 30px rgba(191, 149, 63, 0.8); }
 .heart-pop { animation: heartPopAnim 0.8s ease-out; }
 @keyframes heartPopAnim { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
@@ -56,6 +65,10 @@
                 {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check gold-verify"></i>{% endif %}
                 {% if can_edit %}
                 <button class="btn-ig-edit" onclick="openEditBioModal()">Profili Düzenle</button>
+                <div class="btn-plus-gold" onclick="document.getElementById('photoUploadInput').click()"><i class="fa-solid fa-plus"></i></div>
+                <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                    <input type="file" name="photo" id="photoUploadInput" onchange="this.form.submit()">
+                </form>
                 {% else %}
                 <button class="btn-ig-follow" id="followBtn" onclick="toggleFollow('{{ server_profile.username }}')">
                     {% if is_following %}Takibi Bırak{% else %}Takip Et{% endif %}
@@ -101,7 +114,7 @@
                     <img id="modalImg" src="">
                     <i id="tapHeart" class="fa-solid fa-heart big-heart"></i>
                 </div>
-                <div class="post-modal-info-area">
+                <div class="post-modal-side">
                     <div style="padding:15px; border-bottom:1px solid var(--ig-border); text-align:center;">
                         <b class="verzia-gold-text">{{ server_profile.username }}</b>
                     </div>
@@ -129,25 +142,20 @@
 <script>
 let activePostId = null;
 
-// TAKİP EDİLENLER LİSTESİNİ ÇEKEN SİHİRLİ FONKSİYON
 async function showUserList(type) {
     const pathArray = window.location.pathname.split('/');
     const username = pathArray[pathArray.length - 1];
     const container = document.getElementById('userListContainer');
     document.getElementById('userListTitle').innerText = type === 'followers' ? 'Takipçiler' : 'Takip Edilenler';
-    
     container.innerHTML = '<p class="text-center opacity-50 p-4">Yükleniyor...</p>';
     new bootstrap.Modal(document.getElementById('userListModal')).show();
-    
     try {
         const res = await fetch(`/get_user_list/${username}/${type}`);
         const users = await res.json();
-        
         if(users.length === 0) {
             container.innerHTML = '<p class="text-center opacity-50 p-4">Henüz kimse yok...</p>';
             return;
         }
-        
         container.innerHTML = users.map(u => `
             <a href="/profile/${u.username}" style="display:flex;align-items:center;padding:12px;text-decoration:none;color:var(--ig-text);border-bottom:1px solid var(--ig-border);">
                 <img src="${u.avatar}" style="width:35px;height:35px;border-radius:50%;margin-right:10px;border:1px solid #d4af37;object-fit:cover;">
@@ -156,7 +164,6 @@ async function showUserList(type) {
     } catch(e) { container.innerHTML = '<p class="text-center text-danger p-4">Hata oluştu!</p>'; }
 }
 
-// POST MODAL VE YORUM SİSTEMİ
 async function openPostModal(postId, imgUrl) {
     activePostId = postId;
     document.getElementById('modalImg').src = imgUrl;
@@ -168,12 +175,10 @@ async function loadComments(postId) {
     try {
         const res = await fetch(`/get_comments/${postId}`);
         const comments = await res.json();
-        const likeRes = await fetch(`/like/${postId}`, {method: 'POST'}); // Sayıyı ve durumu al
+        const likeRes = await fetch(`/like/${postId}`, {method: 'POST'});
         const likeData = await likeRes.json();
-        
         document.getElementById('likeCountDisplay').innerText = likeData.like_count;
         document.getElementById('likeIcon').className = likeData.status === 'liked' ? 'fa-solid fa-heart verzia-gold-text' : 'fa-regular fa-heart verzia-gold-text';
-        
         document.getElementById('commentBox').innerHTML = comments.length > 0 
             ? comments.map(c => `<div class="mb-2"><b class="verzia-gold-text">@${c.username}</b> ${c.content}</div>`).join('')
             : '<p class="text-center opacity-50 mt-5">Henüz yorum yok...</p>';
