@@ -80,7 +80,18 @@
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background-color: #000; color: #fff; font-family: 'Montserrat', sans-serif; overflow: hidden; height: 100vh; }
+body { background-color: #000; color: #fff; font-family: 'Montserrat', sans-serif; overflow: hidden; height: 100vh; transition: background 0.5s, color 0.5s; }
+
+/* LIGHT MODE TANIMLARI */
+body.light-mode { background-color: #f5f5f5; color: #1a1a1a; }
+/* Light mode buton çerçeveleri gold yapıldı */
+body.light-mode .auth-link, body.light-mode .about-btn, body.light-mode .contact-btn { color: #1a1a1a; border-color: #aa771c; }
+body.light-mode .overlay { background: rgba(255, 255, 255, 0.98); }
+body.light-mode .overlay-content { background: #fff; border-color: #aa771c; }
+body.light-mode .pay-input { background: #eee; color: #000; border-color: #ccc; }
+body.light-mode .plan-card { color: #000; border-color: #ddd; }
+body.light-mode .plan-card.active { background: rgba(170, 119, 28, 0.1); }
+body.light-mode .close-btn { color: #aa771c; }
 
 .signature-container { width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; pointer-events: none; position: absolute; top: 0; left: 0; }
 .signature-text { font-family: 'Pinyon Script', cursive; font-size: 220px; fill: url(#goldLuxe); text-anchor: middle; dominant-baseline: central; }
@@ -112,7 +123,6 @@ body { background-color: #000; color: #fff; font-family: 'Montserrat', sans-seri
 
 .popular-badge-fixed { position: absolute; top: -12px; right: 15px; background: #d4af37; color: #000; font-size: 0.65rem; padding: 2px 10px; font-weight: 800; border-radius: 2px; z-index: 10; }
 
-/* Yeni Eklenen Buton Stili */
 .back-link-btn { background: none; border: none; color: rgba(212, 175, 55, 0.7); cursor: pointer; margin-top: 20px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; text-decoration: underline; transition: color 0.3s; }
 .back-link-btn:hover { color: #d4af37; }
 </style>
@@ -132,7 +142,6 @@ body { background-color: #000; color: #fff; font-family: 'Montserrat', sans-seri
     function toggleMode() { document.body.classList.toggle('light-mode'); }
 </script>
 {% endblock %}
-
 
 
 
