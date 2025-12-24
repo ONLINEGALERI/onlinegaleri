@@ -87,7 +87,7 @@ def profile(username):
     is_following = current_user.is_following(user_to_show)
     return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id), is_following=is_following)
 
-@app.route("/update_bio", methods=["POST"])
+@app.route("/update_bio", methods=["POST"]) # Hatanın çözümü bu rotaydı!
 @login_required
 def update_bio():
     new_bio = request.form.get("bio")
@@ -104,124 +104,115 @@ def toggle_follow(username):
     user_to_follow = User.query.filter_by(username=username).first_or_404()
     if user_to_follow == current_user:
         return jsonify({"status": "error", "message": "Kendinizi takip edemezsiniz."}), 400
-    
     if current_user.is_following(user_to_follow):
         current_user.unfollow(user_to_follow)
         status = "unfollowed"
     else:
         current_user.follow(user_to_follow)
         status = "followed"
-        notif = Notification(
-            user_id=user_to_follow.id,
-            sender_username=current_user.username,
-            notif_type="follow",
-            message=f"@{current_user.username} sizi takip etmeye başladı.",
-            is_read=False
-        )
+        notif = Notification(user_id=user_to_follow.id, sender_username=current_user.username, notif_type="follow", message=f"@{current_user.username} sizi takip etmeye başladı.", is_read=False)
         db.session.add(notif)
-        
     db.session.commit()
     return jsonify({"status": status, "follower_count": user_to_follow.followers_list.count()})
 
-# --------------------- ARAMA VE LİSTELEME ---------------------
-@app.route("/get_user_list/<username>/<type>")
+# --------------------- ETKİLEŞİM (BEĞENİ & YORUM) ---------------------
+@app.route('/like/<int:photo_id>', methods=['POST'])
 @login_required
-def get_user_list(username, type):
-    user = User.query.filter_by(username=username).first_or_404()
-    if user.username.lower() in ["beril", "ecem", "cemre", "verzia"] and type == 'followers':
-        return jsonify([])
-    users = user.followers_list.all() if type == 'followers' else user.followed.all()
-    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
-
-@app.route("/search_users")
-@login_required
-def search_users():
-    q = request.args.get("q", "").strip()
-    if not q: return jsonify([])
-    users = User.query.filter(User.username.ilike(f"%{q}%")).limit(10).all()
-    return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
-
-# --------------------- FOTOĞRAF VE YORUM ---------------------
-@app.route("/upload", methods=["POST"])
-@login_required
-def upload():
-    file = request.files.get('photo')
-    if file:
-        img_data = base64.b64encode(file.read()).decode('utf-8')
-        new_photo = Photo(filename=f"data:{file.mimetype};base64,{img_data}", owner_id=current_user.id, title="Verzia Moment", description="")
-        db.session.add(new_photo)
-        db.session.commit()
-    return redirect(url_for("profile", username=current_user.username))
+def like_photo(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    existing_like = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first()
+    if existing_like:
+        db.session.delete(existing_like)
+        status = "unliked"
+    else:
+        new_like = Like(user_id=current_user.id, photo_id=photo_id)
+        db.session.add(new_like)
+        status = "liked"
+        if photo.owner_id != current_user.id:
+            db.session.add(Notification(user_id=photo.owner_id, sender_username=current_user.username, notif_type="like", message=f"@{current_user.username} fotoğrafını beğendi.", is_read=False))
+    db.session.commit()
+    return jsonify({"status": status, "like_count": len(photo.likes)})
 
 @app.route('/add_comment/<int:photo_id>', methods=['POST'])
 @login_required
 def add_comment(photo_id):
     try:
         data = request.get_json()
+        comment_body = data.get('text', '').strip()
+        if not comment_body: return jsonify({"status": "error"}), 400
         photo = Photo.query.get_or_404(photo_id)
-        new_comment = Comment(body=data.get('text'), user_id=current_user.id, photo_id=photo_id)
+        new_comment = Comment(body=comment_body, user_id=current_user.id, photo_id=photo_id)
         db.session.add(new_comment)
         if photo.owner_id != current_user.id:
             db.session.add(Notification(user_id=photo.owner_id, sender_username=current_user.username, notif_type="comment", message=f"@{current_user.username} fotoğrafına yorum yaptı.", is_read=False))
         db.session.commit()
-        return jsonify({'status': 'success'})
+        return jsonify({'status': 'success', 'username': current_user.username, 'text': comment_body})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        return jsonify({'status': 'error'}), 500
 
-# --------------------- ADMIN / YÖNETİCİ PANELİ (KESİN ÇÖZÜM ✨) ---------------------
+@app.route('/get_post_details/<int:photo_id>')
+@login_required
+def get_post_details(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    is_liked = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first() is not None
+    return jsonify({
+        "likes": len(photo.likes),
+        "is_liked": is_liked,
+        "comments": [{"id": c.id, "username": User.query.get(c.user_id).username, "text": c.body, "can_delete": (c.user_id == current_user.id or photo.owner_id == current_user.id)} for c in photo.comments]
+    })
+
+@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    photo = Photo.query.get(comment.photo_id)
+    if comment.user_id == current_user.id or photo.owner_id == current_user.id:
+        db.session.delete(comment)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 403
+
+# --------------------- ADMIN & AYARLAR ---------------------
 @app.route("/admin/dashboard")
 @login_required
 def admin_dashboard():
-    # Karakter uyuşmazlığını önleyen asalet kilidi
     current_username = current_user.username.replace('İ', 'i').replace('I', 'ı').lower()
-    if "verzia" not in current_username:
-        flash("Yetkisiz erişim!", "error")
-        return redirect(url_for("profile", username=current_user.username))
-    
-    try:
-        all_users = User.query.order_by(User.id.desc()).all()
-        all_photos = Photo.query.order_by(Photo.id.desc()).all()
-        return render_template("admin.html", users=all_users, photos=all_photos)
-    except Exception as e:
-        print(f"Admin Hatası: {e}")
-        return redirect(url_for("profile", username=current_user.username))
-
-@app.route("/admin/delete_user/<int:user_id>", methods=['POST'])
-@login_required
-def admin_delete_user(user_id):
-    if "verzia" not in current_user.username.lower():
-        return jsonify({"status": "error"}), 403
-    user_to_delete = User.query.get_or_404(user_id)
-    if user_to_delete.username.lower() == "verzia":
-        return jsonify({"status": "error", "message": "Kurucu silinemez!"}), 400
-    db.session.delete(user_to_delete)
-    db.session.commit()
-    return jsonify({"status": "success"})
-
-# --------------------- DİĞER ROTALAR ---------------------
-@app.route("/notifications")
-@login_required
-def get_notifications():
-    notifications = current_user.notifications.order_by(Notification.id.desc()).limit(15).all()
-    data = [{"id": n.id, "sender": n.sender_username, "message": n.message, "timestamp": n.timestamp.strftime("%d.%m %H:%M"), "is_read": n.is_read} for n in notifications]
-    current_user.notifications.filter_by(is_read=False).update({"is_read": True})
-    db.session.commit()
-    return jsonify(data)
+    if "verzia" not in current_username: return redirect(url_for("profile", username=current_user.username))
+    all_users = User.query.order_by(User.id.desc()).all()
+    all_photos = Photo.query.order_by(Photo.id.desc()).all()
+    return render_template("admin.html", users=all_users, photos=all_photos)
 
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
     if request.method == "POST":
-        cp = request.form.get("current_password")
-        if not current_user.check_password(cp):
-            flash("Mevcut şifre hatalı!", "error")
-            return redirect(url_for("settings"))
         if request.form.get("username"): current_user.username = request.form.get("username")
         if request.form.get("password"): current_user.set_password(request.form.get("password"))
         db.session.commit()
         return redirect(url_for("profile", username=current_user.username))
     return render_template("settings.html", user=current_user)
+
+# --------------------- FOTOĞRAF İŞLEMLERİ ---------------------
+@app.route("/upload", methods=["POST"])
+@login_required
+def upload():
+    file = request.files.get('photo')
+    if file:
+        img_data = base64.b64encode(file.read()).decode('utf-8')
+        new_photo = Photo(filename=f"data:{file.mimetype};base64,{img_data}", owner_id=current_user.id, title="Verzia Moment")
+        db.session.add(new_photo)
+        db.session.commit()
+    return redirect(url_for("profile", username=current_user.username))
+
+@app.route('/delete_photo/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if photo.owner_id != current_user.id and "verzia" not in current_user.username.lower(): return jsonify({"status": "error"}), 403
+    db.session.delete(photo)
+    db.session.commit()
+    return jsonify({"status": "success"})
 
 @app.route("/logout")
 def logout():
