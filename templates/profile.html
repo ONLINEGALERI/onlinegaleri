@@ -68,8 +68,8 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 /* SOL BAR TASARIMI */
 .side-nav {
     width: 70px; 
-    background-color: #000; 
-    border-right: 1px solid #262626;
+    background-color: var(--ig-sidebar-bg); 
+    border-right: 1px solid var(--ig-border);
     display: flex; 
     flex-direction: column; 
     align-items: center;
@@ -92,9 +92,18 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     transform: scale(1.1);
 }
 
-/* MODALLAR */
-.v-modal-content { background: #000000 !important; border: 1px solid #d4af37 !important; color: #f5f5f5; border-radius: 12px; }
-.search-input-gold { background: #111 !important; border: 1px solid #d4af37 !important; color: #fff !important; }
+/* MODALLAR - DİNAMİK RENK AYARI YAPILDI */
+.v-modal-content { 
+    background-color: var(--modal-bg) !important; 
+    border: 1px solid #d4af37 !important; 
+    color: var(--ig-text) !important; 
+    border-radius: 12px; 
+}
+.search-input-gold { 
+    background-color: var(--input-bg) !important; 
+    border: 1px solid var(--ig-border) !important; 
+    color: var(--ig-text) !important; 
+}
 
 #avatarInput, #photoUploadInput { display: none; }
 </style>
@@ -186,7 +195,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
         <div class="modal-content v-modal-content">
             <div class="v-modal-header border-bottom-0 p-3">
                 <h5 class="modal-title verzia-gold-text">Biyografiyi Düzenle</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <form action="{{ url_for('update_bio') }}" method="POST">
@@ -203,7 +212,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
         <div class="modal-content v-modal-content">
             <div class="v-modal-header border-bottom-0 p-3">
                 <h5 class="modal-title verzia-gold-text">Kullanıcı Ara</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <input type="text" id="userSearchInput" class="form-control search-input-gold" placeholder="Kullanıcı adı yazın..." oninput="searchUsers()">
@@ -244,7 +253,7 @@ async function searchUsers() {
         const response = await fetch(`/search_users?q=${encodeURIComponent(q)}`);
         const users = await response.json();
         resDiv.innerHTML = users.map(u => `
-            <a href="/profile/${u.username}" style="display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid #1a1a1a; text-decoration:none; color:#fff;">
+            <a href="/profile/${u.username}" style="display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid var(--ig-border); text-decoration:none; color:inherit;">
                 <img src="${u.avatar}" style="width:35px; height:35px; border-radius:50%; border:1px solid #d4af37; object-fit: cover;">
                 <span>${u.username}</span>
             </a>
