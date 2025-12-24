@@ -252,14 +252,19 @@ def search_users():
     users = User.query.filter(User.username.ilike(f"%{q}%")).limit(10).all()
     return jsonify([{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users])
 
-# --------------------- FOTOĞRAF VE AYARLAR ---------------------
+# --------------------- FOTOĞRAF VE AYARLAR (FIXED ✨) ---------------------
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
     file = request.files.get('photo')
     if file:
         img_data = base64.b64encode(file.read()).decode('utf-8')
-        new_photo = Photo(filename=f"data:{file.mimetype};base64,{img_data}", owner_id=current_user.id)
+        # IntegrityError hatasını önlemek için title mühürlendi
+        new_photo = Photo(
+            filename=f"data:{file.mimetype};base64,{img_data}", 
+            owner_id=current_user.id,
+            title="Verzia Moment" # NOT NULL kuralı için pırlanta dokunuş ✨
+        )
         db.session.add(new_photo)
         db.session.commit()
     return redirect(url_for("profile", username=current_user.username))
