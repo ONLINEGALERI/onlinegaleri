@@ -8,11 +8,20 @@ from models.photo import Photo
 app = Flask(__name__)
 app.config.from_object('config.Config')
 
-# DATABASE BAĞLANTISI (KESİN ÇÖZÜM)
+# ---------------- DATABASE AYARI (HEM LOKAL HEM RENDER) ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
 if DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+    # Render üzerindeyken burası çalışır
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+else:
+    # Kendi bilgisayarındayken (Lokalde) burası çalışır ve hata vermez
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///verzia_local.db"
+# -----------------------------------------------------------------------
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 migrate.init_app(app, db)
@@ -22,12 +31,14 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# --- ANA SAYFA (ESKİ DÜZENİ BOZMADIK) ---
 @app.route("/")
 def index():
     if current_user.is_authenticated:
         return redirect(url_for("profile", username=current_user.username))
     return render_template("index.html")
 
+# --- GİRİŞ YAP ---
 @app.route("/login", methods=["POST"])
 def login():
     username = request.form.get("username")
@@ -38,6 +49,7 @@ def login():
         return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
     return jsonify({"status": "error", "message": "Hatalı bilgi!"}), 401
 
+# --- PROFİL SAYFASI (ESKİ ŞIK DÜZEN) ---
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
@@ -56,7 +68,9 @@ def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    with app.app_context():
+        db.create_all() # Lokal veritabanını otomatik oluşturur
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)), debug=True)
 
 
 
