@@ -87,7 +87,7 @@ def profile(username):
     is_following = current_user.is_following(user_to_show)
     return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id), is_following=is_following)
 
-@app.route("/update_bio", methods=["POST"]) # Hatanın çözümü bu rotaydı!
+@app.route("/update_bio", methods=["POST"])
 @login_required
 def update_bio():
     new_bio = request.form.get("bio")
@@ -182,6 +182,17 @@ def admin_dashboard():
     all_users = User.query.order_by(User.id.desc()).all()
     all_photos = Photo.query.order_by(Photo.id.desc()).all()
     return render_template("admin.html", users=all_users, photos=all_photos)
+
+@app.route("/admin/delete_user/<int:user_id>", methods=['POST']) # Silme hatasını çözen asil rota!
+@login_required
+def admin_delete_user(user_id):
+    current_username = current_user.username.replace('İ', 'i').replace('I', 'ı').lower()
+    if "verzia" not in current_username: return jsonify({"status": "error"}), 403
+    user_to_delete = User.query.get_or_404(user_id)
+    if user_to_delete.username.lower() == "verzia": return jsonify({"status": "error"}), 400
+    db.session.delete(user_to_delete)
+    db.session.commit()
+    return redirect(url_for('admin_dashboard'))
 
 @app.route("/settings", methods=["GET", "POST"])
 @login_required

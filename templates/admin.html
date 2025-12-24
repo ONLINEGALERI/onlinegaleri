@@ -7,8 +7,8 @@
     <i class="fa-solid fa-xmark"></i>
 </button>
 
-<div class="container mt-4 admin-page">
-    <h1 class="mb-4 admin-title">🛠️ Yönetici Paneli</h1>
+<div class="container admin-page" style="padding-top: 25px !important; padding-left: 60px; padding-right: 60px; max-width: 1200px; margin: 0 auto;">
+    <h1 class="mb-4 admin-title" style="font-size: 2.8rem; letter-spacing: 4px;">🛠️ Yönetici Paneli</h1>
 
     <div class="section-header">
         <h3>Kullanıcılar</h3>
@@ -97,11 +97,9 @@
 
 .admin-page { 
     color: var(--ig-text) !important;
-    padding-top: 60px;
     padding-bottom: 60px;
 }
 
-/* Tablo Arka Plan Çakışmasını Kökten Çözen Kısım ✨ */
 .admin-table-custom {
     background-color: transparent !important;
     color: var(--ig-text) !important;
@@ -110,7 +108,7 @@
 }
 
 .admin-table-custom td, .admin-table-custom th {
-    background-color: transparent !important; /* Bootstrap beyazlığını sildik */
+    background-color: transparent !important;
     color: inherit !important;
     border-color: rgba(191, 149, 63, 0.1) !important;
     padding: 15px;
@@ -121,7 +119,6 @@
     border-bottom: 2px solid #bf953f !important;
 }
 
-/* Text Görünürlük Ayarları */
 body:not(.light-mode) .admin-table-custom { color: #ffffff !important; }
 body.light-mode .admin-table-custom { color: #000000 !important; }
 
@@ -144,12 +141,11 @@ body.light-mode .admin-table-custom { color: #000000 !important; }
     font-weight: bold;
 }
 
-.current-user-text { color: #fcf6ba; font-weight: bold; }
+.current-user-text { color: #bf953f; font-weight: bold; }
 .admin-yetki-text, .no-data-text { color: var(--ig-text); opacity: 0.6; }
 
-/* Çarpı Butonu */
 .exit-btn-fixed {
-    position: fixed; top: 30px; right: 40px; font-size: 2.5rem;
+    position: fixed; top: 25px; right: 40px; font-size: 2.8rem;
     background: none; border: none; cursor: pointer; z-index: 10000;
     color: var(--ig-text); transition: 0.4s ease;
 }
@@ -159,6 +155,8 @@ body.light-mode .admin-table-custom { color: #000000 !important; }
     border: 1px solid #bf953f !important;
     background: transparent !important;
     color: #bf953f !important;
+    border-radius: 20px;
+    padding: 5px 15px;
 }
 </style>
 {% endblock %}
