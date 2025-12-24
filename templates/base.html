@@ -46,15 +46,33 @@
             justify-content: space-between;
         }
 
-        /* --- MODAL VE KUTU TASARIMLARI (BURAYI GÜNCELLEDİM) --- */
-        /* Hakkında kısmı gibi bembeyaz olması için !important ekledik */
+        /* --- V LOGO STİLİ --- */
+        .v-logo-nav {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 32px;
+            font-style: italic;
+            background: var(--v-gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: 0.5s;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .v-logo-nav:hover {
+            transform: scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 0 10px rgba(252, 246, 186, 0.6));
+        }
+
+        /* --- MODAL VE KUTU TASARIMLARI --- */
         .modal-content, .modal-header, .modal-body, .modal-footer, .overlay-content {
             background-color: var(--modal-bg) !important;
             color: var(--ig-text) !important;
-            border: 1px solid #d4af37 !important; /* Dış çerçeve gold kalıyor */
+            border: 1px solid #d4af37 !important;
         }
 
-        /* Yazı Yazılan Alanlar (Biyografi kutusu içi vb.) */
         textarea, input, .pay-input, .form-control {
             background-color: var(--input-bg) !important;
             color: var(--ig-text) !important;
@@ -62,7 +80,6 @@
             outline: none !important;
         }
 
-        /* Modal Başlıkları */
         .modal-title, .gold-title, .modal-header h5 {
             background: var(--v-gold-gradient);
             -webkit-background-clip: text;
@@ -70,18 +87,15 @@
             font-weight: bold !important;
         }
 
-        /* X (Kapatma) Butonu Rengi */
         body.light-mode .btn-close { filter: invert(0) !important; }
         body:not(.light-mode) .btn-close { filter: invert(1) !important; }
 
-        /* Sol Nav İkonları */
         .side-nav i, .side-nav a { 
             font-size: 24px; cursor: pointer; transition: 0.3s; text-decoration: none;
             background: var(--v-gold-gradient);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;
         }
 
-        /* @BERİL GOLD BUTON */
         .beril-btn-gold {
             background: var(--v-gold-gradient) !important;
             border: 1px solid #bf953f !important;
@@ -96,6 +110,7 @@
 
         @media (max-width: 768px) {
             .side-nav { width: 100%; height: 60px; top: auto; bottom: 0; flex-direction: row; justify-content: space-around; border: none; border-top: 1px solid var(--ig-border); padding: 0; }
+            .v-logo-nav { margin-bottom: 0; font-size: 24px; }
             .has-sidebar { margin-left: 0; padding-bottom: 60px; width: 100%; }
         }
     </style>
@@ -105,6 +120,8 @@
     {% if current_user.is_authenticated and request.endpoint != 'index' %}
     <aside class="side-nav">
         <div class="nav-top">
+            <a href="{{ url_for('profile', username='VERZİA') }}" class="v-logo-nav" title="Verzia Global">V</a>
+            
             <a href="{{ url_for('index') }}" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
             <i class="fa-solid fa-magnifying-glass" onclick="typeof openSearchModal === 'function' ? openSearchModal() : (window.showSearchModal ? showSearchModal() : null)"></i>
             <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle"></i></a>

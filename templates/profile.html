@@ -82,6 +82,33 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     justify-content: space-between; 
 }
 .nav-top, .nav-bottom { display: flex; flex-direction: column; align-items: center; gap: 35px; }
+
+/* --- LÜKS V LOGO TASARIMI (GÜNCELLENDİ) --- */
+.v-logo-nav {
+    font-family: 'Cinzel', serif; /* Krallık havası veren font */
+    font-weight: 700;
+    font-size: 28px;
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-decoration: none;
+    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    display: inline-block;
+    filter: drop-shadow(0 0 5px rgba(191, 149, 63, 0.4));
+}
+.v-logo-nav:hover {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 15px rgba(252, 246, 186, 0.8));
+    animation: goldPulse 2s infinite;
+}
+
+@keyframes goldPulse {
+    0% { filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4)); }
+    50% { filter: drop-shadow(0 0 20px rgba(252, 246, 186, 0.9)); }
+    100% { filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4)); }
+}
+
 .side-nav i, .side-nav a { 
     font-size: 24px; cursor: pointer; transition: 0.3s; text-decoration: none;
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
@@ -92,7 +119,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     transform: scale(1.1);
 }
 
-/* MODALLAR - DİNAMİK RENK AYARI YAPILDI */
+/* MODALLAR */
 .v-modal-content { 
     background-color: var(--modal-bg) !important; 
     border: 1px solid #d4af37 !important; 
@@ -113,6 +140,8 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
         <a href="{{ url_for('index') }}" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
         <i class="fa-solid fa-magnifying-glass" onclick="openSearchModal()" title="Kullanıcı Ara"></i>
         <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle active"></i></a>
+        
+        <a href="{{ url_for('profile', username='VERZİA') }}" class="v-logo-nav" title="Verzia Global">V</a>
     </div>
     <div class="nav-bottom">
         <a href="{{ url_for('settings') }}" title="Ayarlar"><i class="fa-solid fa-gear"></i></a>
@@ -161,7 +190,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     <div class="d-flex justify-content-between align-items-center mb-4 px-2">
         <h5 class="verzia-gold-text mb-0" style="letter-spacing: 1px;">GÖNDERİLER</h5>
         {% if can_edit and photos %}
-        <button class="verzia-gold-btn btn-sm" onclick="document.getElementById('photoUploadInput').click()">
+        <button class="verzia-gold-btn btn-sm" onclick="triggerPhotoUpload()">
             <i class="fa-solid fa-plus"></i> Yeni Ekle
         </button>
         {% endif %}
@@ -180,7 +209,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
                 <h3 class="verzia-gold-text">Henüz hiç gönderi yok</h3>
                 <p style="opacity: 0.7; margin-bottom: 20px;">Sen de hemen şimdi ilk fotoğrafını paylaş!</p>
                 {% if can_edit %}
-                <button class="verzia-gold-btn" onclick="document.getElementById('photoUploadInput').click()">Hemen Paylaş</button>
+                <button class="verzia-gold-btn" onclick="triggerPhotoUpload()">Hemen Paylaş</button>
                 <form id="directUploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
                     <input type="file" name="photo" id="photoUploadInput" onchange="this.form.submit()">
                 </form>
@@ -223,6 +252,16 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 </div>
 
 <script>
+// FOTOĞRAF YÜKLEME TETİKLEYİCİSİ (KESİN ÇÖZÜM)
+function triggerPhotoUpload() {
+    const input = document.getElementById('photoUploadInput');
+    if(input) {
+        input.click();
+    } else {
+        console.error("Upload input bulunamadı!");
+    }
+}
+
 async function toggleFollow(username) {
     const btn = document.getElementById('followBtn');
     const isFollowing = btn.innerText.trim() === "Takibi Bırak";
