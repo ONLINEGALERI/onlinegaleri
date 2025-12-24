@@ -96,7 +96,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
                 <h2 class="profile-name">{{ server_profile.username }}</h2>
                 {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check gold-verify"></i>{% endif %}
                 {% if can_edit %}
-                <button class="btn-ig-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">Profili Düzenle</button>
+                <button class="btn-ig-edit" onclick="openEditBioModal()">Profili Düzenle</button>
                 {% endif %}
             </div>
             <ul class="ig-stats">
@@ -109,9 +109,6 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
             </ul>
             <div class="ig-bio">
                 <div id="profileBio">
-                    {% if server_profile.is_vip %}
-                    <a href="#" class="bio-link" style="color: #d4af37; text-decoration: none; font-weight: bold;">VERZİA OFFİCİAL EXPERIENCE</a>
-                    {% endif %}
                     <p class="mt-1" style="white-space: pre-wrap;">{{ server_profile.bio }}</p>
                 </div>
             </div>
@@ -150,6 +147,23 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     </div>
 </div>
 
+<div class="modal fade" id="editBioModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content v-modal-content">
+            <div class="v-modal-header border-bottom-0 p-3">
+                <h5 class="modal-title verzia-gold-text">Biyografiyi Düzenle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{{ url_for('update_bio') }}" method="POST">
+                    <textarea name="bio" class="form-control search-input-gold mb-3" rows="4" placeholder="Kendinizden bahsedin...">{{ server_profile.bio }}</textarea>
+                    <button type="submit" class="verzia-gold-btn w-100">Kaydet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="searchModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content v-modal-content">
@@ -166,6 +180,10 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 </div>
 
 <script>
+function openEditBioModal() {
+    new bootstrap.Modal(document.getElementById('editBioModal')).show();
+}
+
 function openSearchModal() {
     new bootstrap.Modal(document.getElementById('searchModal')).show();
     setTimeout(() => document.getElementById('userSearchInput').focus(), 500);

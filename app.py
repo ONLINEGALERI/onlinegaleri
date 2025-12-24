@@ -82,6 +82,16 @@ def profile(username):
     is_following = current_user.is_following(user_to_show)
     return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id), is_following=is_following)
 
+@app.route("/update_bio", methods=["POST"])
+@login_required
+def update_bio():
+    new_bio = request.form.get("bio")
+    user = User.query.get(current_user.id)
+    if user:
+        user.bio = new_bio
+        db.session.commit()
+    return redirect(url_for("profile", username=user.username))
+
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
