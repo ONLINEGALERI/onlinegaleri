@@ -12,3 +12,8 @@ class Photo(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     owner = db.relationship('User', backref=db.backref('photos', lazy=True))
+
+    # --- SADECE BU 2 SATIRI EKLEDİK (HATALARI KÖKTEN ÇÖZER) ---
+    # Beğeni sayısının gözükmesi ve yorumların listelenmesi için gerekli bağlantılar:
+    comments = db.relationship('Comment', backref='photo', lazy=True, cascade="all, delete-orphan")
+    likes = db.relationship('Like', backref='photo', lazy=True, cascade="all, delete-orphan")
