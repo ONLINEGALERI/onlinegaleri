@@ -17,25 +17,26 @@
 .gold-verify { font-size: 20px; background: linear-gradient(135deg, #a67c00 0%, #ffbf00 50%, #b8860b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.3)); }
 
 .btn-ig-edit, .btn-ig-follow { 
-    background: transparent !important; 
-    border: 1px solid #bf953f !important; 
-    border-radius: 30px !important; 
-    color: #bf953f !important;
-    font-weight: 700; 
-    font-size: 14px; 
-    padding: 8px 20px; 
-    cursor: pointer; 
-    transition: all 0.3s ease; 
-    display: inline-block;
-    text-decoration: none;
+    background: transparent !important; border: 1px solid #bf953f !important; border-radius: 30px !important; 
+    color: #bf953f !important; font-weight: 700; font-size: 14px; padding: 8px 20px; 
+    cursor: pointer; transition: all 0.3s ease; display: inline-block; text-decoration: none;
 }
 
-.btn-plus-gold { width: 35px; height: 35px; border-radius: 50%; background: var(--v-gold-gradient); display: flex; align-items: center; justify-content: center; color: #000; font-size: 18px; cursor: pointer; margin-left: 10px; border: 1px solid #d4af37; transition: 0.3s; }
-.btn-plus-gold:hover { transform: scale(1.1) rotate(90deg); }
-
-.ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
-.ig-stats li { font-size: 16px; color: var(--ig-text); }
-.ig-stats b { font-weight: 600; }
+/* 3D KALP ANİMASYONU STİLLERİ (GERİ GELDİ) */
+.big-heart { 
+    position: absolute; top: 50%; left: 50%; 
+    transform: translate(-50%, -50%) scale(0); 
+    color: #fcf6ba; font-size: 100px; opacity: 0; 
+    pointer-events: none; z-index: 100; 
+    text-shadow: 0 0 30px rgba(191, 149, 63, 0.8);
+    transition: 0.3s;
+}
+.heart-pop { animation: heartPopAnim 0.8s ease-out; }
+@keyframes heartPopAnim { 
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 
+    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; } 
+    100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } 
+}
 
 .ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
 .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
@@ -48,7 +49,7 @@
 input[type="file"] { display: none !important; }
 
 .post-modal-body { display: flex; padding: 0; min-height: 500px; flex-wrap: nowrap !important; }
-.post-modal-img-area { flex: 1.2; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
+.post-modal-img-area { flex: 1.2; background: #000; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .post-modal-img-area img { max-width: 100%; max-height: 80vh; object-fit: contain; }
 .post-modal-info-area { flex: 0.8; display: flex; flex-direction: column; background: var(--modal-bg); border-left: 1px solid var(--ig-border); min-width: 350px !important; }
 
@@ -109,25 +110,14 @@ input[type="file"] { display: none !important; }
     </div>
 </div>
 
-<div class="modal fade" id="userListModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content v-modal-content">
-            <button type="button" class="verzia-manual-close" data-bs-dismiss="modal">&times;</button>
-            <div style="padding:15px; border-bottom:1px solid var(--ig-border); text-align:center;">
-                <h6 class="modal-title verzia-gold-text fw-bold m-0" id="userListTitle">Liste</h6>
-            </div>
-            <div class="modal-body p-0" id="userListContainer" style="max-height: 400px; overflow-y: auto;"></div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="postModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content v-modal-content">
             <button type="button" class="verzia-manual-close" data-bs-dismiss="modal">&times;</button>
             <div class="post-modal-body">
-                <div class="post-modal-img-area">
+                <div class="post-modal-img-area" ondblclick="handleDoubleTap()">
                     <img id="modalImg" src="">
+                    <i id="tapHeart" class="fa-solid fa-heart big-heart"></i>
                 </div>
                 <div class="post-modal-info-area">
                     <div style="padding:15px; border-bottom:1px solid var(--ig-border); text-align:center;">
@@ -138,49 +128,49 @@ input[type="file"] { display: none !important; }
                         <i id="likeIcon" class="fa-regular fa-heart verzia-gold-text" style="font-size:24px; cursor:pointer;" onclick="toggleLike()"></i>
                         <div class="mt-1"><b><span id="likeCountDisplay">0</span> beğeni</b></div>
                     </div>
+                    <div style="padding:10px; border-top:1px solid var(--ig-border);">
+                        <div class="input-group">
+                            <input type="text" id="newComment" class="form-control" placeholder="Yorum ekle..." style="background:transparent; border:none; color:var(--ig-text); outline:none;">
+                            <button style="background:none; border:none; color:#bf953f; font-size:20px; cursor:pointer;" onclick="addComment()">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="editBioModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content v-modal-content"><button type="button" class="verzia-manual-close" data-bs-dismiss="modal">&times;</button><div class="modal-header border-bottom-0 p-3 justify-content-center"><h5 class="modal-title verzia-gold-text">Biyografiyi Düzenle</h5></div><div class="modal-body p-4"><form action="{{ url_for('update_bio') }}" method="POST"><textarea name="bio" class="form-control mb-3" rows="4" style="background: var(--input-bg); border: 1px solid var(--ig-border); color: var(--ig-text);">{{ server_profile.bio }}</textarea><button type="submit" class="verzia-gold-btn w-100" style="background: var(--v-gold-gradient); color: #000; font-weight: bold; border: none; padding: 10px; border-radius: 8px;">Kaydet</button></form></div></div></div></div>
-
 <script>
 let activePostId = null;
+
+// ÇİFT TIKLAMA ANİMASYONU
+function handleDoubleTap() {
+    const heart = document.getElementById('tapHeart');
+    heart.classList.add('heart-pop');
+    setTimeout(() => heart.classList.remove('heart-pop'), 800);
+    toggleLike();
+}
 
 async function deleteMyPost(photoId) {
     if(confirm("Bu içeriği kaldırmak istediğinize emin misiniz?")) {
         try {
             const res = await fetch(`/delete_photo/${photoId}`, {method: 'POST'});
             const data = await res.json();
-            if(data.status === "success") {
-                location.reload();
-            }
+            if(data.status === "success") { location.reload(); }
         } catch(e) { console.error(e); }
     }
 }
 
-async function showUserList(type) {
-    const pathArray = window.location.pathname.split('/');
-    const username = pathArray[pathArray.length - 1];
-    const container = document.getElementById('userListContainer');
-    document.getElementById('userListTitle').innerText = type === 'followers' ? 'Takipçiler' : 'Takip Edilenler';
-    container.innerHTML = '<p class="text-center opacity-50 p-4">Yükleniyor...</p>';
-    new bootstrap.Modal(document.getElementById('userListModal')).show();
-    try {
-        const res = await fetch(`/get_user_list/${username}/${type}`);
-        const users = await res.json();
-        if(users.length === 0) {
-            container.innerHTML = '<p class="text-center opacity-50 p-4">Bu liste gizlidir veya henüz kimse yok.</p>';
-            return;
-        }
-        container.innerHTML = users.map(u => `
-            <a href="/profile/${u.username}" style="display:flex;align-items:center;padding:12px;text-decoration:none;color:var(--ig-text);border-bottom:1px solid var(--ig-border);">
-                <img src="${u.avatar}" style="width:35px;height:35px;border-radius:50%;margin-right:10px;border:1px solid #d4af37;object-fit:cover;">
-                <span class="fw-bold">${u.username}</span>
-            </a>`).join('');
-    } catch(e) { container.innerHTML = '<p class="text-center text-danger p-4">Hata oluştu!</p>'; }
+async function deleteComment(commentId, postId) {
+    if(confirm("Bu yorumu silmek istediğinize emin misiniz?")) {
+        try {
+            const res = await fetch(`/delete_comment/${commentId}`, { method: 'POST' });
+            const data = await res.json();
+            if(data.status === "success") { loadComments(postId); }
+        } catch(e) { console.error(e); }
+    }
 }
 
 async function openPostModal(postId, imgUrl) {
@@ -196,10 +186,35 @@ async function loadComments(postId) {
         const data = await res.json();
         document.getElementById('likeCountDisplay').innerText = data.likes;
         document.getElementById('likeIcon').className = data.is_liked ? 'fa-solid fa-heart verzia-gold-text' : 'fa-regular fa-heart verzia-gold-text';
-        document.getElementById('commentBox').innerHTML = data.comments.length > 0 
-            ? data.comments.map(c => `<div class="mb-2"><b class="verzia-gold-text">@${c.username}</b> ${c.text}</div>`).join('')
-            : '<p class="text-center opacity-50 mt-5">Yorum bulunamadı.</p>';
+        
+        const commentBox = document.getElementById('commentBox');
+        if (data.comments.length > 0) {
+            commentBox.innerHTML = data.comments.map(c => `
+                <div class="mb-2 d-flex justify-content-between align-items-center">
+                    <div>
+                        <b class="verzia-gold-text">@${c.username}</b> ${c.text}
+                    </div>
+                    ${(c.can_delete) ? `
+                    <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:12px; color:#ff4d4d; opacity:0.8;" onclick="deleteComment('${c.id}', '${postId}')"></i>
+                    ` : ''}
+                </div>
+            `).join('');
+        } else {
+            commentBox.innerHTML = '<p class="text-center opacity-50 mt-5">Yorum bulunamadı.</p>';
+        }
     } catch(e) {}
+}
+
+async function addComment() {
+    const input = document.getElementById('newComment');
+    if(!input.value.trim()) return;
+    await fetch(`/add_comment/${activePostId}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text: input.value})
+    });
+    input.value = '';
+    loadComments(activePostId);
 }
 
 async function toggleLike() {
@@ -209,7 +224,6 @@ async function toggleLike() {
     document.getElementById('likeIcon').className = data.status === 'liked' ? 'fa-solid fa-heart verzia-gold-text' : 'fa-regular fa-heart verzia-gold-text';
 }
 
-function openEditBioModal() { new bootstrap.Modal(document.getElementById('editBioModal')).show(); }
 function previewImage(event) {
     const reader = new FileReader();
     reader.onload = function(){ document.getElementById('avatarPreview').src = reader.result; };

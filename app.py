@@ -153,8 +153,17 @@ def settings():
 def get_post_details(photo_id):
     photo = Photo.query.get_or_404(photo_id)
     is_liked = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first() is not None
-    comments = [{"username": db.session.get(User, c.user_id).username, "text": c.body} for c in photo.comments]
-    return jsonify({"likes": len(photo.likes), "is_liked": is_liked, "comments": comments})
+    # Yorum verisini, silme yetkisini de içerecek şekilde güncelledik
+    comment_data = []
+    for c in photo.comments:
+        u = db.session.get(User, c.user_id)
+        comment_data.append({
+            "id": c.id,
+            "username": u.username,
+            "text": c.body,
+            "can_delete": (c.user_id == current_user.id or photo.owner_id == current_user.id)
+        })
+    return jsonify({"likes": len(photo.likes), "is_liked": is_liked, "comments": comment_data})
 
 @app.route('/like/<int:photo_id>', methods=['POST'])
 @app.route('/like_post/<int:photo_id>', methods=['POST'])
@@ -180,6 +189,18 @@ def add_comment(photo_id):
     db.session.add(Comment(body=content, user_id=current_user.id, photo_id=photo_id))
     db.session.commit()
     return jsonify({'status': 'success'})
+
+# --------------------- YORUM SİLME (YENİ EKLENDİ) ---------------------
+@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    photo = Photo.query.get(comment.photo_id)
+    if comment.user_id == current_user.id or photo.owner_id == current_user.id:
+        db.session.delete(comment)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    return jsonify({'status': 'error'}), 403
 
 @app.route("/get_user_list/<username>/<type>")
 @login_required
