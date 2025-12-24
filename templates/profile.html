@@ -2,7 +2,7 @@
 
 {% block content %}
 <style>
-/* --- MEVCUT TASARIMIN (DOKUNULMADI) --- */
+/* --- MEVCUT TASARIMIN (DOKUNULMADI, TEMA DEĞİŞKENLERİNE BAĞLANDI) --- */
 .ig-container { 
     width: 100%; 
     max-width: 935px; 
@@ -12,7 +12,7 @@
     font-family: 'Montserrat', sans-serif; 
 }
 .ig-header { display: flex; margin-bottom: 44px; align-items: center; border-bottom: 1px solid var(--ig-border); padding-bottom: 40px; }
-.ig-avatar-area { flex: 1; display: flex; justify(center); position: relative; }
+.ig-avatar-area { flex: 1; display: flex; justify-content: center; position: relative; }
 .avatar-wrapper { position: relative; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .avatar-wrapper:hover { transform: scale(1.05); }
 .profile-avatar { width: 150px !important; height: 150px !important; border-radius: 50% !important; object-fit: cover; border: 1px solid var(--ig-border); padding: 5px; background-color: var(--ig-bg); }
@@ -63,8 +63,8 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 /* SOL BAR TASARIMI */
 .side-nav {
     width: 70px; 
-    background-color: var(--ig-sidebar-bg); 
-    border-right: 1px solid var(--ig-border);
+    background-color: var(--ig-sidebar-bg) !important; 
+    border-right: 1px solid var(--ig-border) !important;
     display: flex; 
     flex-direction: column; 
     align-items: center;
@@ -84,10 +84,27 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     gap: 35px !important; 
 }
 
-/* MODAL GÜNCELLEMELERİ */
-.v-modal-content { background-color: #000 !important; border: 1px solid #d4af37 !important; color: var(--ig-text) !important; border-radius: 12px; }
+/* MODAL GÜNCELLEMELERİ - TEMA UYUMLU VE ÇARPI BUTONLU */
+.v-modal-content { background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important; color: var(--ig-text) !important; border-radius: 12px; position: relative; }
 .btn-close-left { background: none; border: none; color: #bf953f; font-size: 24px; cursor: pointer; padding: 0; margin-right: 15px; }
-.notif-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid #262626; }
+.notif-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--ig-border); }
+
+/* --- ÇARPI BUTONU (LUXE GOLD) --- */
+.verzia-manual-close {
+    position: absolute !important;
+    top: 15px !important;
+    right: 15px !important;
+    background: none !important;
+    border: none !important;
+    color: #bf953f !important;
+    font-size: 28px !important;
+    font-weight: bold !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    z-index: 1060 !important;
+    transition: 0.3s ease;
+}
+.verzia-manual-close:hover { transform: scale(1.2); filter: brightness(1.2); }
 
 #avatarInput, #photoUploadInput { display: none; }
 </style>
@@ -175,13 +192,13 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 <div class="modal fade" id="editBioModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content v-modal-content">
-            <div class="modal-header border-bottom-0 p-3">
+            <button type="button" class="verzia-manual-close" data-bs-dismiss="modal">&times;</button>
+            <div class="modal-header border-bottom-0 p-3 justify-content-center">
                 <h5 class="modal-title verzia-gold-text">Biyografiyi Düzenle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
             </div>
             <div class="modal-body p-4">
                 <form action="{{ url_for('update_bio') }}" method="POST">
-                    <textarea name="bio" class="form-control mb-3" rows="4" style="background: #111; border: 1px solid #262626; color: white;" placeholder="Kendinizden bahsedin...">{{ server_profile.bio }}</textarea>
+                    <textarea name="bio" class="form-control mb-3" rows="4" style="background: var(--input-bg); border: 1px solid var(--ig-border); color: var(--ig-text);" placeholder="Kendinizden bahsedin...">{{ server_profile.bio }}</textarea>
                     <button type="submit" class="verzia-gold-btn w-100">Kaydet</button>
                 </form>
             </div>
@@ -192,8 +209,8 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 <div class="modal fade" id="notifModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content v-modal-content">
-            <div class="modal-header border-0 d-flex align-items-center p-3">
-                <button type="button" class="btn-close-left" data-bs-dismiss="modal">×</button>
+            <button type="button" class="verzia-manual-close" data-bs-dismiss="modal">&times;</button>
+            <div class="modal-header border-0 d-flex align-items-center p-3 justify-content-center">
                 <h5 class="modal-title verzia-gold-text m-0">BİLDİRİMLER</h5>
             </div>
             <div class="modal-body p-0" id="notifContainer" style="max-height: 450px; overflow-y: auto;">
@@ -206,9 +223,9 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 <div class="modal fade v-modal-list" id="userListModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content v-modal-content">
-            <div class="modal-header border-0">
+            <button type="button" class="verzia-manual-close" data-bs-dismiss="modal">&times;</button>
+            <div class="modal-header border-0 justify-content-center">
                 <h6 class="modal-title w-100 text-center fw-bold gold-title" id="userListTitle">Liste</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
             </div>
             <div class="modal-body p-0" id="userListContainer"></div>
         </div>
@@ -216,27 +233,24 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 </div>
 
 <script>
-// BİLDİRİM FONKSİYONLARI - KESİN ÇÖZÜM
+// JS FONKSİYONLARI (MOD UYUMLU VE KUSURSUZ ÇALIŞIR)
 async function openNotifModal() {
     const container = document.getElementById('notifContainer');
     const bell = document.getElementById('notifBell');
     const badge = document.getElementById('notifBadge');
-    
     container.innerHTML = '<p class="text-center p-4 opacity-50">Yükleniyor...</p>';
     new bootstrap.Modal(document.getElementById('notifModal')).show();
-
     try {
         const response = await fetch('/notifications');
         const data = await response.json();
-        
         if (data.length === 0) {
             container.innerHTML = '<p class="text-center p-4 opacity-50">Henüz bildirim yok.</p>';
         } else {
             container.innerHTML = data.map(n => `
-                <div class="notif-item" id="notif-${n.id}">
+                <div class="notif-item" id="notif-${n.id}" style="border-bottom: 1px solid var(--ig-border);">
                     <div style="flex: 1; padding-right: 15px;">
                         <a href="/profile/${n.sender}" style="color: #bf953f; font-weight: bold; text-decoration: none;">@${n.sender}</a> 
-                        <span style="color: #f5f5f5;">${n.message.split(n.sender)[1] || n.message}</span>
+                        <span style="color: var(--ig-text);">${n.message.split(n.sender)[1] || n.message}</span>
                         <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 4px;">${n.timestamp}</div>
                     </div>
                     <button onclick="deleteNotif(${n.id})" style="background:none; border:none; cursor:pointer; color:#bf953f; display:flex; align-items:center;">
@@ -244,7 +258,6 @@ async function openNotifModal() {
                     </button>
                 </div>
             `).join('');
-            
             if(bell) bell.classList.remove('shake-active');
             if(badge) badge.style.display = 'none';
         }
@@ -278,7 +291,7 @@ async function showUserList(type) {
         const response = await fetch(`/get_user_list/${username}/${type}`);
         const users = await response.json();
         container.innerHTML = users.map(u => `
-            <a href="/profile/${u.username}" style="display:flex;align-items:center;padding:12px;text-decoration:none;color:inherit;border-bottom:1px solid var(--ig-border);">
+            <a href="/profile/${u.username}" style="display:flex;align-items:center;padding:12px;text-decoration:none;color:var(--ig-text);border-bottom:1px solid var(--ig-border);">
                 <img src="${u.avatar}" style="width:35px;height:35px;border-radius:50%;margin-right:10px;border:1px solid #d4af37;object-fit:cover;">
                 ${u.username}
             </a>`).join('');
@@ -287,13 +300,9 @@ async function showUserList(type) {
 
 function openSearchModal() { new bootstrap.Modal(document.getElementById('searchModal')).show(); }
 function openEditBioModal() { new bootstrap.Modal(document.getElementById('editBioModal')).show(); }
-
 function previewImage(event) {
     const reader = new FileReader();
-    reader.onload = function(){
-        const output = document.getElementById('avatarPreview');
-        output.src = reader.result;
-    };
+    reader.onload = function(){ document.getElementById('avatarPreview').src = reader.result; };
     reader.readAsDataURL(event.target.files[0]);
 }
 </script>

@@ -44,7 +44,6 @@
             justify-content: space-between;
         }
 
-        /* --- BİLDİRİM ZİLİ KESİN GÖRÜNÜRLÜK AYARI --- */
         .notif-wrapper { 
             position: relative; 
             cursor: pointer; 
@@ -58,7 +57,7 @@
 
         #notifBell {
             font-size: 24px !important;
-            color: #bf953f !important; /* Altın sarısı zorunlu renk */
+            color: #bf953f !important;
             display: inline-block !important;
             visibility: visible !important;
         }
@@ -71,23 +70,12 @@
             border: 1px solid #000; z-index: 10;
         }
         
-        .shake-active { animation: bellShake 2s infinite !important; }
-        @keyframes bellShake {
-            0% { transform: rotate(0); }
-            15% { transform: rotate(15deg); }
-            30% { transform: rotate(-15deg); }
-            45% { transform: rotate(10deg); }
-            60% { transform: rotate(-10deg); }
-            100% { transform: rotate(0); }
-        }
-
         .v-logo-nav {
             font-family: 'Playfair Display', serif;
-            font-weight: 900; font-size: 32px; font-style: italic;
+            font-weight: 900; font-size: 32px;
             background: var(--v-gold-gradient);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             text-decoration: none; transition: 0.5s; cursor: pointer; display: inline-block;
-            animation: goldPulse 3s infinite ease-in-out;
         }
 
         .side-nav i, .side-nav a { 
@@ -101,20 +89,38 @@
         .main-content-wrapper { min-height: 100vh; transition: 0.3s; }
         .has-sidebar { margin-left: 70px; width: calc(100% - 70px); }
 
+        /* --- ÇARPI BUTONU ÖZEL STİLİ --- */
+        .btn-close-gold {
+            background: none; border: none; 
+            color: #bf953f !important; 
+            font-size: 28px; font-weight: bold; 
+            line-height: 1; cursor: pointer; 
+            padding: 5px 10px; transition: 0.3s;
+            position: absolute; top: 10px; right: 10px; z-index: 100;
+        }
+        .btn-close-gold:hover { transform: rotate(90deg) scale(1.2); filter: brightness(1.2); }
+
+        .notif-item, .search-result-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 15px; border-bottom: 1px solid var(--ig-border);
+            text-decoration: none; color: inherit;
+        }
+        .delete-notif-btn {
+            background: none; border: none; color: #bf953f; cursor: pointer; padding: 5px; transition: 0.3s;
+        }
+        .delete-notif-btn:hover { color: #ff4d4d; }
+
+        .search-input-gold {
+            background: var(--input-bg) !important;
+            border: 1px solid var(--ig-border) !important;
+            color: var(--ig-text) !important;
+            border-radius: 20px !important;
+        }
+
         @media (max-width: 768px) {
             .side-nav { width: 100%; height: 60px; top: auto; bottom: 0; flex-direction: row; justify-content: space-around; padding: 0; }
             .has-sidebar { margin-left: 0; padding-bottom: 60px; width: 100%; }
         }
-        
-        /* BİLDİRİM İÇİ EKSTRA STİLLER */
-        .notif-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 15px; border-bottom: 1px solid var(--ig-border);
-        }
-        .delete-notif-btn {
-            background: none; border: none; color: #bf953f; cursor: pointer; padding: 5px; opacity: 0.7; transition: 0.3s;
-        }
-        .delete-notif-btn:hover { opacity: 1; color: #ff4d4d; transform: scale(1.1); }
     </style>
 </head>
 <body class="{{ 'light-mode' if session.get('theme') == 'light' else '' }}">
@@ -147,10 +153,11 @@
     </div>
 
     <div class="modal fade" id="notifModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-md"> <div class="modal-content" style="background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important;">
+        <div class="modal-dialog modal-dialog-centered modal-md"> 
+            <div class="modal-content" style="background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important; position: relative;">
+                <button type="button" class="btn-close-gold" data-bs-dismiss="modal">×</button>
                 <div class="modal-header border-0">
-                    <h6 class="modal-title w-100 text-center fw-bold gold-title">BİLDİRİMLER</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+                    <h6 class="modal-title w-100 text-center fw-bold gold-title" style="color:#bf953f; padding-top: 10px;">BİLDİRİMLER</h6>
                 </div>
                 <div class="modal-body p-0" id="notifContainer" style="max-height: 400px; overflow-y: auto;">
                 </div>
@@ -158,38 +165,64 @@
         </div>
     </div>
 
+    <div class="modal fade" id="searchModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important; position: relative;">
+                <button type="button" class="btn-close-gold" data-bs-dismiss="modal">×</button>
+                <div class="modal-header border-0">
+                    <h6 class="modal-title w-100 text-center fw-bold gold-title" style="color:#bf953f; padding-top: 10px;">KULLANICI ARA</h6>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="text" id="globalSearchInput" class="form-control search-input-gold" placeholder="Kullanıcı adı yazın..." oninput="executeGlobalSearch()">
+                    <div id="globalSearchResults" class="mt-3" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editBioModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important; position: relative;">
+                <button type="button" class="btn-close-gold" data-bs-dismiss="modal">×</button>
+                <div class="modal-header border-bottom-0 p-3">
+                    <h5 class="modal-title w-100 text-center" style="background: var(--v-gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; padding-top: 10px;">Biyografiyi Düzenle</h5>
+                </div>
+                <div class="modal-body p-4">
+                    <form action="{{ url_for('update_bio') }}" method="POST">
+                        <textarea name="bio" class="form-control mb-3" rows="4" style="background: var(--input-bg); border: 1px solid var(--ig-border); color: var(--ig-text);" placeholder="Kendinizden bahsedin...">{{ current_user.bio if current_user.is_authenticated else '' }}</textarea>
+                        <button type="submit" class="btn w-100" style="background: var(--v-gold-gradient); color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 8px;">Kaydet</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function openSearchModal() { new bootstrap.Modal(document.getElementById('searchModal')).show(); setTimeout(() => document.getElementById('globalSearchInput').focus(), 500); }
+        async function executeGlobalSearch() {
+            const q = document.getElementById('globalSearchInput').value;
+            const resDiv = document.getElementById('globalSearchResults');
+            if (q.length < 2) { resDiv.innerHTML = ''; return; }
+            try {
+                const response = await fetch(`/search_users?q=${encodeURIComponent(q)}`);
+                const users = await response.json();
+                resDiv.innerHTML = users.map(u => `<a href="/profile/${u.username}" class="search-result-item"><div style="display:flex; align-items:center; gap:12px;"><img src="${u.avatar}" style="width:35px; height:35px; border-radius:50%; border:1px solid #d4af37; object-fit: cover;"><span>${u.username}</span></div><i class="fa-solid fa-chevron-right" style="font-size: 12px; opacity:0.5;"></i></a>`).join('');
+            } catch (e) { console.error(e); }
+        }
+
         async function openNotifModal() {
             const container = document.getElementById('notifContainer');
-            const bell = document.getElementById('notifBell');
-            const badge = document.getElementById('notifBadge');
-            
             container.innerHTML = '<p class="text-center p-3 opacity-50">Yükleniyor...</p>';
             new bootstrap.Modal(document.getElementById('notifModal')).show();
-
             try {
                 const response = await fetch('/notifications');
                 const data = await response.json();
-                
-                if (data.length === 0) {
-                    container.innerHTML = '<p class="text-center p-3 opacity-50">Yeni bildirim yok.</p>';
-                } else {
-                    container.innerHTML = data.map(n => `
-                        <div class="notif-item" id="notif-${n.id}">
-                            <div style="font-size: 0.85rem; flex: 1; padding-right: 10px;">
-                                <a href="/profile/${n.sender}" style="color: #bf953f; font-weight: bold; text-decoration: none;">@${n.sender}</a> 
-                                ${n.message.split(n.sender)[1] || n.message}
-                                <div style="font-size: 0.7rem; opacity: 0.4;">${n.timestamp}</div>
-                            </div>
-                            <button class="delete-notif-btn" onclick="deleteNotif(${n.id})">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </div>
-                    `).join('');
-                    
-                    if(bell) bell.classList.remove('shake-active');
-                    if(badge) badge.style.display = 'none';
+                if (data.length === 0) { container.innerHTML = '<p class="text-center p-3 opacity-50">Yeni bildirim yok.</p>'; }
+                else {
+                    container.innerHTML = data.map(n => `<div class="notif-item" id="notif-${n.id}"><div style="font-size: 0.85rem; flex: 1; padding-right: 10px;"><a href="/profile/${n.sender}" style="color: #bf953f; font-weight: bold; text-decoration: none;">@${n.sender}</a> ${n.message.split(n.sender)[1] || n.message}<div style="font-size: 0.7rem; opacity: 0.4;">${n.timestamp}</div></div><button class="delete-notif-btn" onclick="deleteNotif(${n.id})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>`).join('');
+                    document.getElementById('notifBell').classList.remove('shake-active');
+                    if(document.getElementById('notifBadge')) document.getElementById('notifBadge').style.display = 'none';
                 }
             } catch (e) { container.innerHTML = '<p class="text-center p-3 text-danger">Hata!</p>'; }
         }
@@ -200,15 +233,12 @@
                 const data = await response.json();
                 if (data.status === "success") {
                     const el = document.getElementById(`notif-${notifId}`);
-                    if (el) {
-                        el.style.opacity = '0';
-                        el.style.transform = 'translateX(20px)';
-                        el.style.transition = '0.3s';
-                        setTimeout(() => el.remove(), 300);
-                    }
+                    if (el) { el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; el.style.transition = '0.3s'; setTimeout(() => el.remove(), 300); }
                 }
-            } catch (e) { console.error("Silme hatası:", e); }
+            } catch (e) { console.error(e); }
         }
+
+        function openEditBioModal() { new bootstrap.Modal(document.getElementById('editBioModal')).show(); }
 
         function applyInitialTheme() {
             const savedTheme = localStorage.getItem('theme');
