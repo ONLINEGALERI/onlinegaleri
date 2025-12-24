@@ -64,20 +64,28 @@ def register():
     login_user(new_user, remember=True)
     return jsonify({"status": "success", "redirect": url_for("profile", username=new_user.username)})
 
-# --------------------- PROFİL VE SOSYAL ---------------------
+# --------------------- PROFİL VE SOSYAL (GÜNCELLENDİ) ---------------------
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
     user_to_show = User.query.filter_by(username=username).first_or_404()
     photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
+    
+    # KURUCU LİSTESİ
+    kurucular = ["beril", "ecem", "cemre"]
+    is_kurucu = user_to_show.username.lower() in kurucular
+    
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
         "bio": user_to_show.bio or "Verzia Experience",
-        "followers": user_to_show.followers_list.count(),
+        # Kuruculara 1.5M tanımlıyoruz
+        "followers": "1.5M" if is_kurucu else user_to_show.followers_list.count(),
         "following": user_to_show.followed.count(),
-        "is_vip": user_to_show.username.lower() in ["bec", "beril"]
+        "is_vip": is_kurucu or user_to_show.username.lower() == "bec",
+        "is_kurucu": is_kurucu # HTML'de takipçi listesini kilitlemek için
     }
+    
     is_following = current_user.is_following(user_to_show)
     return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id), is_following=is_following)
 
@@ -91,7 +99,7 @@ def update_bio():
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
-# --------------------- AYARLAR (YENİ EKLEME) ---------------------
+# --------------------- AYARLAR ---------------------
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
@@ -101,7 +109,6 @@ def settings():
         new_password = request.form.get("password")
 
         if new_username:
-            # Kullanıcı adı müsait mi kontrolü
             existing_user = User.query.filter_by(username=new_username).first()
             if existing_user and existing_user.id != user.id:
                 flash("Bu kullanıcı adı zaten alınmış!", "error")

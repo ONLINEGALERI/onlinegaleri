@@ -6,7 +6,7 @@
 .ig-container { 
     width: 100%; 
     max-width: 935px; 
-    margin: 0 auto; /* Sayfayı ortalar */
+    margin: 0 auto; 
     padding: 30px 20px; 
     color: var(--ig-text); 
     font-family: 'Montserrat', sans-serif; 
@@ -25,13 +25,11 @@
 .gold-verify { font-size: 20px; background: linear-gradient(135deg, #a67c00 0%, #ffbf00 50%, #b8860b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.3)); }
 body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37 0%, #fff9e3 50%, #c5a028 100%); -webkit-background-clip: text; }
 
-/* PROFİLİ DÜZENLE BUTONU - NAVBAR İLE AYNI GRADIENT GOLD */
-.btn-ig-edit { 
+/* BUTONLAR - GOLD GRADIENT */
+.btn-ig-edit, .btn-ig-follow { 
     background: transparent !important; 
-    /* Kenarlık rengini navbardaki baskın gold tonuna sabitledik */
     border: 1px solid #bf953f !important; 
     border-radius: 4px !important; 
-    /* Yazı rengini gradient gold yaptık */
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
@@ -42,7 +40,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     transition: all 0.3s ease;
     display: inline-block;
 }
-.btn-ig-edit:hover {
+.btn-ig-edit:hover, .btn-ig-follow:hover {
     filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4));
     border-color: #fcf6ba !important;
     transform: scale(1.02);
@@ -67,7 +65,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     border: 1px dashed #d4af37; border-radius: 12px; background: rgba(212, 175, 55, 0.03);
 }
 
-/* SOL BAR TASARIMI (GRADIENT GOLD) - DÜZENLENDİ */
+/* SOL BAR TASARIMI */
 .side-nav {
     width: 70px; 
     background-color: #000; 
@@ -83,25 +81,12 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     z-index: 999;
     justify-content: space-between; 
 }
-
-.nav-top, .nav-bottom {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 35px; 
-}
-
+.nav-top, .nav-bottom { display: flex; flex-direction: column; align-items: center; gap: 35px; }
 .side-nav i, .side-nav a { 
-    font-size: 24px; 
-    cursor: pointer; 
-    transition: 0.3s; 
-    text-decoration: none;
+    font-size: 24px; cursor: pointer; transition: 0.3s; text-decoration: none;
     background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;
 }
-
 .side-nav i:hover, .side-nav a:hover, .side-nav .active { 
     filter: drop-shadow(0 0 8px rgba(252, 246, 186, 0.5));
     transform: scale(1.1);
@@ -120,14 +105,14 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
         <i class="fa-solid fa-magnifying-glass" onclick="openSearchModal()" title="Kullanıcı Ara"></i>
         <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle active"></i></a>
     </div>
-
     <div class="nav-bottom">
         <a href="{{ url_for('settings') }}" title="Ayarlar"><i class="fa-solid fa-gear"></i></a>
         <a href="{{ url_for('logout') }}" title="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></a>
     </div>
 </aside>
 
-<div class="ig-container" style="padding-left: 90px;"> <header class="ig-header">
+<div class="ig-container" style="padding-left: 90px;"> 
+    <header class="ig-header">
         <div class="ig-avatar-area">
             <div class="avatar-wrapper" {% if can_edit %}onclick="document.getElementById('avatarInput').click()"{% endif %}>
                 <img class="profile-avatar" id="avatarPreview" src="{{ server_profile.avatar }}" alt="avatar">
@@ -138,17 +123,23 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
             <div class="ig-user-row">
                 <h2 class="profile-name">{{ server_profile.username }}</h2>
                 {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check gold-verify"></i>{% endif %}
+                
                 {% if can_edit %}
                 <button class="btn-ig-edit" onclick="openEditBioModal()">Profili Düzenle</button>
+                {% else %}
+                <button class="btn-ig-follow" id="followBtn" onclick="toggleFollow('{{ server_profile.username }}')">
+                    {% if is_following %}Takibi Bırak{% else %}Takip Et{% endif %}
+                </button>
                 {% endif %}
             </div>
             <ul class="ig-stats">
                 <li><b>{{ photos|length }}</b> gönderi</li>
-                <li onclick="showUserList('followers')" style="cursor:pointer">
-                    <b id="followerCount">{% if server_profile.is_vip %}2.4M{% else %}{{ server_profile.followers|default(0) }}{% endif %}</b> takipçi
+                <li {% if not server_profile.is_kurucu %}onclick="showUserList('followers')"{% endif %} style="{% if not server_profile.is_kurucu %}cursor:pointer{% endif %}">
+                    <b id="followerCount">{{ server_profile.followers }}</b> takipçi
                 </li>
                 <li onclick="showUserList('following')" style="cursor:pointer">
-                    <b>{{ server_profile.following|default(0) }}</b> takip</li>
+                    <b>{{ server_profile.following|default(0) }}</b> takip
+                </li>
             </ul>
             <div class="ig-bio">
                 <div id="profileBio">
@@ -223,11 +214,24 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 </div>
 
 <script>
-function openEditBioModal() {
-    new bootstrap.Modal(document.getElementById('editBioModal')).show();
+async function toggleFollow(username) {
+    const btn = document.getElementById('followBtn');
+    const isFollowing = btn.innerText.trim() === "Takibi Bırak";
+    const endpoint = isFollowing ? `/unfollow/${username}` : `/follow/${username}`;
+    try {
+        const response = await fetch(endpoint, { method: 'POST' });
+        const data = await response.json();
+        if (data.status === "success") {
+            btn.innerText = isFollowing ? "Takip Et" : "Takibi Bırak";
+            const countElem = document.getElementById('followerCount');
+            if (countElem && !countElem.innerText.includes('M')) countElem.innerText = data.followers;
+        }
+    } catch (e) { console.error(e); }
 }
 
-function openSearchModal() {
+function openEditBioModal() { new bootstrap.Modal(document.getElementById('editBioModal')).show(); }
+
+function openSearchModal() { 
     new bootstrap.Modal(document.getElementById('searchModal')).show();
     setTimeout(() => document.getElementById('userSearchInput').focus(), 500);
 }
@@ -245,7 +249,6 @@ async function searchUsers() {
                 <span>${u.username}</span>
             </a>
         `).join('');
-        if (users.length === 0) resDiv.innerHTML = '<p class="text-center opacity-50 p-3">Kullanıcı bulunamadı.</p>';
     } catch (e) { console.error(e); }
 }
 </script>
