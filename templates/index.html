@@ -2,7 +2,7 @@
 {% block title %}Verzia{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 
 <div class="hero-container">
@@ -119,12 +119,10 @@
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-/* RENKLER DEĞİŞKENLERE BAĞLANDI */
 body { background-color: var(--ig-bg); color: var(--ig-text); font-family: 'Montserrat', sans-serif; overflow: hidden; height: 100vh; transition: background 0.5s, color 0.5s; }
 
 input::-webkit-contacts-auto-fill-button, input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; pointer-events: none; }
 
-/* @BERİL GOLD BUTON STİLİ */
 .beril-gold-btn {
 background: var(--v-gold-gradient);
 border: 1px solid #d4af37;
@@ -143,7 +141,6 @@ transform: scale(1.05);
 filter: brightness(1.1);
 }
 
-/* LIGHT MODE OVERRIDES - BASE DEĞİŞKENLERİNDEN BESLENİR */
 body.light-mode { background-color: var(--ig-bg); color: var(--ig-text); }
 body.light-mode .auth-link, body.light-mode .about-btn, body.light-mode .contact-btn { color: var(--ig-text); border-color: #aa771c; }
 body.light-mode .overlay { background: rgba(255, 255, 255, 0.98); }
@@ -185,7 +182,6 @@ body.light-mode .pay-input { background: var(--input-bg); color: var(--ig-text);
 </style>
 
 <script>
-// TEMA GEÇİŞİNİ KAYDEDELİM Kİ SAYFA YENİLENİNCE BOZULMASIN
 function toggleMode() {
 document.body.classList.toggle('light-mode');
 const theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
@@ -212,9 +208,11 @@ function togglePassVisibility(inputId, icon) {
 const input = document.getElementById(inputId);
 if (input.type === "password") {
 input.type = "text";
+icon.classList.replace('far', 'fas');
 icon.classList.replace('fa-eye', 'fa-eye-slash');
 } else {
 input.type = "password";
+icon.classList.replace('fas', 'far');
 icon.classList.replace('fa-eye-slash', 'fa-eye');
 }
 }
@@ -250,7 +248,6 @@ else { alert(result.message); }
 });
 </script>
 {% endblock %}
-
 
 
 

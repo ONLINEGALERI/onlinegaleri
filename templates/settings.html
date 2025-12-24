@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %}Verzia{% endblock %}
 
 {% block content %}
 <style>
@@ -11,17 +12,19 @@
     align-items: flex-start;
     padding-top: 50px;
     padding-left: 70px;
-    background-color: #000;
+    background-color: var(--ig-bg); /* Sabit renk değişkene bağlandı */
+    transition: background 0.4s ease;
 }
 
 .settings-card {
     width: 100%;
     max-width: 500px;
-    background: #000;
+    background: var(--modal-bg); /* Sabit renk değişkene bağlandı */
     border: 1px solid #d4af37;
     padding: 40px;
     border-radius: 12px;
     position: relative;
+    transition: background 0.4s ease;
 }
 
 .settings-title {
@@ -30,14 +33,14 @@
     -webkit-text-fill-color: transparent;
     font-weight: bold;
     font-size: 22px;
-    margin-bottom: 30px; /* Başlık alt boşluğu sabitlendi */
+    margin-bottom: 30px;
     text-align: center;
     letter-spacing: 2px;
     text-transform: uppercase;
 }
 
 .form-group {
-    margin-bottom: 20px; /* Tüm alanlar arası boşluk eşitlendi */
+    margin-bottom: 20px;
 }
 
 .form-group label {
@@ -57,10 +60,10 @@
 .settings-input {
     width: 100%;
     padding: 12px 15px;
-    background: #111;
-    border: 1px solid #333;
+    background: var(--input-bg); /* Sabit renk değişkene bağlandı */
+    border: 1px solid var(--ig-border); /* Sabit renk değişkene bağlandı */
     border-radius: 8px;
-    color: #fff;
+    color: var(--ig-text); /* Sabit renk değişkene bağlandı */
     outline: none;
     transition: 0.3s;
     font-family: 'Montserrat', sans-serif;
@@ -92,7 +95,7 @@
     border-radius: 8px;
     cursor: pointer;
     transition: 0.3s;
-    margin-top: 10px; /* Buton üst boşluğu ayarlandı */
+    margin-top: 10px;
     font-size: 0.95rem;
     letter-spacing: 1px;
 }
@@ -118,7 +121,9 @@
 
 /* Sol Bar */
 .side-nav {
-    width: 70px; background-color: #000; border-right: 1px solid #262626;
+    width: 70px; 
+    background-color: var(--ig-sidebar-bg); /* Değişkene bağlandı */
+    border-right: 1px solid var(--ig-border);
     display: flex; flex-direction: column; align-items: center;
     padding: 25px 0; position: fixed; height: 100vh; left: 0; top: 0; z-index: 999;
     justify-content: space-between;
