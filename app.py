@@ -4,19 +4,19 @@ import os
 from werkzeug.utils import secure_filename
 
 from extensions import db, migrate, login_manager
-from models.user import User
+from models.user import User, Comment, Like 
 from models.photo import Photo
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
 app.secret_key = os.environ.get("SECRET_KEY", "verzia-special-2025")
 
-# UPLOAD AYARI (Eğer config'de yoksa diye güvene alıyoruz)
+# UPLOAD AYARI
 app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static/uploads")
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
 
-# DATABASE AYARI: Lokal ve Render uyumlu
+# DATABASE AYARI
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
@@ -33,10 +33,10 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# --------------------- ANA SAYFA VE AUTH (DÜZENLENDİ) ---------------------
 @app.route("/")
 def index():
-    if current_user.is_authenticated:
-        return redirect(url_for("profile", username=current_user.username))
+    # Giriş yapmış olsa bile anasayfayı (index.html) görmesini sağlıyoruz
     return render_template("index.html")
 
 @app.route("/login", methods=["POST"])
@@ -54,98 +54,92 @@ def register():
     username = request.form.get("username")
     email = request.form.get("email")
     password = request.form.get("password")
-
     if User.query.filter_by(username=username).first():
         return jsonify({"status": "error", "message": "Bu kullanıcı adı zaten alınmış!"}), 400
     if User.query.filter_by(email=email).first():
         return jsonify({"status": "error", "message": "Bu e-posta zaten kayıtlı!"}), 400
-
     new_user = User(username=username, email=email)
     new_user.set_password(password)
-    
     db.session.add(new_user)
     db.session.commit()
-
     login_user(new_user, remember=True)
-    
-    return jsonify({
-        "status": "success", 
-        "redirect": url_for("profile", username=new_user.username)
-    })
+    return jsonify({"status": "success", "redirect": url_for("profile", username=new_user.username)})
 
+# --------------------- PROFİL VE SOSYAL ---------------------
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
     user_to_show = User.query.filter_by(username=username).first_or_404()
     photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
-    
-    # Takipçi sayılarını modelden alıyoruz (User modelinde followers/following tanımlı olmalı)
-    # Eğer modelde bu özellikler yoksa hata vermemesi için .count() kullanıyoruz
     profile_data = {
         "username": user_to_show.username,
         "avatar": user_to_show.avatar or "https://picsum.photos/400",
         "bio": user_to_show.bio or "Verzia Experience",
-        "followers": user_to_show.followers_list.count() if hasattr(user_to_show, 'followers_list') else 0,
-        "following": user_to_show.followed.count() if hasattr(user_to_show, 'followed') else 0,
+        "followers": user_to_show.followers_list.count(),
+        "following": user_to_show.followed.count(),
         "is_vip": user_to_show.username.lower() in ["bec", "beril"]
     }
-    
-    # Mevcut kullanıcının bu kişiyi takip edip etmediği
-    is_following = current_user.is_following(user_to_show) if hasattr(current_user, 'is_following') else False
-    
-    return render_template("profile.html", 
-                           server_profile=profile_data, 
-                           photos=photos, 
-                           can_edit=(current_user.id == user_to_show.id),
-                           is_following=is_following)
-
-# --- YENİ EKLENEN PROFİL FONKSİYONLARI ---
+    is_following = current_user.is_following(user_to_show)
+    return render_template("profile.html", server_profile=profile_data, photos=photos, can_edit=(current_user.id == user_to_show.id), is_following=is_following)
 
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
-    if 'photo' not in request.files:
-        return redirect(request.url)
+    if 'photo' not in request.files: return redirect(request.url)
     file = request.files['photo']
-    if file.filename == '':
-        return redirect(request.url)
-    
-    if file:
-        filename = secure_filename(file.filename)
-        # İsmi çakışmaması için kullanıcı id ekliyoruz
-        filename = f"{current_user.id}_{filename}"
+    if file and file.filename != '':
+        filename = secure_filename(f"{current_user.id}_{file.filename}")
         file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-        
         new_photo = Photo(filename=filename, owner_id=current_user.id, title=request.form.get("title", "Verzia Photo"))
         db.session.add(new_photo)
         db.session.commit()
-        
     return redirect(url_for("profile", username=current_user.username))
 
-@app.route("/profile/save", methods=["POST"])
+# --------------------- BEĞENİ VE YORUM ---------------------
+@app.route('/like/<int:photo_id>', methods=['POST'])
 @login_required
-def save_profile():
-    data = request.get_json()
-    user = User.query.get(current_user.id)
-    
-    if "bio" in data:
-        user.bio = data["bio"]
-    if "avatar" in data:
-        # Base64 avatar kaydı veya url kaydı (HTML tarafındaki yapıya göre)
-        user.avatar = data["avatar"]
-        
-    db.session.commit()
-    return jsonify({"status": "success"})
-
-@app.route("/delete_photo_profile/<int:photo_id>", methods=["POST"])
-@login_required
-def delete_photo_profile(photo_id):
+def like_photo(photo_id):
     photo = Photo.query.get_or_404(photo_id)
-    if photo.owner_id == current_user.id:
-        db.session.delete(photo)
-        db.session.commit()
-    return redirect(url_for("profile", username=current_user.username))
+    existing_like = Like.query.filter_by(user_id=current_user.id, photo_id=photo_id).first()
+    if existing_like:
+        db.session.delete(existing_like)
+        status = 'unliked'
+    else:
+        new_like = Like(user_id=current_user.id, photo_id=photo_id)
+        db.session.add(new_like)
+        status = 'liked'
+    db.session.commit()
+    return jsonify({'status': status, 'like_count': len(photo.likes)})
 
+@app.route('/comment/<int:photo_id>', methods=['POST'])
+@login_required
+def add_comment(photo_id):
+    data = request.get_json()
+    content = data.get('content')
+    if not content: return jsonify({'status': 'error'}), 400
+    new_comment = Comment(body=content, user_id=current_user.id, photo_id=photo_id)
+    db.session.add(new_comment)
+    db.session.commit()
+    return jsonify({'status': 'success', 'username': current_user.username, 'content': content})
+
+@app.route('/get_comments/<int:photo_id>')
+def get_comments(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    comments = [{'username': User.query.get(c.user_id).username, 'content': c.body} for c in photo.comments]
+    return jsonify(comments)
+
+# --------------------- ARAMA MOTORU ---------------------
+@app.route("/search_users")
+@login_required
+def search_users():
+    query = request.args.get('q', '').strip()
+    if not query or len(query) < 2:
+        return jsonify([])
+    users = User.query.filter(User.username.ilike(f"%{query}%")).limit(10).all()
+    results = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users]
+    return jsonify(results)
+
+# --------------------- DİĞER ROTALAR ---------------------
 @app.route("/follow/<username>", methods=["POST"])
 @login_required
 def follow(username):
@@ -166,21 +160,24 @@ def unfollow(username):
         return jsonify({"status": "success", "followers": user.followers_list.count()})
     return jsonify({"status": "error"}), 404
 
-@app.route("/get_followers/<username>")
+@app.route("/profile/save", methods=["POST"])
 @login_required
-def get_followers(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    followers = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/200"} for u in user.followers_list]
-    return jsonify(followers)
+def save_profile():
+    data = request.get_json()
+    user = User.query.get(current_user.id)
+    if "bio" in data: user.bio = data["bio"]
+    if "avatar" in data: user.avatar = data["avatar"]
+    db.session.commit()
+    return jsonify({"status": "success"})
 
-@app.route("/get_following/<username>")
+@app.route("/delete_photo_profile/<int:photo_id>", methods=["POST"])
 @login_required
-def get_following(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    following = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/200"} for u in user.followed]
-    return jsonify(following)
-
-# --- MEVCUT DİĞER ROTALAR ---
+def delete_photo_profile(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if photo.owner_id == current_user.id:
+        db.session.delete(photo)
+        db.session.commit()
+    return redirect(url_for("profile", username=current_user.username))
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
