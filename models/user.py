@@ -37,6 +37,7 @@ class User(UserMixin, db.Model):
         lazy='dynamic'
     )
 
+    # Bildirimler ilişkisi - Zil buradaki veriye bakıyor
     notifications = db.relationship(
         'Notification',
         backref='recipient',

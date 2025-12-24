@@ -60,11 +60,6 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 .grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
 .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; cursor: pointer; }
 
-.no-posts {
-    grid-column: 1 / -1; text-align: center; padding: 80px 20px;
-    border: 1px dashed #d4af37; border-radius: 12px; background: rgba(212, 175, 55, 0.03);
-}
-
 /* SOL BAR TASARIMI */
 .side-nav {
     width: 70px; 
@@ -82,7 +77,6 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     justify-content: space-between; 
 }
 
-/* TÜM İKONLAR VE V LOGO ARASINDAKİ SİMETRİ */
 .nav-top, .nav-bottom { 
     display: flex; 
     flex-direction: column; 
@@ -90,55 +84,29 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     gap: 35px !important; 
 }
 
-/* --- ANİMASYONLU VE LÜKS V LOGO STİLİ (360 DÖNÜŞLÜ) --- */
-.v-logo-nav {
-    font-family: 'Cinzel', serif; 
-    font-weight: 700;
-    font-size: 28px;
-    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-decoration: none;
-    transition: 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Yaylanarak dönme efekti */
-    cursor: pointer;
-    display: inline-block;
-    filter: drop-shadow(0 0 5px rgba(191, 149, 63, 0.4));
-    animation: goldPulse 3s infinite ease-in-out; 
+/* BİLDİRİM ZİLİ */
+.notif-wrapper { position: relative; cursor: pointer; }
+.notif-badge {
+    position: absolute; top: -5px; right: -5px;
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728); color: #000;
+    font-size: 10px; font-weight: bold; border-radius: 50%;
+    width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid #000;
+}
+.shake-active { animation: bellShake 1.5s infinite; }
+@keyframes bellShake {
+    0%, 100% { transform: rotate(0); }
+    10, 30, 50, 70, 90% { transform: rotate(10deg); }
+    20, 40, 60, 80% { transform: rotate(-10deg); }
 }
 
-@keyframes goldPulse {
-    0% { filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4)); transform: scale(1); }
-    50% { filter: drop-shadow(0 0 20px rgba(252, 246, 186, 0.9)); transform: scale(1.08); }
-    100% { filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4)); transform: scale(1); }
-}
+/* MODAL AYARLARI */
+.v-modal-content { background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important; color: var(--ig-text) !important; border-radius: 12px; }
+.btn-close-left { background: none; border: none; color: #bf953f; font-size: 24px; cursor: pointer; padding: 0; margin-right: 15px; line-height: 1; }
 
-/* ÜZERİNE GELİNDİĞİNDE 360 DERECE DÖNME */
-.v-logo-nav:hover {
-    transform: rotate(360deg) scale(1.2) !important; /* 360 Derece dönme */
-    filter: drop-shadow(0 0 15px rgba(252, 246, 186, 1));
-}
-
-.side-nav i, .side-nav a { 
-    font-size: 24px; cursor: pointer; transition: 0.3s; text-decoration: none;
-    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;
-}
-.side-nav i:hover, .side-nav a:hover, .side-nav .active { 
-    filter: drop-shadow(0 0 8px rgba(252, 246, 186, 0.5));
-    transform: scale(1.1);
-}
-
-/* MODALLAR - DİNAMİK RENK */
-.v-modal-content { 
-    background-color: var(--modal-bg) !important; 
-    border: 1px solid #d4af37 !important; 
-    color: var(--ig-text) !important; 
-    border-radius: 12px; 
-}
-.search-input-gold { 
-    background-color: var(--input-bg) !important; 
-    border: 1px solid var(--ig-border) !important; 
-    color: var(--ig-text) !important; 
+.notif-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 20px; border-bottom: 1px solid var(--ig-border);
 }
 
 #avatarInput, #photoUploadInput { display: none; }
@@ -150,6 +118,13 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
         <i class="fa-solid fa-magnifying-glass" onclick="openSearchModal()" title="Kullanıcı Ara"></i>
         <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle active"></i></a>
         
+        <div class="notif-wrapper" onclick="openNotifModal()" title="Bildirimler">
+            <i id="notifBell" class="fa-solid fa-bell {% if unread_notifications_count > 0 %}shake-active{% endif %}"></i>
+            {% if unread_notifications_count > 0 %}
+            <span id="notifBadge" class="notif-badge">{{ unread_notifications_count }}</span>
+            {% endif %}
+        </div>
+
         <a href="{{ url_for('profile', username='VERZİA') }}" class="v-logo-nav" title="Verzia Global">V</a>
     </div>
     <div class="nav-bottom">
@@ -185,40 +160,29 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
                     <b id="followerCount">{{ server_profile.followers }}</b> takipçi
                 </li>
                 <li onclick="showUserList('following')" style="cursor:pointer">
-                    <b>{{ server_profile.following|default(0) }}</b> takip
+                    <b>{{ server_profile.following }}</b> takip
                 </li>
             </ul>
             <div class="ig-bio">
-                <div id="profileBio">
-                    <p class="mt-1" style="white-space: pre-wrap;">{{ server_profile.bio }}</p>
-                </div>
+                <p class="mt-1" style="white-space: pre-wrap;">{{ server_profile.bio }}</p>
             </div>
         </div>
     </header>
-
-    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
-        <h5 class="verzia-gold-text mb-0" style="letter-spacing: 1px;">GÖNDERİLER</h5>
-        {% if can_edit and photos %}
-        <button class="verzia-gold-btn btn-sm" onclick="triggerPhotoUpload()">
-            <i class="fa-solid fa-plus"></i> Yeni Ekle
-        </button>
-        {% endif %}
-    </div>
 
     <div class="ig-photo-grid">
         {% if photos %}
             {% for photo in photos %}
             <div class="grid-item">
-                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" alt="{{ photo.title }}" onclick="openLightbox(this.src)">
+                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" alt="{{ photo.title }}">
             </div>
             {% endfor %}
         {% else %}
-            <div class="no-posts">
+            <div class="no-posts" style="grid-column: 1/-1; text-align: center; padding: 80px 20px; border: 1px dashed #bf953f; border-radius: 12px; background: rgba(191,149,63,0.03);">
                 <div style="font-size: 50px; margin-bottom: 15px;">📸</div>
                 <h3 class="verzia-gold-text">Henüz hiç gönderi yok</h3>
                 <p style="opacity: 0.7; margin-bottom: 20px;">Sen de hemen şimdi ilk fotoğrafını paylaş!</p>
                 {% if can_edit %}
-                <button class="verzia-gold-btn" onclick="triggerPhotoUpload()">Hemen Paylaş</button>
+                <button class="verzia-gold-btn" onclick="document.getElementById('photoUploadInput').click()">Hemen Paylaş</button>
                 <form id="directUploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
                     <input type="file" name="photo" id="photoUploadInput" onchange="this.form.submit()">
                 </form>
@@ -228,80 +192,101 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     </div>
 </div>
 
-<div class="modal fade" id="editBioModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="notifModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content v-modal-content">
-            <div class="v-modal-header border-bottom-0 p-3">
-                <h5 class="modal-title verzia-gold-text">Biyografiyi Düzenle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0 d-flex align-items-center p-3">
+                <button type="button" class="btn-close-left" data-bs-dismiss="modal">×</button>
+                <h5 class="modal-title verzia-gold-text m-0">BİLDİRİMLER</h5>
             </div>
-            <div class="modal-body p-4">
-                <form action="{{ url_for('update_bio') }}" method="POST">
-                    <textarea name="bio" class="form-control search-input-gold mb-3" rows="4" placeholder="Kendinizden bahsedin...">{{ server_profile.bio }}</textarea>
-                    <button type="submit" class="verzia-gold-btn w-100">Kaydet</button>
-                </form>
+            <div class="modal-body p-0" id="notifContainer" style="max-height: 450px; overflow-y: auto;">
+                <p class="text-center p-4 opacity-50">Yükleniyor...</p>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="searchModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade v-modal-list" id="userListModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content v-modal-content">
-            <div class="v-modal-header border-bottom-0 p-3">
-                <h5 class="modal-title verzia-gold-text">Kullanıcı Ara</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0">
+                <h6 class="modal-title w-100 text-center fw-bold gold-title" id="userListTitle">Liste</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
             </div>
-            <div class="modal-body p-4">
-                <input type="text" id="userSearchInput" class="form-control search-input-gold" placeholder="Kullanıcı adı yazın..." oninput="searchUsers()">
-                <div id="searchResults" class="mt-3" style="max-height: 300px; overflow-y: auto;"></div>
-            </div>
+            <div class="modal-body p-0" id="userListContainer"></div>
         </div>
     </div>
 </div>
 
 <script>
-function triggerPhotoUpload() {
-    const input = document.getElementById('photoUploadInput');
-    if(input) input.click();
+async function openNotifModal() {
+    const container = document.getElementById('notifContainer');
+    const bell = document.getElementById('notifBell');
+    const badge = document.getElementById('notifBadge');
+    
+    container.innerHTML = '<p class="text-center p-4 opacity-50">Yükleniyor...</p>';
+    new bootstrap.Modal(document.getElementById('notifModal')).show();
+
+    try {
+        const response = await fetch('/notifications');
+        const data = await response.json();
+        
+        if (data.length === 0) {
+            container.innerHTML = '<p class="text-center p-4 opacity-50">Bildirim yok.</p>';
+        } else {
+            container.innerHTML = data.map(n => `
+                <div class="notif-item" id="notif-${n.id}">
+                    <div style="flex: 1; padding-right: 10px;">
+                        <strong style="color: #bf953f;">@${n.sender}</strong> ${n.message.split(n.sender)[1] || n.message}
+                        <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 4px;">${n.timestamp}</div>
+                    </div>
+                    <button onclick="deleteNotif(${n.id})" style="background:none; border:none; cursor:pointer; color:#bf953f; display:flex; align-items:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+            
+            if(bell) bell.classList.remove('shake-active');
+            if(badge) badge.style.display = 'none';
+        }
+    } catch (e) { container.innerHTML = '<p class="text-center p-4 text-danger">Hata oluştu.</p>'; }
 }
 
-async function toggleFollow(username) {
-    const btn = document.getElementById('followBtn');
-    const isFollowing = btn.innerText.trim() === "Takibi Bırak";
-    const endpoint = isFollowing ? `/unfollow/${username}` : `/follow/${username}`;
+async function deleteNotif(notifId) {
     try {
-        const response = await fetch(endpoint, { method: 'POST' });
+        const response = await fetch(`/delete_notification/${notifId}`, { method: 'POST' });
         const data = await response.json();
         if (data.status === "success") {
-            btn.innerText = isFollowing ? "Takip Et" : "Takibi Bırak";
-            const countElem = document.getElementById('followerCount');
-            if (countElem && !countElem.innerText.includes('M')) countElem.innerText = data.followers;
+            const el = document.getElementById(`notif-${notifId}`);
+            if (el) {
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(20px)';
+                el.style.transition = '0.3s';
+                setTimeout(() => el.remove(), 300);
+            }
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Silme hatası:", e); }
 }
 
-function openEditBioModal() { new bootstrap.Modal(document.getElementById('editBioModal')).show(); }
-
-function openSearchModal() { 
-    new bootstrap.Modal(document.getElementById('searchModal')).show();
-    setTimeout(() => document.getElementById('userSearchInput').focus(), 500);
-}
-
-async function searchUsers() {
-    const q = document.getElementById('userSearchInput').value;
-    const resDiv = document.getElementById('searchResults');
-    if (q.length < 2) { resDiv.innerHTML = ''; return; }
+async function showUserList(type) {
+    const pathArray = window.location.pathname.split('/');
+    const username = pathArray[pathArray.length - 1];
+    const container = document.getElementById('userListContainer');
+    const title = document.getElementById('userListTitle');
+    title.innerText = type === 'followers' ? 'Takipçiler' : 'Takip Edilenler';
+    new bootstrap.Modal(document.getElementById('userListModal')).show();
     try {
-        const response = await fetch(`/search_users?q=${encodeURIComponent(q)}`);
+        const response = await fetch(`/get_user_list/${username}/${type}`);
         const users = await response.json();
-        resDiv.innerHTML = users.map(u => `
-            <a href="/profile/${u.username}" style="display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid var(--ig-border); text-decoration:none; color:inherit;">
-                <img src="${u.avatar}" style="width:35px; height:35px; border-radius:50%; border:1px solid #d4af37; object-fit: cover;">
-                <span>${u.username}</span>
-            </a>
-        `).join('');
+        container.innerHTML = users.map(u => `
+            <a href="/profile/${u.username}" style="display:flex;align-items:center;padding:12px;text-decoration:none;color:inherit;border-bottom:1px solid var(--ig-border);">
+                <img src="${u.avatar}" style="width:35px;height:35px;border-radius:50%;margin-right:10px;border:1px solid #d4af37;object-fit:cover;">
+                ${u.username}
+            </a>`).join('');
     } catch (e) { console.error(e); }
 }
+
+function openSearchModal() { new bootstrap.Modal(document.getElementById('searchModal')).show(); }
+function openEditBioModal() { new bootstrap.Modal(document.getElementById('editBioModal')).show(); }
 </script>
 {% endblock %}

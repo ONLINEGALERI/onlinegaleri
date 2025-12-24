@@ -4,7 +4,7 @@ import os
 from werkzeug.utils import secure_filename
 
 from extensions import db, migrate, login_manager
-from models.user import User, Comment, Like 
+from models.user import User, Comment, Like, Notification # Notification eklendi
 from models.photo import Photo
 
 app = Flask(__name__)
@@ -31,7 +31,17 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    # Modern SQLAlchemy 2.0 yöntemi uyarısız çalışır
+    return db.session.get(User, int(user_id))
+
+# --------------------- BİLDİRİM CONTEXT PROCESSOR (ZİL İÇİN KRİTİK) ---------------------
+@app.context_processor
+def inject_notifications():
+    """Tüm sayfalara otomatik olarak okunmamış bildirim sayısını gönderir."""
+    if current_user.is_authenticated:
+        unread_count = current_user.notifications.filter_by(is_read=False).count()
+        return dict(unread_notifications_count=unread_count)
+    return dict(unread_notifications_count=0)
 
 # --------------------- ANA SAYFA VE AUTH (DÜZENLENDİ) ---------------------
 @app.route("/")
@@ -72,7 +82,6 @@ def profile(username):
     photos = Photo.query.filter_by(owner_id=user_to_show.id).order_by(Photo.id.desc()).all()
     
     # KURUCU VE ANA PROFİL KONTROLÜ (TÜRKÇE KARAKTER GARANTİLİ)
-    # Büyük İ ve I sorununu çözmek için normalize ediyoruz
     username_check = user_to_show.username.replace('İ', 'i').replace('I', 'ı').lower()
     
     kurucular = ["beril", "ecem", "cemre"]
@@ -104,18 +113,50 @@ def profile(username):
 @login_required
 def update_bio():
     new_bio = request.form.get("bio")
-    user = User.query.get(current_user.id)
+    user = db.session.get(User, current_user.id)
     if user:
         user.bio = new_bio
         db.session.commit()
     return redirect(url_for("profile", username=user.username))
 
-# --------------------- AYARLAR (ŞİFRE DOĞRULAMA) ---------------------
+# --------------------- BİLDİRİM SİSTEMİ (YENİ) ---------------------
+@app.route('/notifications')
+@login_required
+def get_notifications():
+    notifs = current_user.notifications.order_by(Notification.timestamp.desc()).limit(20).all()
+    results = []
+    for n in notifs:
+        results.append({
+            "id": n.id,
+            "sender": n.sender_username,
+            "type": n.notif_type,
+            "message": n.message,
+            "is_read": n.is_read,
+            "timestamp": n.timestamp.strftime("%d.%m %H:%M")
+        })
+    # Bildirimleri getirince okunmuş sayalım
+    for n in notifs:
+        n.is_read = True
+    db.session.commit()
+    return jsonify(results)
+
+# BİLDİRİM SİLME ROTASI (YENİ EKLENDİ)
+@app.route('/delete_notification/<int:notif_id>', methods=['POST'])
+@login_required
+def delete_notification(notif_id):
+    notif = db.session.get(Notification, notif_id)
+    if notif and notif.user_id == current_user.id:
+        db.session.delete(notif)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 403
+
+# --------------------- AYARLAR ---------------------
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
     if request.method == "POST":
-        user = User.query.get(current_user.id)
+        user = db.session.get(User, current_user.id)
         current_password = request.form.get("current_password")
         new_username = request.form.get("username")
         new_password = request.form.get("password")
@@ -154,7 +195,7 @@ def upload():
         db.session.commit()
     return redirect(url_for("profile", username=current_user.username))
 
-# --------------------- BEĞENİ VE YORUM ---------------------
+# --------------------- BEĞENİ VE YORUM (BİLDİRİMLİ) ---------------------
 @app.route('/like/<int:photo_id>', methods=['POST'])
 @login_required
 def like_photo(photo_id):
@@ -167,6 +208,18 @@ def like_photo(photo_id):
         new_like = Like(user_id=current_user.id, photo_id=photo_id)
         db.session.add(new_like)
         status = 'liked'
+        
+        # Bildirim Oluştur (Kendi fotoğrafımız değilse)
+        if photo.owner_id != current_user.id:
+            notif = Notification(
+                user_id=photo.owner_id,
+                sender_username=current_user.username,
+                notif_type="like",
+                photo_id=photo_id,
+                message=f"{current_user.username} bir fotoğrafını beğendi!"
+            )
+            db.session.add(notif)
+
     db.session.commit()
     return jsonify({'status': status, 'like_count': len(photo.likes)})
 
@@ -178,13 +231,26 @@ def add_comment(photo_id):
     if not content: return jsonify({'status': 'error'}), 400
     new_comment = Comment(body=content, user_id=current_user.id, photo_id=photo_id)
     db.session.add(new_comment)
+    
+    # Bildirim Oluştur
+    photo = Photo.query.get(photo_id)
+    if photo.owner_id != current_user.id:
+        notif = Notification(
+            user_id=photo.owner_id,
+            sender_username=current_user.username,
+            notif_type="comment",
+            photo_id=photo_id,
+            message=f"{current_user.username} fotoğrafına yorum yaptı: {content[:20]}..."
+        )
+        db.session.add(notif)
+        
     db.session.commit()
     return jsonify({'status': 'success', 'username': current_user.username, 'content': content})
 
 @app.route('/get_comments/<int:photo_id>')
 def get_comments(photo_id):
     photo = Photo.query.get_or_404(photo_id)
-    comments = [{'username': User.query.get(c.user_id).username, 'content': c.body} for c in photo.comments]
+    comments = [{'username': db.session.get(User, c.user_id).username, 'content': c.body} for c in photo.comments]
     return jsonify(comments)
 
 # --------------------- ARAMA MOTORU ---------------------
@@ -205,7 +271,6 @@ def get_user_list(username, type):
     user = User.query.filter_by(username=username).first_or_404()
     if type == 'followers':
         kurucular = ["beril", "ecem", "cemre", "verzia"]
-        # Büyük harf kontrolü için normalize ediyoruz
         user_name_lower = user.username.replace('İ', 'i').replace('I', 'ı').lower()
         if user_name_lower in kurucular:
             return jsonify([])
@@ -216,13 +281,21 @@ def get_user_list(username, type):
     results = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users]
     return jsonify(results)
 
-# --------------------- DİĞER ROTALAR ---------------------
+# --------------------- TAKİP (BİLDİRİMLİ) ---------------------
 @app.route("/follow/<username>", methods=["POST"])
 @login_required
 def follow(username):
     user = User.query.filter_by(username=username).first()
     if user:
         current_user.follow(user)
+        # Takip bildirimi
+        notif = Notification(
+            user_id=user.id,
+            sender_username=current_user.username,
+            notif_type="follow",
+            message=f"{current_user.username} seni takip etmeye başladı!"
+        )
+        db.session.add(notif)
         db.session.commit()
         return jsonify({"status": "success", "followers": user.followers_list.count()})
     return jsonify({"status": "error"}), 404
@@ -241,7 +314,7 @@ def unfollow(username):
 @login_required
 def save_profile():
     data = request.get_json()
-    user = User.query.get(current_user.id)
+    user = db.session.get(User, current_user.id)
     if "bio" in data: user.bio = data["bio"]
     if "avatar" in data: user.avatar = data["avatar"]
     db.session.commit()

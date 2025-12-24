@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Verzia{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --ig-bg: #000; 
@@ -17,7 +17,6 @@
             --input-bg: #111;
         }
         
-        /* --- TAM KAPSAMLI LIGHT MODE --- */
         body.light-mode {
             --ig-bg: #ffffff;
             --ig-text: #1a1a1a;
@@ -36,7 +35,6 @@
             transition: background 0.4s ease, color 0.4s ease; 
         }
 
-        /* --- SOL NAVBAR: MODA DUYARLI --- */
         .side-nav {
             width: 70px; 
             background-color: var(--ig-sidebar-bg) !important;
@@ -46,82 +44,65 @@
             justify-content: space-between;
         }
 
-        /* --- V LOGO STİLİ (ANİMASYONLU) --- */
+        /* --- BİLDİRİM ZİLİ KESİN GÖRÜNÜRLÜK AYARI --- */
+        .notif-wrapper { 
+            position: relative; 
+            cursor: pointer; 
+            display: flex !important; 
+            align-items: center; 
+            justify-content: center; 
+            width: 40px;
+            height: 40px;
+            margin: 5px 0;
+        }
+
+        #notifBell {
+            font-size: 24px !important;
+            color: #bf953f !important; /* Altın sarısı zorunlu renk */
+            display: inline-block !important;
+            visibility: visible !important;
+        }
+        
+        .notif-badge {
+            position: absolute; top: 0; right: 0;
+            background: var(--v-gold-gradient); color: #000;
+            font-size: 10px; font-weight: bold; border-radius: 50%;
+            width: 18px; height: 18px; display: flex !important; align-items: center; justify-content: center;
+            border: 1px solid #000; z-index: 10;
+        }
+        
+        .shake-active { animation: bellShake 2s infinite !important; }
+        @keyframes bellShake {
+            0% { transform: rotate(0); }
+            15% { transform: rotate(15deg); }
+            30% { transform: rotate(-15deg); }
+            45% { transform: rotate(10deg); }
+            60% { transform: rotate(-10deg); }
+            100% { transform: rotate(0); }
+        }
+
         .v-logo-nav {
             font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            font-size: 32px;
-            font-style: italic;
+            font-weight: 900; font-size: 32px; font-style: italic;
             background: var(--v-gold-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-decoration: none;
-            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            display: inline-block;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-decoration: none; transition: 0.5s; cursor: pointer; display: inline-block;
             animation: goldPulse 3s infinite ease-in-out;
         }
-
-        /* Altın Işıltısı Animasyonu */
-        @keyframes goldPulse {
-            0% { filter: drop-shadow(0 0 2px rgba(191, 149, 63, 0.4)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 12px rgba(252, 246, 186, 0.8)); transform: scale(1.05); }
-            100% { filter: drop-shadow(0 0 2px rgba(191, 149, 63, 0.4)); transform: scale(1); }
-        }
-
-        .v-logo-nav:hover {
-            transform: rotateY(180deg) scale(1.2);
-            filter: drop-shadow(0 0 15px rgba(252, 246, 186, 1));
-        }
-
-        /* --- MODAL VE KUTU TASARIMLARI --- */
-        .modal-content, .modal-header, .modal-body, .modal-footer, .overlay-content {
-            background-color: var(--modal-bg) !important;
-            color: var(--ig-text) !important;
-            border: 1px solid #d4af37 !important;
-        }
-
-        textarea, input, .pay-input, .form-control {
-            background-color: var(--input-bg) !important;
-            color: var(--ig-text) !important;
-            border: 1px solid var(--ig-border) !important;
-            outline: none !important;
-        }
-
-        .modal-title, .gold-title, .modal-header h5 {
-            background: var(--v-gold-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: bold !important;
-        }
-
-        body.light-mode .btn-close { filter: invert(0) !important; }
-        body:not(.light-mode) .btn-close { filter: invert(1) !important; }
-
-        /* Nav İkonları ve Eşit Boşluklar */
-        .nav-top, .nav-bottom { display: flex; flex-direction: column; align-items: center; gap: 35px; }
 
         .side-nav i, .side-nav a { 
             font-size: 24px; cursor: pointer; transition: 0.3s; text-decoration: none;
             background: var(--v-gold-gradient);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: inline-block !important;
         }
-
-        .beril-btn-gold {
-            background: var(--v-gold-gradient) !important;
-            border: 1px solid #bf953f !important;
-            padding: 8px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            color: #000 !important;
-        }
-
+        
+        .nav-top, .nav-bottom { display: flex; flex-direction: column; align-items: center; gap: 30px; }
         .main-content-wrapper { min-height: 100vh; transition: 0.3s; }
         .has-sidebar { margin-left: 70px; width: calc(100% - 70px); }
 
         @media (max-width: 768px) {
-            .side-nav { width: 100%; height: 60px; top: auto; bottom: 0; flex-direction: row; justify-content: space-around; border: none; border-top: 1px solid var(--ig-border); padding: 0; }
-            .v-logo-nav { margin-bottom: 0; font-size: 24px; }
+            .side-nav { width: 100%; height: 60px; top: auto; bottom: 0; flex-direction: row; justify-content: space-around; padding: 0; }
             .has-sidebar { margin-left: 0; padding-bottom: 60px; width: 100%; }
         }
     </style>
@@ -132,9 +113,16 @@
     <aside class="side-nav">
         <div class="nav-top">
             <a href="{{ url_for('index') }}" title="Ana Sayfa"><i class="fa-solid fa-house"></i></a>
-            <i class="fa-solid fa-magnifying-glass" onclick="typeof openSearchModal === 'function' ? openSearchModal() : (window.showSearchModal ? showSearchModal() : null)"></i>
+            <i class="fa-solid fa-magnifying-glass" onclick="openSearchModal()"></i>
             <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle"></i></a>
             
+            <div class="notif-wrapper" onclick="openNotifModal()" title="Bildirimler">
+                <i id="notifBell" class="fa-regular fa-bell {% if unread_notifications_count > 0 %}shake-active{% endif %}"></i>
+                {% if unread_notifications_count > 0 %}
+                <span id="notifBadge" class="notif-badge">{{ unread_notifications_count }}</span>
+                {% endif %}
+            </div>
+
             <a href="{{ url_for('profile', username='VERZİA') }}" class="v-logo-nav" title="Verzia Global">V</a>
         </div>
         <div class="nav-bottom">
@@ -148,53 +136,56 @@
         {% block content %}{% endblock %}
     </div>
 
-    <div class="modal fade v-modal-list" id="userListModal" tabindex="-1">
+    <div class="modal fade" id="notifModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
+            <div class="modal-content" style="background-color: var(--modal-bg) !important; border: 1px solid #d4af37 !important;">
                 <div class="modal-header border-0">
-                    <h6 class="modal-title w-100 text-center fw-bold" id="userListTitle">Liste</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h6 class="modal-title w-100 text-center fw-bold gold-title">BİLDİRİMLER</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
                 </div>
-                <div class="modal-body p-0" id="userListContainer"></div>
+                <div class="modal-body p-0" id="notifContainer" style="max-height: 350px; overflow-y: auto;">
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        async function openNotifModal() {
+            const container = document.getElementById('notifContainer');
+            const bell = document.getElementById('notifBell');
+            const badge = document.getElementById('notifBadge');
+            
+            container.innerHTML = '<p class="text-center p-3 opacity-50">Yükleniyor...</p>';
+            new bootstrap.Modal(document.getElementById('notifModal')).show();
+
+            try {
+                const response = await fetch('/notifications');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    container.innerHTML = '<p class="text-center p-3 opacity-50">Yeni bildirim yok.</p>';
+                } else {
+                    container.innerHTML = data.map(n => `
+                        <div class="notif-item" style="padding: 12px; border-bottom: 1px solid var(--ig-border);">
+                            <div style="font-size: 0.85rem;">
+                                <strong>@${n.sender}</strong> ${n.message.split(n.sender)[1] || n.message}
+                                <div style="font-size: 0.7rem; opacity: 0.4;">${n.timestamp}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    if(bell) bell.classList.remove('shake-active');
+                    if(badge) badge.style.display = 'none';
+                }
+            } catch (e) { container.innerHTML = '<p class="text-center p-3 text-danger">Hata!</p>'; }
+        }
+
         function applyInitialTheme() {
             const savedTheme = localStorage.getItem('theme');
-            const currentPath = window.location.pathname;
-            if (currentPath.includes('/profile/beril') && !savedTheme) {
-                document.body.classList.remove('light-mode');
-            } else if (savedTheme === 'light') {
-                document.body.classList.add('light-mode');
-            }
+            if (savedTheme === 'light') document.body.classList.add('light-mode');
         }
-
-        function toggleMode() {
-            document.body.classList.toggle('light-mode');
-            const theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
-            localStorage.setItem('theme', theme);
-        }
-
         applyInitialTheme();
-
-        async function showUserList(type) {
-            const pathArray = window.location.pathname.split('/');
-            const username = pathArray[pathArray.length - 1];
-            const container = document.getElementById('userListContainer');
-            new bootstrap.Modal(document.getElementById('userListModal')).show();
-            try {
-                const response = await fetch(`/get_user_list/${username}/${type}`);
-                const users = await response.json();
-                container.innerHTML = users.map(u => `
-                    <a href="/profile/${u.username}" style="display:flex;align-items:center;padding:12px;text-decoration:none;color:inherit;border-bottom:1px solid var(--ig-border);">
-                        <img src="${u.avatar}" style="width:35px;height:35px;border-radius:50%;margin-right:10px;border:1px solid #d4af37;">
-                        ${u.username}
-                    </a>`).join('');
-            } catch (e) { console.error(e); }
-        }
     </script>
 </body>
 </html>
