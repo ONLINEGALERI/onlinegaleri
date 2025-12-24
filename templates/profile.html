@@ -22,14 +22,24 @@
     cursor: pointer; transition: all 0.3s ease; display: inline-block; text-decoration: none;
 }
 
-/* 3D KALP ANİMASYONU STİLLERİ (GERİ GELDİ) */
+.btn-plus-gold { width: 35px; height: 35px; border-radius: 50%; background: var(--v-gold-gradient); display: flex; align-items: center; justify-content: center; color: #000; font-size: 18px; cursor: pointer; margin-left: 10px; border: 1px solid #d4af37; transition: 0.3s; }
+.btn-plus-gold:hover { transform: scale(1.1) rotate(90deg); }
+
+.ig-stats { display: flex; gap: 40px; list-style: none; padding: 0; margin-bottom: 20px; }
+.ig-stats li { font-size: 16px; color: var(--ig-text); }
+.ig-stats b { font-weight: 600; }
+
+.ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
+.grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
+.grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; cursor: pointer; }
+
+/* 3D KALP ANİMASYONU STİLLERİ */
 .big-heart { 
     position: absolute; top: 50%; left: 50%; 
     transform: translate(-50%, -50%) scale(0); 
     color: #fcf6ba; font-size: 100px; opacity: 0; 
     pointer-events: none; z-index: 100; 
     text-shadow: 0 0 30px rgba(191, 149, 63, 0.8);
-    transition: 0.3s;
 }
 .heart-pop { animation: heartPopAnim 0.8s ease-out; }
 @keyframes heartPopAnim { 
@@ -38,10 +48,6 @@
     100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } 
 }
 
-.ig-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 10px; }
-.grid-item { aspect-ratio: 1/1; overflow: hidden; background: var(--ig-border); position: relative; border-radius: 4px; }
-.grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; cursor: pointer; }
-
 /* GOLD ÇÖP KOVASI */
 .delete-btn-overlay { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.85); color: #bf953f !important; border-radius: 50%; width: 34px; height: 34px; display: flex !important; align-items: center; justify-content: center; cursor: pointer; z-index: 1000; border: 1px solid #bf953f; transition: 0.4s; opacity: 0.8; }
 .delete-btn-overlay:hover { opacity: 1; transform: scale(1.15); box-shadow: 0 0 15px rgba(191, 149, 63, 0.5); }
@@ -49,7 +55,7 @@
 input[type="file"] { display: none !important; }
 
 .post-modal-body { display: flex; padding: 0; min-height: 500px; flex-wrap: nowrap !important; }
-.post-modal-img-area { flex: 1.2; background: #000; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.post-modal-img-area { flex: 1.2; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
 .post-modal-img-area img { max-width: 100%; max-height: 80vh; object-fit: contain; }
 .post-modal-info-area { flex: 0.8; display: flex; flex-direction: column; background: var(--modal-bg); border-left: 1px solid var(--ig-border); min-width: 350px !important; }
 
@@ -110,6 +116,18 @@ input[type="file"] { display: none !important; }
     </div>
 </div>
 
+<div class="modal fade" id="userListModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content v-modal-content">
+            <button type="button" class="verzia-manual-close" data-bs-dismiss="modal">&times;</button>
+            <div style="padding:15px; border-bottom:1px solid var(--ig-border); text-align:center;">
+                <h6 class="modal-title verzia-gold-text fw-bold m-0" id="userListTitle">Liste</h6>
+            </div>
+            <div class="modal-body p-0" id="userListContainer" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="postModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content v-modal-content">
@@ -145,7 +163,29 @@ input[type="file"] { display: none !important; }
 <script>
 let activePostId = null;
 
-// ÇİFT TIKLAMA ANİMASYONU
+// TAKİP LİSTESİ GÖRÜNTÜLEME FONKSİYONU
+async function showUserList(type) {
+    const pathArray = window.location.pathname.split('/');
+    const username = pathArray[pathArray.length - 1];
+    const container = document.getElementById('userListContainer');
+    document.getElementById('userListTitle').innerText = type === 'followers' ? 'Takipçiler' : 'Takip Edilenler';
+    container.innerHTML = '<p class="text-center opacity-50 p-4">Yükleniyor...</p>';
+    new bootstrap.Modal(document.getElementById('userListModal')).show();
+    try {
+        const res = await fetch(`/get_user_list/${username}/${type}`);
+        const users = await res.json();
+        if(users.length === 0) {
+            container.innerHTML = '<p class="text-center opacity-50 p-4">Bu liste gizlidir veya henüz kimse yok.</p>';
+            return;
+        }
+        container.innerHTML = users.map(u => `
+            <a href="/profile/${u.username}" style="display:flex;align-items:center;padding:12px;text-decoration:none;color:var(--ig-text);border-bottom:1px solid var(--ig-border);">
+                <img src="${u.avatar}" style="width:35px;height:35px;border-radius:50%;margin-right:10px;border:1px solid #d4af37;object-fit:cover;">
+                <span class="fw-bold">${u.username}</span>
+            </a>`).join('');
+    } catch(e) { container.innerHTML = '<p class="text-center text-danger p-4">Hata oluştu!</p>'; }
+}
+
 function handleDoubleTap() {
     const heart = document.getElementById('tapHeart');
     heart.classList.add('heart-pop');
@@ -168,7 +208,9 @@ async function deleteComment(commentId, postId) {
         try {
             const res = await fetch(`/delete_comment/${commentId}`, { method: 'POST' });
             const data = await res.json();
-            if(data.status === "success") { loadComments(postId); }
+            if(data.status === "success") {
+                loadComments(postId); 
+            }
         } catch(e) { console.error(e); }
     }
 }
