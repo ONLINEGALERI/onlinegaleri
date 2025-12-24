@@ -1,64 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-    .profile-container { max-width: 935px; margin: 0 auto; padding: 50px 20px; color: #fff; }
-    .profile-header { display: flex; align-items: center; margin-bottom: 44px; }
-    .avatar-box { flex: 1; display: flex; justify-content: center; }
-    .profile-avatar { width: 150px; height: 150px; border-radius: 50%; border: 2px solid #d4af37; padding: 5px; object-fit: cover; }
-    .info-box { flex: 2; padding-left: 30px; }
-    .user-row { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-    .user-name { font-size: 28px; font-weight: 300; letter-spacing: 1px; }
-    .gold-verify { color: #d4af37; font-size: 20px; }
-    .verzia-btn { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 8px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .p-container { max-width: 935px; margin: 0 auto; padding: 50px 20px; color: #fff; }
+    .p-header { display: flex; align-items: center; margin-bottom: 44px; border-bottom: 1px solid #262626; padding-bottom: 40px; }
+    .p-avatar-box { flex: 1; display: flex; justify-content: center; }
+    .p-avatar { width: 150px; height: 150px; border-radius: 50%; border: 2px solid #d4af37; padding: 5px; object-fit: cover; }
+    .p-info { flex: 2; padding-left: 30px; }
+    .p-user-row { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+    .p-name { font-size: 28px; font-weight: 300; letter-spacing: 1px; text-transform: uppercase; }
+    .v-gold-btn { background: linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); color: #000; border: none; padding: 8px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
     
-    /* GALERİ DÜZENİ */
-    .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 50px; }
-    .photo-item { aspect-ratio: 1/1; overflow: hidden; position: relative; border: 1px solid #262626; border-radius: 4px; }
-    .photo-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; cursor: pointer; }
-    .photo-item img:hover { filter: brightness(0.8); }
+    .p-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 50px; }
+    .p-item { aspect-ratio: 1/1; overflow: hidden; position: relative; border: 1px solid #262626; border-radius: 4px; }
+    .p-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; cursor: pointer; }
+    .p-item img:hover { filter: brightness(0.8); }
 
-    @media (max-width: 768px) {
-        .profile-header { flex-direction: column; text-align: center; }
-        .info-box { padding-left: 0; margin-top: 20px; }
-        .photo-grid { gap: 3px; }
-    }
+    @media (max-width: 768px) { .p-header { flex-direction: column; text-align: center; } .p-info { padding-left: 0; margin-top: 20px; } .p-grid { gap: 3px; } }
 </style>
 
-<div class="profile-container">
-    <header class="profile-header">
-        <div class="avatar-box">
-            <img class="profile-avatar" src="{{ server_profile.avatar }}">
-        </div>
-        <div class="info-box">
-            <div class="user-row">
-                <h2 class="user-name">{{ server_profile.username }}</h2>
-                {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check gold-verify"></i>{% endif %}
-                {% if can_edit %}
-                    <button class="verzia-btn">Profili Düzenle</button>
-                    <button class="verzia-btn" onclick="alert('Yükleme ekranı açılıyor...')">Fotoğraf Yükle</button>
-                {% endif %}
-            </div>
-            <div style="margin-bottom: 20px;">
-                <span style="margin-right: 20px;"><b>{{ photos|length }}</b> gönderi</span>
-                <span style="margin-right: 20px;"><b>0</b> takipçi</span>
-                <span><b>0</b> takip</span>
+<div class="p-container">
+    <header class="p-header">
+        <div class="p-avatar-box"><img class="p-avatar" src="{{ server_profile.avatar }}"></div>
+        <div class="p-info">
+            <div class="p-user-row">
+                <h2 class="p-name">{{ server_profile.username }}</h2>
+                {% if server_profile.is_vip %}<i class="fa-solid fa-circle-check" style="color:#d4af37; font-size:20px;"></i>{% endif %}
+                {% if can_edit %}<button class="v-gold-btn">Fotoğraf Yükle</button>{% endif %}
             </div>
             <p><b>{{ server_profile.bio }}</b></p>
         </div>
     </header>
-
-    <div class="photo-grid">
+    <div class="p-grid">
         {% if photos %}
-            {% for photo in photos %}
-            <div class="photo-item">
-                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}">
-            </div>
-            {% endfor %}
+            {% for photo in photos %}<div class="p-item"><img src="{{ url_for('uploaded_file', filename=photo.filename) }}"></div>{% endfor %}
         {% else %}
-            <div style="grid-column: 1/-1; text-align: center; padding: 100px; opacity: 0.5; border: 1px dashed #d4af37;">
-                <i class="fa-solid fa-camera" style="font-size: 40px; margin-bottom: 20px; display: block;"></i>
-                Henüz hiç fotoğraf yok.
-            </div>
+            <div style="grid-column: 1/-1; text-align: center; padding: 80px; opacity: 0.5;">Henüz hiç fotoğraf yok.</div>
         {% endif %}
     </div>
 </div>

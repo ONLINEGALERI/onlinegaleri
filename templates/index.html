@@ -13,30 +13,33 @@
         </svg>
     </div>
     <div class="top-nav" style="position:absolute; top:40px; width:100%; display:flex; justify-content:space-between; padding:0 50px;">
-        <div><button class="m-btn" onclick="alert('Yakında!')">Hakkında</button></div>
-        <div><button class="m-btn" onclick="document.getElementById('l-modal').style.display='flex'">Giriş Yap</button></div>
+        <div class="left-group"><button class="m-btn">Hakkında</button><button class="m-btn">İletişim</button></div>
+        <div class="right-group"><button class="m-btn" onclick="document.getElementById('l-modal').style.display='flex'">Giriş Yap</button><button class="m-btn">Kayıt Ol</button></div>
     </div>
-    <div class="bottom-nav" style="position:absolute; bottom:50px; width:100%; text-align:center;">
+    <div class="bottom-nav" style="position:absolute; bottom:50px; width:100%; display:flex; justify-content:space-between; padding:0 50px; align-items:center;">
         <button class="g-btn">VPRO</button>
+        <button class="g-btn">DARK / LIGHT</button>
+        <span style="color:#d4af37; font-weight:bold; letter-spacing:2px;">@bec</span>
     </div>
 </div>
 
-<div id="l-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center;">
-    <div style="background:#000; padding:50px; border:1px solid #d4af37; text-align:center;">
-        <h2 style="color:#d4af37; margin-bottom:20px;">GİRİŞ YAP</h2>
+<div id="l-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#000; padding:50px; border:1px solid #d4af37; text-align:center; width:350px;">
+        <h2 style="color:#d4af37; margin-bottom:20px; letter-spacing:2px;">GİRİŞ YAP</h2>
         <form id="l-form">
-            <input type="text" name="username" placeholder="Kullanıcı Adı" style="display:block; width:100%; margin-bottom:10px; padding:10px; background:#111; border:1px solid #333; color:#fff;">
-            <input type="password" name="password" placeholder="Şifre" style="display:block; width:100%; margin-bottom:10px; padding:10px; background:#111; border:1px solid #333; color:#fff;">
-            <button type="submit" style="width:100%; padding:10px; background:#d4af37; border:none; color:#000; font-weight:bold;">GİRİŞ</button>
+            <input type="text" name="username" placeholder="Kullanıcı Adı" style="display:block; width:100%; margin-bottom:15px; padding:12px; background:#0a0a0a; border:1px solid #333; color:#fff;">
+            <input type="password" name="password" placeholder="Şifre" style="display:block; width:100%; margin-bottom:15px; padding:12px; background:#0a0a0a; border:1px solid #333; color:#fff;">
+            <button type="submit" style="width:100%; padding:12px; background:linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border:none; color:#000; font-weight:bold; cursor:pointer;">GİRİŞ</button>
         </form>
-        <button onclick="document.getElementById('l-modal').style.display='none'" style="background:none; border:none; color:#d4af37; margin-top:15px; cursor:pointer;">Kapat</button>
+        <button onclick="document.getElementById('l-modal').style.display='none'" style="background:none; border:none; color:#d4af37; margin-top:20px; cursor:pointer; opacity:0.7;">Kapat</button>
     </div>
 </div>
 
 <style>
-    .hero { height:100vh; display:flex; justify-content:center; align-items:center; background:#000; position:relative; }
-    .m-btn { background:none; border:1px solid #d4af37; color:#fff; padding:8px 20px; border-radius:20px; cursor:pointer; }
-    .g-btn { background:linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border:none; padding:12px 30px; font-weight:bold; border-radius:5px; cursor:pointer; }
+    .hero { height:100vh; display:flex; justify-content:center; align-items:center; background:#000; position:relative; overflow:hidden; }
+    .m-btn { background:none; border:1px solid rgba(212,175,55,0.4); color:#fff; padding:8px 25px; border-radius:30px; cursor:pointer; margin:0 5px; font-size:0.8rem; transition:0.3s; }
+    .m-btn:hover { border-color:#d4af37; background:rgba(212,175,55,0.1); }
+    .g-btn { background:linear-gradient(135deg, #bf953f, #fcf6ba, #aa771c); border:none; padding:12px 30px; font-weight:800; border-radius:5px; cursor:pointer; color:#000; font-size:0.7rem; letter-spacing:1px; }
 </style>
 
 <script>

@@ -8,7 +8,7 @@ from models.photo import Photo
 app = Flask(__name__)
 app.config.from_object('config.Config')
 
-# DATABASE BAĞLANTISI
+# DATABASE BAĞLANTISI (KESİN ÇÖZÜM)
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
@@ -36,7 +36,7 @@ def login():
     if user and user.check_password(password):
         login_user(user, remember=True)
         return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
-    return jsonify({"status": "error", "message": "Hata!"}), 401
+    return jsonify({"status": "error", "message": "Hatalı bilgi!"}), 401
 
 @app.route("/profile/<username>")
 @login_required
