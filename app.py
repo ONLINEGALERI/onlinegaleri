@@ -182,6 +182,24 @@ def search_users():
     results = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users]
     return jsonify(results)
 
+# --------------------- LİSTE GETİRME (YENİ EKLENEN) ---------------------
+@app.route("/get_user_list/<username>/<type>")
+@login_required
+def get_user_list(username, type):
+    user = User.query.filter_by(username=username).first_or_404()
+    if type == 'followers':
+        # Kurucu kontrolü: Eğer kurucuysa listeyi boş döndür (Gizlilik için)
+        kurucular = ["beril", "ecem", "cemre"]
+        if user.username.lower() in kurucular:
+            return jsonify([])
+        users = user.followers_list.all()
+    else:
+        # Takip edilenler her zaman görünebilir
+        users = user.followed.all()
+        
+    results = [{"username": u.username, "avatar": u.avatar or "https://picsum.photos/100"} for u in users]
+    return jsonify(results)
+
 # --------------------- DİĞER ROTALAR ---------------------
 @app.route("/follow/<username>", methods=["POST"])
 @login_required

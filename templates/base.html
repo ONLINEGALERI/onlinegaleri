@@ -9,35 +9,109 @@
     <style>
         :root {
             --ig-bg: #000; --ig-sidebar-bg: #000; --ig-border: #262626; --ig-text: #f5f5f5;
-            --v-gold-gradient: linear-gradient(145deg, #8a6e2f 0%, #d4af37 25%, #f9e29c 50%, #d4af37 75%, #a67c00 100%);
-            --v-icon-color: #d4af37;
+            --v-gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
         }
-        body { background: var(--ig-bg); color: var(--ig-text); margin: 0; font-family: sans-serif; }
-        .ig-sidebar {
-            position: fixed; left: 0; top: 0; bottom: 0; width: 72px;
-            border-right: 1px solid var(--ig-border); display: flex; flex-direction: column; align-items: center; padding: 25px 0;
+        body { background: var(--ig-bg); color: var(--ig-text); margin: 0; font-family: 'Montserrat', sans-serif; overflow-x: hidden; }
+
+        /* --- SOL NAVBAR: ORİJİNAL TASARIM --- */
+        .side-nav {
+            width: 70px; background-color: #000; border-right: 1px solid #262626;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 25px 0; position: fixed; height: 100vh; left: 0; top: 0; z-index: 999;
+            justify-content: space-between;
         }
-        .sidebar-item { margin-bottom: 30px; color: var(--v-icon-color); font-size: 24px; text-decoration: none; transition: 0.3s; }
-        .sidebar-item:hover { transform: scale(1.1); }
-        .main-content-wrapper { margin-left: 72px; min-height: 100vh; }
+        .nav-top, .nav-bottom { display: flex; flex-direction: column; align-items: center; gap: 35px; }
+        
+        /* Gold İkonlar */
+        .side-nav i, .side-nav a { 
+            font-size: 24px; cursor: pointer; transition: 0.3s; text-decoration: none;
+            background: var(--v-gold-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;
+        }
+        .side-nav i:hover, .side-nav a:hover, .side-nav .active { 
+            filter: drop-shadow(0 0 8px rgba(252, 246, 186, 0.5));
+            transform: scale(1.1);
+        }
+
+        .main-content-wrapper { margin-left: 70px; min-height: 100vh; width: calc(100% - 70px); }
+
+        /* LİSTE MODAL TASARIMI */
+        .v-modal-list .modal-content { background: #000; border: 1px solid #d4af37; border-radius: 12px; color: #fff; }
+        .user-list-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #1a1a1a; text-decoration: none; color: #fff; }
+        .user-list-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #d4af37; }
+
         @media (max-width: 768px) {
-            .ig-sidebar { width: 100%; height: 60px; top: auto; bottom: 0; flex-direction: row; justify-content: space-around; border-right: none; border-top: 1px solid var(--ig-border); padding: 0; }
-            .main-content-wrapper { margin-left: 0; padding-bottom: 60px; }
-            .sidebar-item { margin-bottom: 0; }
+            .side-nav { width: 100%; height: 60px; top: auto; bottom: 0; flex-direction: row; justify-content: space-around; border-right: none; border-top: 1px solid var(--ig-border); padding: 0; }
+            .main-content-wrapper { margin-left: 0; padding-bottom: 60px; width: 100%; }
+            .nav-top, .nav-bottom { flex-direction: row; gap: 0; height: 100%; width: 50%; justify-content: space-around; }
         }
     </style>
 </head>
 <body>
-    {% if current_user.is_authenticated and request.endpoint in ['profile', 'search'] %}
-    <div class="ig-sidebar">
-        <a href="{{ url_for('index') }}" class="sidebar-item"><i class="fa-solid fa-house"></i></a>
-        <a href="{{ url_for('profile', username=current_user.username) }}" class="sidebar-item"><i class="fa-solid fa-circle-user"></i></a>
-        <a href="{{ url_for('logout') }}" class="sidebar-item"><i class="fa-solid fa-right-from-bracket"></i></a>
-    </div>
+    {% if current_user.is_authenticated %}
+    <aside class="side-nav">
+        <div class="nav-top">
+            <a href="{{ url_for('index') }}" title="Ana Sayfa"><i class="fa-solid fa-house {% if request.endpoint == 'index' %}active{% endif %}"></i></a>
+            <i class="fa-solid fa-magnifying-glass" onclick="typeof openSearchModal === 'function' && openSearchModal()" title="Kullanıcı Ara"></i>
+            <a href="{{ url_for('profile', username=current_user.username) }}" title="Profilim"><i class="fa-solid fa-user-circle {% if request.endpoint == 'profile' and request.view_args['username'] == current_user.username %}active{% endif %}"></i></a>
+        </div>
+        <div class="nav-bottom">
+            <a href="{{ url_for('settings') }}" title="Ayarlar"><i class="fa-solid fa-gear {% if request.endpoint == 'settings' %}active{% endif %}"></i></a>
+            <a href="{{ url_for('logout') }}" title="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
+    </aside>
     {% endif %}
+
     <div class="main-content-wrapper">
         {% block content %}{% endblock %}
     </div>
+
+    <div class="modal fade v-modal-list" id="userListModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h6 class="modal-title w-100 text-center fw-bold" id="userListTitle" style="color:#d4af37; letter-spacing: 1px; text-transform: uppercase;">Liste</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" style="font-size: 0.8rem;"></button>
+                </div>
+                <div class="modal-body p-0" id="userListContainer" style="max-height: 400px; overflow-y: auto;">
+                    </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function showUserList(type) {
+            const pathArray = window.location.pathname.split('/');
+            const username = pathArray[pathArray.length - 1];
+            
+            const title = type === 'followers' ? 'Takipçiler' : 'Takip Edilenler';
+            document.getElementById('userListTitle').innerText = title;
+            const container = document.getElementById('userListContainer');
+            container.innerHTML = '<div class="text-center p-4"><div class="spinner-border spinner-border-sm text-warning"></div></div>';
+            
+            const modal = new bootstrap.Modal(document.getElementById('userListModal'));
+            modal.show();
+
+            try {
+                const response = await fetch(`/get_user_list/${username}/${type}`);
+                const users = await response.json();
+                
+                if (users.length === 0) {
+                    container.innerHTML = '<p class="text-center p-4 opacity-50">Henüz kimse yok.</p>';
+                    return;
+                }
+
+                container.innerHTML = users.map(u => `
+                    <a href="/profile/${u.username}" class="user-list-item">
+                        <img src="${u.avatar}" class="user-list-avatar">
+                        <span class="fw-bold" style="font-size: 0.9rem;">${u.username}</span>
+                    </a>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = '<p class="text-center p-4 text-danger">Liste yüklenemedi.</p>';
+            }
+        }
+    </script>
 </body>
 </html>

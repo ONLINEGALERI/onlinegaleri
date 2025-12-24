@@ -134,7 +134,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
             </div>
             <ul class="ig-stats">
                 <li><b>{{ photos|length }}</b> gönderi</li>
-                <li {% if not server_profile.is_kurucu %}onclick="showUserList('followers')"{% endif %} style="{% if not server_profile.is_kurucu %}cursor:pointer{% endif %}">
+                <li onclick="{% if not server_profile.is_kurucu %}showUserList('followers'){% else %}void(0){% endif %}" style="{% if not server_profile.is_kurucu %}cursor:pointer{% endif %}">
                     <b id="followerCount">{{ server_profile.followers }}</b> takipçi
                 </li>
                 <li onclick="showUserList('following')" style="cursor:pointer">
