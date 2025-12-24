@@ -25,7 +25,29 @@
 .gold-verify { font-size: 20px; background: linear-gradient(135deg, #a67c00 0%, #ffbf00 50%, #b8860b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.3)); }
 body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37 0%, #fff9e3 50%, #c5a028 100%); -webkit-background-clip: text; }
 
-.btn-ig-edit { background: var(--ig-bg) !important; border: 1px solid var(--ig-border) !important; border-radius: 4px !important; color: var(--ig-text) !important; font-weight: 600; font-size: 14px; padding: 5px 9px; cursor: pointer; }
+/* PROFİLİ DÜZENLE BUTONU - NAVBAR İLE AYNI GRADIENT GOLD */
+.btn-ig-edit { 
+    background: transparent !important; 
+    /* Kenarlık rengini navbardaki baskın gold tonuna sabitledik */
+    border: 1px solid #bf953f !important; 
+    border-radius: 4px !important; 
+    /* Yazı rengini gradient gold yaptık */
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 700; 
+    font-size: 14px; 
+    padding: 5px 12px; 
+    cursor: pointer; 
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+.btn-ig-edit:hover {
+    filter: drop-shadow(0 0 5px rgba(252, 246, 186, 0.4));
+    border-color: #fcf6ba !important;
+    transform: scale(1.02);
+}
+
 .verzia-gold-btn { background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728) !important; color: #000 !important; font-weight: bold; border: none !important; padding: 8px 20px; border-radius: 5px; cursor: pointer; transition: transform 0.2s; }
 .verzia-gold-btn:hover { transform: scale(1.05); }
 
@@ -47,7 +69,7 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
 
 /* SOL BAR TASARIMI (GRADIENT GOLD) - DÜZENLENDİ */
 .side-nav {
-    width: 70px; /* Biraz daha genişlettik ferah durması için */
+    width: 70px; 
     background-color: #000; 
     border-right: 1px solid #262626;
     display: flex; 
@@ -59,14 +81,14 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     left: 0; 
     top: 0; 
     z-index: 999;
-    justify-content: space-between; /* Üst ve alt grupları ayırır */
+    justify-content: space-between; 
 }
 
 .nav-top, .nav-bottom {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 35px; /* Butonlar arası eşit mesafe */
+    gap: 35px; 
 }
 
 .side-nav i, .side-nav a { 
