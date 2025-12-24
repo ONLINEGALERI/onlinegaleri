@@ -38,15 +38,32 @@ body:not(.light-mode) .gold-verify { background: linear-gradient(135deg, #d4af37
     border: 1px dashed #d4af37; border-radius: 12px; background: rgba(212, 175, 55, 0.03);
 }
 
-/* SOL BAR TASARIMI */
+/* SOL BAR TASARIMI (GÖNDERİLER YAZISIYLA AYNI GRADIENT GOLD) */
 .side-nav {
     width: 60px; background-color: #000; border-right: 1px solid #262626;
     display: flex; flex-direction: column; align-items: center;
     padding-top: 25px; position: fixed; height: 100vh; left: 0; top: 0; z-index: 999;
 }
-.side-nav i, .side-nav a { color: #8e8e8e; font-size: 22px; margin-bottom: 35px; cursor: pointer; transition: 0.3s; text-decoration: none; }
-.side-nav i:hover, .side-nav a:hover { color: #d4af37; }
-.side-nav .active { color: #d4af37 !important; }
+
+/* İkonlara gradient efekti verme */
+.side-nav i, .side-nav a { 
+    font-size: 22px; 
+    margin-bottom: 35px; 
+    cursor: pointer; 
+    transition: 0.3s; 
+    text-decoration: none;
+    /* Gönderiler yazısındaki gradient'in aynısı */
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* Üzerine gelince veya aktifken hafif bir parlama (glow) ekleyelim */
+.side-nav i:hover, .side-nav a:hover, .side-nav .active { 
+    filter: drop-shadow(0 0 8px rgba(252, 246, 186, 0.5));
+    transform: scale(1.1);
+}
 
 /* MODALLAR */
 .v-modal-content { background: #000000 !important; border: 1px solid #d4af37 !important; color: #f5f5f5; border-radius: 12px; }
@@ -166,7 +183,5 @@ async function searchUsers() {
         if (users.length === 0) resDiv.innerHTML = '<p class="text-center opacity-50 p-3">Kullanıcı bulunamadı.</p>';
     } catch (e) { console.error(e); }
 }
-
-/* DİĞER FONKSİYONLARIN (Lightbox, preview vb.) AYNI KALSIN */
 </script>
 {% endblock %}

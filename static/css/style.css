@@ -389,8 +389,6 @@ body.light-mode .footer-text {
 /* ===================== */
 /* 📱 VERZIA MOBİL - TAM EKRAN PROFİL & ALT NAVBAR */
 @media screen and (max-width: 768px) {
-
-    /* 1. SOLDAKİ BARIN TÜM ETKİSİNİ SIFIRLA */
     .ig-sidebar {
         width: 100% !important;
         height: 60px !important;
@@ -398,125 +396,94 @@ body.light-mode .footer-text {
         top: auto !important;
         bottom: 0 !important;
         left: 0 !important;
-        flex-direction: row !important; /* İkonlar yan yana */
+        flex-direction: row !important;
         justify-content: space-around !important;
         padding: 0 !important;
         border-right: none !important;
-        border-top: 1px solid var(--ig-border) !important;
-        background: var(--ig-sidebar-bg) !important;
+        background: #000 !important;
         z-index: 10000 !important;
     }
 
-    /* 2. İÇERİĞİ SOLA İTEN BOŞLUĞU TAMAMEN KALDIR */
     .main-content-wrapper {
-        margin-left: 0 !important; /* Sol taraftaki 72px boşluğu sildik */
+        margin-left: 0 !important;
         width: 100% !important;
-        padding-bottom: 80px !important; /* Alt barın altında kalmasın diye */
+        padding-bottom: 80px !important;
         display: block !important;
     }
-
-    /* 3. PROFİL ÜST KISMI TAM ORTALA */
-    .profile-header, [class*="profile-header"] {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center !important;
-        width: 100% !important;
-        padding: 40px 15px 20px 15px !important;
-        margin: 0 auto !important;
-    }
-
-    .profile-avatar {
-        margin: 0 auto 15px auto !important;
-        width: 100px !important;
-        height: 100px !important;
-    }
-
-    .profile-info {
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-    }
-
-    /* İstatistikler ve Buton */
-    .profile-stats {
-        display: flex !important;
-        justify-content: center !important;
-        gap: 20px !important;
-        margin: 15px 0 !important;
-        font-size: 0.85rem !important;
-    }
-
-    .btn-outline-light, [class*="edit-btn"] {
-        position: static !important;
-        margin: 10px auto !important;
-        width: auto !important;
-        min-width: 140px !important;
-    }
-
-    /* 4. ÇIKIŞ YAP BUTONU DÜZELTME */
-    .mt-auto { margin-top: 0 !important; display: flex !important; }
-    .sidebar-item { margin: 0 !important; width: auto !important; }
-
-    /* Yatay kaymayı tamamen engelle */
-    body, html {
-        overflow-x: hidden !important;
-        width: 100% !important;
-    }
 }
+
 /* ===================== */
 /* 📱 PROFIL TAŞMA VE SOLA ALMA DÜZENLEMESİ */
 @media screen and (max-width: 768px) {
-
-    /* 1. TAŞMAYI ÖNLEME VE SOLA HİZALAMA */
     .profile-header, [class*="profile-header"] {
         margin-left: 0 !important;
-        padding-left: 15px !important; /* Sola yaklaştırdık */
+        padding-left: 15px !important;
         padding-right: 15px !important;
         width: 100% !important;
         display: flex !important;
         flex-direction: column !important;
-        align-items: flex-start !important; /* İçeriği sola yaslar */
+        align-items: flex-start !important;
         text-align: left !important;
     }
 
-    /* 2. BİLGİ KISMINI SOLA ÇEK */
     .profile-info {
-        align-items: flex-start !important; /* Yazıları sola yaslar */
+        align-items: flex-start !important;
         width: 100% !important;
         margin-left: 0 !important;
     }
 
-    /* 3. İSTATİSTİKLERİN (TAKİPÇİ VS) TAŞMASINI ENGELLE */
     .profile-stats {
         display: flex !important;
-        justify-content: flex-start !important; /* Sola yasla */
-        gap: 15px !important; /* Sığması için arayı daralttık */
+        justify-content: flex-start !important;
+        gap: 15px !important;
         width: 100% !important;
         margin-left: 0 !important;
-        flex-wrap: wrap !important; /* Sığmazsa alta geçer, ekranı itmez */
+        flex-wrap: wrap !important;
     }
 
-    /* 4. PROFİLİ DÜZENLE BUTONU */
     .btn-outline-light, [class*="edit-btn"] {
         position: relative !important;
-        left: 0 !important; /* Sağa sabitlenmişse sola çeker */
-        margin: 10px 0 !important; /* Sola yaslı bırakır */
+        left: 0 !important;
+        margin: 10px 0 !important;
         padding: 5px 15px !important;
         font-size: 0.8rem !important;
         width: auto !important;
     }
 
-    /* 5. AVATAR (SOLDA KALSIN) */
     .profile-avatar {
         margin-left: 0 !important;
         margin-right: auto !important;
     }
     
-    /* Global taşma engelleyici */
     .main-content-wrapper {
         margin-left: 0 !important;
-        overflow-hidden: hidden !important;
+        overflow: hidden !important; 
     }
+}
+
+/* ============================================================ */
+/* ✨ SOL NAVBAR İKONLARI GOLD YAPMA (ZORLAMALI MOD) ✨ */
+/* ============================================================ */
+
+/* Sayfadaki sol barda olabilecek tüm ikonları (i ve svg) hedefle */
+.ig-sidebar i, 
+.ig-sidebar svg,
+.sidebar-item i, 
+.sidebar-item svg,
+[class*="sidebar"] i,
+[class*="sidebar"] svg {
+    color: #D4AF37 !important; /* Gold rengi */
+    fill: #D4AF37 !important;  /* SVG ise içini boyar */
+    stroke: #D4AF37 !important; /* Çizgisel SVG ise kenarı boyar */
+    opacity: 1 !important;
+    transition: 0.3s ease !important;
+}
+
+/* Üzerine gelince ikonlar parlasın */
+.ig-sidebar a:hover i, 
+.sidebar-item:hover i,
+[class*="sidebar"] a:hover svg {
+    color: #FFD700 !important;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8)) !important;
+    transform: scale(1.1);
 }
