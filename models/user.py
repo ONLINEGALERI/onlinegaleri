@@ -46,7 +46,8 @@ class User(UserMixin, db.Model):
 
     # -------- PASSWORD HELPERS --------
     def set_password(self, raw_password):
-        self.password = generate_password_hash(raw_password)
+        # 🔥 HATA GİDERİLDİ: 'scrypt' hatasını önlemek için uyumlu olan pbkdf2 yöntemi seçildi.
+        self.password = generate_password_hash(raw_password, method='pbkdf2:sha256')
 
     def check_password(self, raw_password):
         return check_password_hash(self.password, raw_password)

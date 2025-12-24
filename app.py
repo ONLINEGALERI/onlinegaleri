@@ -44,6 +44,34 @@ def login():
         return jsonify({"status": "success", "redirect": url_for("profile", username=user.username)})
     return jsonify({"status": "error", "message": "Bilgiler hatalı!"}), 401
 
+# YENİ EKLENEN KAYIT OLMA FONKSİYONU
+@app.route("/register", methods=["POST"])
+def register():
+    username = request.form.get("username")
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    # Kullanıcı adı veya email zaten var mı kontrol et
+    if User.query.filter_by(username=username).first():
+        return jsonify({"status": "error", "message": "Bu kullanıcı adı zaten alınmış!"}), 400
+    if User.query.filter_by(email=email).first():
+        return jsonify({"status": "error", "message": "Bu e-posta zaten kayıtlı!"}), 400
+
+    # Yeni kullanıcı oluştur
+    new_user = User(username=username, email=email)
+    new_user.set_password(password)
+    
+    db.session.add(new_user)
+    db.session.commit()
+
+    # Kayıt olunca otomatik giriş yap
+    login_user(new_user, remember=True)
+    
+    return jsonify({
+        "status": "success", 
+        "redirect": url_for("profile", username=new_user.username)
+    })
+
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
@@ -60,6 +88,12 @@ def profile(username):
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+# LOGOUT (Çıkış yapmayı da ekledim ki profilinde buton çalışsın)
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("index"))
 
 if __name__ == "__main__":
     with app.app_context():
